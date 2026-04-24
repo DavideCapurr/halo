@@ -5,16 +5,11 @@ struct RootView: View {
   @Environment(AppState.self) private var state
 
   var body: some View {
-    Group {
-      if state.isAuthenticated {
-        // TODO step 8: sostituire con HomeView() + NavigationStack basato su AppState.route.
-        Text("Home placeholder").foregroundStyle(.white)
-      } else {
-        // TODO step 4: SignInView con Sign in with Apple + OTP.
-        Text("Sign in placeholder").foregroundStyle(.white)
-      }
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(Color.black)
+    // TODO step 4: ripristinare il gate auth (SignInView se !isAuthenticated).
+    // Mentre auth e Supabase services non sono ancora implementati, si entra
+    // direttamente nella Home con seed locale per poter rivedere il design.
+    HomeView()
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .background(Color.black)
   }
 }

@@ -1,0 +1,272 @@
+import SwiftUI
+import UIKit
+import HaloShared
+
+/// Sheet "peek" che si apre tappando una bolla. Contiene:
+///  - header con portrait + nome + handle + tier
+///  - chip vibe corrente
+///  - 3 finte halo posts (foto / testo / audio)
+///  - reaction bar con i 6 glyph custom
+struct HaloSpacePeekSheet: View {
+  let person: DemoPerson
+  @State private var selectedReactions: Set<String> = []
+
+  private let posts: [DemoPost]
+
+  init(person: DemoPerson) {
+    self.person = person
+    self.posts = [
+      DemoPost(id: 1, kind: .photo, caption: person.note.isEmpty ? "oggi così" : person.note, ago: "2h"),
+      DemoPost(id: 2, kind: .text,  caption: "mi sto rendendo conto che l’autunno è la mia stagione preferita da sempre", ago: "8h"),
+      DemoPost(id: 3, kind: .audio, caption: "voice note · 14s", ago: "1g"),
+    ]
+  }
+
+  var body: some View {
+    ScrollView {
+      VStack(spacing: 0) {
+        header
+        vibeChip
+        ForEach(posts) { post in
+          postCard(post)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 12)
+        }
+      }
+      .padding(.top, 4)
+      .padding(.bottom, 40)
+    }
+    .background(haloSheetBackground())
+    .presentationDetents([.medium, .large])
+    .presentationDragIndicator(.visible)
+    .presentationCornerRadius(HaloTheme.sheetCornerRadius)
+    .presentationBackground(.clear)
+  }
+
+  // MARK: header
+
+  private var header: some View {
+    HStack(spacing: 14) {
+      ZStack {
+        Circle()
+          .fill(
+            RadialGradient(
+              colors: [MoodPalette.auraRing(person.mood, alpha: 0.55), .clear],
+              center: .center, startRadius: 0, endRadius: 50
+            )
+          )
+          .frame(width: 88, height: 88)
+        Circle()
+          .fill(MoodPalette.auraColor(person.mood, l: 0.72))
+          .frame(width: 68, height: 68)
+          .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 9)
+        PortraitView(personId: person.id, size: 62)
+          .background(HaloTheme.portraitBacking, in: Circle())
+      }
+      .frame(width: 68, height: 68)
+
+      VStack(alignment: .leading, spacing: 1) {
+        Text(person.name)
+          .font(.system(size: 19, weight: .semibold))
+          .kerning(-0.3)
+          .foregroundStyle(.white)
+        Text("@\(person.handle) · \(person.tier.label)")
+          .font(.system(size: 13))
+          .foregroundStyle(HaloTheme.textMuted)
+      }
+      Spacer(minLength: 0)
+    }
+    .padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 16)
+  }
+
+  private var vibeChip: some View {
+    HStack(spacing: 10) {
+      Circle()
+        .fill(MoodPalette.auraColor(person.mood, l: 0.8))
+        .frame(width: 10, height: 10)
+        .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 4)
+      Text(person.mood.rawValue)
+        .font(.system(size: 14, weight: .medium))
+        .foregroundStyle(.white)
+      if !person.note.isEmpty {
+        Text("“\(person.note)”")
+          .font(.system(size: 13))
+          .italic()
+          .foregroundStyle(Color.white.opacity(0.55))
+          .lineLimit(1)
+          .truncationMode(.tail)
+      }
+      Spacer(minLength: 0)
+    }
+    .padding(.horizontal, 14).padding(.vertical, 10)
+    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 14))
+    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+    .padding(.horizontal, 20).padding(.bottom, 16)
+  }
+
+  // MARK: posts
+
+  private func postCard(_ post: DemoPost) -> some View {
+    VStack(spacing: 0) {
+      switch post.kind {
+      case .photo:  photoBody(post)
+      case .text:   textBody(post)
+      case .audio:  audioBody(post)
+      }
+      reactionsRow(for: post)
+    }
+    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 18))
+    .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(HaloTheme.hairlineSoft, lineWidth: 0.5))
+    .clipShape(RoundedRectangle(cornerRadius: 18))
+  }
+
+  private func photoBody(_ post: DemoPost) -> some View {
+    ZStack(alignment: .bottomLeading) {
+      LinearGradient(
+        colors: [
+          MoodPalette.auraColor(person.mood, l: 0.5),
+          MoodPalette.auraColor(person.mood, l: 0.25),
+        ],
+        startPoint: .topLeading, endPoint: .bottomTrailing
+      )
+      .frame(height: 160)
+
+      // Diagonal stripes overlay (15% opacity)
+      Canvas { ctx, size in
+        ctx.opacity = 0.15
+        var path = Path()
+        let step: CGFloat = 8
+        var x: CGFloat = -size.height
+        while x < size.width {
+          path.move(to: CGPoint(x: x, y: size.height))
+          path.addLine(to: CGPoint(x: x + size.height, y: 0))
+          x += step
+        }
+        ctx.stroke(path, with: .color(.white), lineWidth: 0.5)
+      }
+      .frame(height: 160)
+
+      Text("foto · \(post.ago)")
+        .font(.system(.caption2, design: .monospaced))
+        .kerning(0.3)
+        .foregroundStyle(Color.white.opacity(0.6))
+        .padding(.leading, 10).padding(.bottom, 8)
+    }
+    .overlay(alignment: .bottom) {
+      if !post.caption.isEmpty {
+        Text(post.caption)
+          .font(.system(size: 14)).italic()
+          .foregroundStyle(Color.white.opacity(0.82))
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.horizontal, 16).padding(.vertical, 10)
+          .background(Color.black.opacity(0.0))
+          .offset(y: 50)
+      }
+    }
+  }
+
+  private func textBody(_ post: DemoPost) -> some View {
+    VStack(alignment: .leading, spacing: 10) {
+      Text(post.caption)
+        .font(.system(size: 15))
+        .kerning(-0.1)
+        .lineSpacing(4)
+        .foregroundStyle(.white)
+      Text("testo · \(post.ago)")
+        .font(.system(.caption2, design: .monospaced))
+        .kerning(0.3)
+        .foregroundStyle(HaloTheme.textCaption)
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+
+  private func audioBody(_ post: DemoPost) -> some View {
+    HStack(spacing: 12) {
+      ZStack {
+        Circle().fill(MoodPalette.auraColor(person.mood, l: 0.7))
+        Image(systemName: "play.fill")
+          .font(.system(size: 12, weight: .bold))
+          .foregroundStyle(.white)
+          .offset(x: 1)
+      }
+      .frame(width: 38, height: 38)
+
+      VStack(alignment: .leading, spacing: 4) {
+        // waveform pseudo-statica
+        HStack(spacing: 2) {
+          ForEach(0..<22, id: \.self) { i in
+            Capsule()
+              .fill(Color.white.opacity(0.15 + (Double(i) / 28) * 0.4))
+              .frame(width: 3, height: CGFloat(7 + abs(sin(Double(i) * 1.4)) * 17))
+          }
+        }
+        .frame(height: 24)
+
+        Text("\(post.caption) · \(post.ago)")
+          .font(.system(.caption2, design: .monospaced))
+          .kerning(0.3)
+          .foregroundStyle(HaloTheme.textCaption)
+      }
+    }
+    .padding(16)
+  }
+
+  private func reactionsRow(for post: DemoPost) -> some View {
+    HStack(spacing: 2) {
+      ForEach(ReactionKind.allCases, id: \.self) { r in
+        let key = "\(post.id)-\(r.rawValue)"
+        let on = selectedReactions.contains(key)
+        Button {
+          if on { selectedReactions.remove(key) } else { selectedReactions.insert(key) }
+          UISelectionFeedbackGenerator().selectionChanged()
+        } label: {
+          ReactionGlyph(
+            kind: r,
+            size: 18,
+            color: on ? MoodPalette.auraColor(person.mood, l: 0.85) : Color.white.opacity(0.45)
+          )
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, 8)
+          .background(on ? Color.white.opacity(0.08) : Color.clear, in: RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+      }
+    }
+    .padding(.horizontal, 10).padding(.vertical, 8)
+    .overlay(alignment: .top) {
+      Rectangle().fill(Color.white.opacity(0.06)).frame(height: 0.5)
+    }
+  }
+}
+
+// MARK: - models
+
+private struct DemoPost: Identifiable {
+  enum Kind { case photo, text, audio }
+  let id: Int
+  let kind: Kind
+  let caption: String
+  let ago: String
+}
+
+// MARK: - shared sheet background
+
+func haloSheetBackground() -> some View {
+  ZStack {
+    HaloTheme.surfaceModal
+    Rectangle().fill(.ultraThinMaterial)
+  }
+  .overlay(
+    UnevenRoundedRectangle(
+      cornerRadii: .init(topLeading: HaloTheme.sheetCornerRadius, topTrailing: HaloTheme.sheetCornerRadius)
+    )
+    .strokeBorder(HaloTheme.hairline, lineWidth: 0.5)
+  )
+  .clipShape(
+    UnevenRoundedRectangle(
+      cornerRadii: .init(topLeading: HaloTheme.sheetCornerRadius, topTrailing: HaloTheme.sheetCornerRadius)
+    )
+  )
+  .ignoresSafeArea()
+}

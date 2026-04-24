@@ -1,18 +1,34 @@
 import SwiftUI
 
 enum HaloTheme {
-  static let background = Color.black
-  static let surface    = Color(white: 0.08)
-  static let text       = Color.white
-  static let textMuted  = Color(white: 0.6)
-  static let ringStroke = Color.white.opacity(0.15)
+  // Background tokens (Deep Space, theme "nocturne")
+  static let pureBlack         = Color.black
+  static let surface           = Color(red: 20 / 255, green: 18 / 255, blue: 30 / 255).opacity(0.55)
+  static let surfaceModal      = Color(red: 20 / 255, green: 18 / 255, blue: 30 / 255).opacity(0.72)
+  static let portraitBacking   = Color(red: 26 / 255, green: 22 / 255, blue: 24 / 255)
+
+  // Text
+  static let text              = Color.white
+  static let textSecondary     = Color.white.opacity(0.75)
+  static let textMuted         = Color.white.opacity(0.5)
+  static let textCaption       = Color.white.opacity(0.4)
+  static let textHairline      = Color.white.opacity(0.35)
+
+  // Strokes & rings
+  static let hairline          = Color.white.opacity(0.12)
+  static let hairlineSoft      = Color.white.opacity(0.08)
+  static let ringInactive      = Color.white.opacity(0.07)
+  static let ringActive        = Color.white.opacity(0.42)
 
   static let cornerRadius: CGFloat = 20
-  static let ringCount: Int = 4   // inner, close, orbit, nebula
+  static let sheetCornerRadius: CGFloat = 32
+
+  // Mono digit font, used per timestamp e counter (ui-monospace nel design)
+  static let mono = Font.system(.caption2, design: .monospaced)
 }
 
 extension Color {
-  /// Parsing minimo per hex "#RRGGBB". Ritorna nero su input invalido.
+  /// Parsing minimo di hex `#RRGGBB`. Su input invalido ritorna nero.
   init(hex: String) {
     var h = hex
     if h.hasPrefix("#") { h.removeFirst() }

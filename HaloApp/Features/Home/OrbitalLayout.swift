@@ -1,31 +1,42 @@
 import Foundation
 import HaloShared
 
-/// Step 3/8: calcola le posizioni delle bolle sui 4 anelli.
-/// Spalma gli utenti di ogni tier equidistanti sull'angolo, con offset deterministico per evitare sovrapposizioni perfette.
+/// Calcolo posizioni angolari delle bolle sui 4 anelli, riproducendo l'algoritmo
+/// del prototipo design:
+///  1. Per ogni tier, ordino le persone per `angleFor(id, tier)` (hash stabile).
+///  2. Distribuisco uniformemente con step 360/n.
+///  3. Aggiungo l'offset di fase per tier (`FriendshipTier.anglePhaseDegrees`).
 enum OrbitalLayout {
   struct Placement: Hashable {
-    let userId: UUID
-    let position: CGPoint   // in coordinate normalizzate [-1, 1]
+    let personId: String
     let tier: FriendshipTier
+    /// Angolo finale in radianti.
+    let angle: Double
   }
 
-  /// - parameter users: ordinati (stabile) per non saltare tra refresh.
-  /// - returns: coordinate normalizzate (-1…1). Il renderer moltiplica per il raggio effettivo.
-  static func placements(for users: [(id: UUID, tier: FriendshipTier)]) -> [Placement] {
-    let byTier = Dictionary(grouping: users, by: { $0.tier })
+  /// Hash deterministico (id + tier) per ordinare le persone in modo stabile fra render.
+  static func angleSeedFor(_ personId: String, tier: FriendshipTier, seed: UInt32 = 7) -> UInt32 {
+    var h = seed
+    let s = personId + "|" + tier.rawValue
+    for u in s.unicodeScalars { h = h &* 31 &+ u.value }
+    return h % 360
+  }
+
+  static func placements(for people: [(id: String, tier: FriendshipTier)]) -> [Placement] {
+    let byTier = Dictionary(grouping: people, by: { $0.tier })
     var out: [Placement] = []
     for tier in FriendshipTier.allCases {
       let group = byTier[tier] ?? []
       guard !group.isEmpty else { continue }
-      let radius = tier.ringRadius
-      // Offset di fase per tier così gli anelli non hanno bolle sullo stesso raggio verticale.
-      let phaseOffset = Double(tier.rank) * 0.11
-      for (idx, u) in group.enumerated() {
-        let angle = 2 * .pi * (Double(idx) / Double(group.count)) + phaseOffset
-        let x = radius * cos(angle)
-        let y = radius * sin(angle)
-        out.append(.init(userId: u.id, position: .init(x: x, y: y), tier: tier))
+      let sorted = group
+        .map { ($0, angleSeedFor($0.id, tier: tier)) }
+        .sorted { $0.1 < $1.1 }
+      let step = 360.0 / Double(sorted.count)
+      let phase = tier.anglePhaseDegrees
+      for (idx, item) in sorted.enumerated() {
+        let degrees = Double(idx) * step + phase
+        let angle = degrees * .pi / 180.0
+        out.append(.init(personId: item.0.id, tier: tier, angle: angle))
       }
     }
     return out

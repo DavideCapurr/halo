@@ -12,6 +12,12 @@ final class FriendshipTierTests: XCTestCase {
     XCTAssertGreaterThan(FriendshipTier.nebula.ringRadius, FriendshipTier.inner.ringRadius)
   }
 
+  func testBubbleSizeOrdering() {
+    XCTAssertGreaterThan(FriendshipTier.inner.bubbleSize, FriendshipTier.close.bubbleSize)
+    XCTAssertGreaterThan(FriendshipTier.close.bubbleSize, FriendshipTier.orbit.bubbleSize)
+    XCTAssertGreaterThan(FriendshipTier.orbit.bubbleSize, FriendshipTier.nebula.bubbleSize)
+  }
+
   func testSoftCaps() {
     XCTAssertEqual(FriendshipTier.inner.softCap, 5)
     XCTAssertEqual(FriendshipTier.close.softCap, 15)
