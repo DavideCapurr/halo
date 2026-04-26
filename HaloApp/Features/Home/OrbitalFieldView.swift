@@ -18,6 +18,9 @@ struct OrbitalFieldView: View {
   @State private var zoomLevel: ZoomLevel = .full
   @State private var pinchInProgress: Bool = false
 
+  /// Espone il livello corrente al parent (per uno slider esterno o per AsteroidBeltView).
+  var onZoomChange: (ZoomLevel) -> Void = { _ in }
+
   private struct DragState: Equatable {
     var personId: String
     var ghostTier: FriendshipTier
@@ -120,8 +123,20 @@ struct OrbitalFieldView: View {
       .animation(.easeInOut(duration: 0.2), value: drag?.ghostTier)
       .animation(.spring(response: 0.55, dampingFraction: 0.82), value: zoomLevel)
       .gesture(pinchGesture)
+      .overlay(alignment: .trailing) {
+        ZoomSlider(level: zoomLevelBinding)
+          .padding(.trailing, 14)
+      }
+      .onChange(of: zoomLevel) { _, newValue in onZoomChange(newValue) }
     }
     .coordinateSpace(name: fieldSpace)
+  }
+
+  private var zoomLevelBinding: Binding<ZoomLevel> {
+    Binding(
+      get: { zoomLevel },
+      set: { zoomLevel = $0 }
+    )
   }
 
   // MARK: gestures
