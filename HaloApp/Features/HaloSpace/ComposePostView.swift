@@ -5,7 +5,7 @@ import HaloShared
 struct ComposePostView: View {
   @State private var caption: String = ""
   @State private var mood: Mood = .chill
-  @State private var minTier: FriendshipTier = .orbit
+  @State private var minTier: FriendshipTier = .inner
 
   var body: some View {
     VStack(spacing: 12) {
