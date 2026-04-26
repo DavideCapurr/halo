@@ -23,54 +23,54 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 ## Fase 1 — Backend & dati feed
 
 ### PostsService
-- [ ] `feedPosts()` — query home feed su tutti i follow, ordinata `tier_rank DESC, created_at DESC`
-- [ ] Implementare `post(kind:mediaPath:caption:mood:minTier:)` (era TODO step 6)
-- [ ] Implementare `delete(id:)` (era TODO step 6)
-- [ ] Implementare `posts(forUser:)` (era TODO step 9)
-- [ ] Default `minTier` da `orbit` → `inner` in tutta la app
+- [x] `feedPosts()` — query home feed su tutti i follow, ordinata `tier_rank DESC, created_at DESC`
+- [x] Implementare `post(kind:mediaPath:caption:mood:minTier:)` (era TODO step 6)
+- [x] Implementare `delete(id:)` (era TODO step 6)
+- [x] Implementare `posts(forUser:)` (era TODO step 9)
+- [x] Default `minTier` da `orbit` → `inner` in tutta la app
 
 ### AuthService
-- [ ] Sign in with Apple (era TODO step 4)
-- [ ] Sign out
-- [ ] `currentUserId()`
+- [x] Sign in with Apple (era TODO step 4)
+- [x] Sign out
+- [x] `currentUserId()`
 
 ### ProfilesService
-- [ ] `currentProfile()` (era TODO step 5)
-- [ ] `update(_:)` (era TODO step 5)
-- [ ] `search(handle:)` (era TODO step 7)
-- [ ] `profile(id:)` (era TODO step 7)
+- [x] `currentProfile()` (era TODO step 5)
+- [x] `update(_:)` (era TODO step 5)
+- [x] `search(handle:)` (era TODO step 7)
+- [x] `profile(id:)` (era TODO step 7)
 
 ### FollowsService
-- [ ] `follow(_:)` (era TODO step 7)
-- [ ] `unfollow(_:)` (era TODO step 7)
-- [ ] `proposeTier(forTier:followeeId:)` (era TODO step 7)
-- [ ] `acceptProposedTier(followerId:)` (era TODO step 8)
-- [ ] `declineProposedTier(followerId:)` (era TODO step 8)
-- [ ] `myFollows()` (era TODO step 8)
-- [ ] `isMutual(userId:)` → Bool — usato da orbital field per filtrare
+- [x] `follow(_:)` (era TODO step 7)
+- [x] `unfollow(_:)` (era TODO step 7)
+- [x] `proposeTier(forTier:followeeId:)` (era TODO step 7)
+- [x] `acceptProposedTier(followerId:)` (era TODO step 8)
+- [x] `declineProposedTier(followerId:)` (era TODO step 8)
+- [x] `myFollows()` (era TODO step 8)
+- [x] `isMutual(userId:)` → Bool — usato da orbital field per filtrare
 
 ### VibesService
-- [ ] `setCurrent(mood:colorHex:note:)` (era TODO step 5)
-- [ ] `current(userId:)` (era TODO step 5)
-- [ ] `currentVibes(userIds:)` (era TODO step 8)
+- [x] `setCurrent(mood:colorHex:note:)` (era TODO step 5)
+- [x] `current(userId:)` (era TODO step 5)
+- [x] `currentVibes(userIds:)` (era TODO step 8)
 
 ### ReactionsService
-- [ ] `react(postId:kind:)` (era TODO step 10)
-- [ ] `unreact(postId:kind:)` (era TODO step 10)
-- [ ] `reactions(postId:viewerTier:)` (era TODO step 10)
+- [x] `react(postId:kind:)` (era TODO step 10)
+- [x] `unreact(postId:kind:)` (era TODO step 10)
+- [x] `reactions(postId:viewerTier:)` (era TODO step 10)
 
 ### StorageService
-- [ ] `uploadAvatar(data:contentType:)` (era TODO step 5)
-- [ ] `uploadPostMedia(data:contentType:)` (era TODO step 6)
-- [ ] `signedURL(path:bucket:ttlSeconds:)` (era TODO step 5)
+- [x] `uploadAvatar(data:contentType:)` (era TODO step 5)
+- [x] `uploadPostMedia(data:contentType:)` (era TODO step 6)
+- [x] `signedURL(path:bucket:ttlSeconds:)` (era TODO step 5)
 
 ### HomeViewModel
-- [ ] `load()` — combina follows + profiles + vibes + subscribe realtime (era TODO step 8)
-- [ ] Separare follow mutuali da follow asimmetrici
-- [ ] `feedItems: [MomentItem]` — dati per il Pulse feed
+- [x] `load()` — combina follows + profiles + vibes + subscribe realtime (era TODO step 8)
+- [x] Separare follow mutuali da follow asimmetrici
+- [x] `feedItems: [MomentItem]` — dati per il Pulse feed
 
 ### DB — Supabase
-- [ ] Migration per indice `follows` mutualità (ottimizzazione query mutual check)
+- [x] Migration per indice `follows` mutualità (ottimizzazione query mutual check)
 - [ ] Edge function `realtime-feed` se necessario per live reactions
 
 ---
