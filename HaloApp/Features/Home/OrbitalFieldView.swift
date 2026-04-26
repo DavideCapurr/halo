@@ -37,7 +37,9 @@ struct OrbitalFieldView: View {
       let cy = H / 2
       // Espande lateralmente: l'anello esterno tocca quasi i bordi.
       let maxR = min(W, H) * 0.56
-      let placements = OrbitalLayout.placements(for: people.map { ($0.id, $0.tier) })
+      // Solo follow mutuali finiscono sugli anelli; gli asimmetrici sono asteroidi.
+      let mutuals = people.filter(\.isMutual)
+      let placements = OrbitalLayout.placements(for: mutuals.map { ($0.id, $0.tier) })
       let placementByPerson = Dictionary(uniqueKeysWithValues: placements.map { ($0.personId, $0) })
 
       ZStack {
@@ -74,8 +76,8 @@ struct OrbitalFieldView: View {
             .position(x: pos.x, y: pos.y)
         }
 
-        // 4. bolle (solo tier visibili al livello corrente)
-        ForEach(people) { p in
+        // 4. bolle (solo mutuali, solo tier visibili al livello corrente)
+        ForEach(mutuals) { p in
           if let placement = placementByPerson[p.id], placement.tier.isVisible(at: zoomLevel) {
             let isDragging = drag?.personId == p.id
             let effectiveTier = isDragging ? (drag?.ghostTier ?? placement.tier) : placement.tier
