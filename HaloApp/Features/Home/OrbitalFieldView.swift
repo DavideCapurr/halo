@@ -86,7 +86,9 @@ struct OrbitalFieldView: View {
               size: size,
               hasNew: p.hasNew,
               showName: effectiveTier == .inner || effectiveTier == .close,
-              pulsing: pulsing
+              pulsing: pulsing,
+              hasActiveVibe: p.hasActiveVibe,
+              lastPostAt: p.lastPostAt
             )
             .position(x: xy.x, y: xy.y)
             .zIndex(isDragging ? 50 : 10)
