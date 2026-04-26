@@ -53,10 +53,14 @@ struct OrbitalFieldView: View {
         }
 
         // 2. self center
-        SelfCenterView(mood: me.mood, size: selfCenterSize)
-          .position(x: cx, y: cy)
-          .zIndex(15)
-          .onTapGesture(perform: onSelfTap)
+        SelfCenterView(
+          mood: me.mood,
+          size: selfCenterSize,
+          hasActiveVibe: me.hasActiveVibe
+        )
+        .position(x: cx, y: cy)
+        .zIndex(15)
+        .onTapGesture(perform: onSelfTap)
 
         // 3. ghost outline nella posizione originale durante un drag
         if let d = drag,
