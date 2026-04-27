@@ -78,33 +78,33 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 ## Fase 2 — Orbital field: zoom + bolle vive + asteroidi
 
 ### Zoom system
-- [ ] `ZoomLevel` enum: `.innerOnly`, `.innerClose`, `.full`, `.asteroids`
-- [ ] `@State private var zoomLevel: ZoomLevel` in `OrbitalFieldView`
-- [ ] `FriendshipTier.ringRadius(at: ZoomLevel)` — funzione, non costante
-- [ ] `FriendshipTier.bubbleSize(at: ZoomLevel)` — scala col zoom, Inner cresce di più
-- [ ] Pinch gesture (`MagnificationGesture`) per zoom in/out
-- [ ] Slider verticale laterale auto-hide (scompare dopo 2s di inattività)
-- [ ] Animazione transition tra zoom levels
-- [ ] Nascondere tier fuori viewport (no render inutile)
+- [x] `ZoomLevel` enum: `.innerOnly`, `.innerClose`, `.full`, `.asteroids`
+- [x] `@State private var zoomLevel: ZoomLevel` in `OrbitalFieldView`
+- [x] `FriendshipTier.ringRadius(at: ZoomLevel)` — funzione, non costante
+- [x] `FriendshipTier.bubbleSize(at: ZoomLevel)` — scala col zoom, Inner cresce di più
+- [x] Pinch gesture (`MagnificationGesture`) per zoom in/out
+- [x] Slider verticale laterale auto-hide (scompare dopo 2s di inattività)
+- [x] Animazione transition tra zoom levels
+- [x] Nascondere tier fuori viewport (no render inutile)
 
 ### Bolle vive
-- [ ] Tinta bubble = `MoodPalette.auraColor(person.vibe.mood)` se vibe attiva, altrimenti neutro
-- [ ] Glow decay: intensità del glow proporzionale a `(72h - timeSinceLastPost) / 72h`
-- [ ] Indicatore "Adesso" su bubble se ha postato negli ultimi 30 min (puntino luminoso)
-- [ ] Anello pulsante se vibe attiva (TimelineView animation già vista in VibeSetterView)
-- [ ] `SelfCenterView` mostra la propria vibe color
+- [x] Tinta bubble = `MoodPalette.auraColor(person.vibe.mood)` se vibe attiva, altrimenti neutro
+- [x] Glow decay: intensità del glow proporzionale a `(72h - timeSinceLastPost) / 72h`
+- [x] Indicatore "Adesso" su bubble se ha postato negli ultimi 30 min (puntino luminoso)
+- [x] Anello pulsante se vibe attiva (TimelineView animation già vista in VibeSetterView)
+- [x] `SelfCenterView` mostra la propria vibe color
 
 ### Filtro mutualità
-- [ ] `OrbitalFieldView` filtra `people` in input: mostra solo follow mutuali
-- [ ] Follow asimmetrici passati a `AsteroidBeltView` (nuovo componente)
+- [x] `OrbitalFieldView` filtra `people` in input: mostra solo follow mutuali
+- [x] Follow asimmetrici passati a `AsteroidBeltView` (nuovo componente)
 
 ### AsteroidBeltView (nuovo)
-- [ ] Componente separato, oltre il ring Nebula
-- [ ] Bubble piccole (~24px), non strutturate, con drift animato lento
-- [ ] Visibile solo a `zoomLevel == .asteroids`
-- [ ] Pan orizzontale per esplorare (può essere lunga)
-- [ ] Tap → HaloSpace della persona
-- [ ] Raggruppamento opzionale per categorie (artisti, brand, etc.)
+- [x] Componente separato, oltre il ring Nebula
+- [x] Bubble piccole (~24px), non strutturate, con drift animato lento
+- [x] Visibile solo a `zoomLevel == .asteroids`
+- [x] Pan orizzontale per esplorare (può essere lunga)
+- [x] Tap → HaloSpace della persona
+- [x] Raggruppamento opzionale per categorie (artisti, brand, etc.)
 
 ---
 
