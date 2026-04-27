@@ -64,21 +64,21 @@ final class FeedRealtime {
         group.addTask { [weak self] in
           for await change in postsInsert {
             if let post: HaloPost = try? change.decodeRecord(decoder: Self.decoder) {
-              self?.broadcast(.newPost(post))
+              await self?.broadcast(.newPost(post))
             }
           }
         }
         group.addTask { [weak self] in
           for await change in vibesInsert {
             if let vibe: Vibe = try? change.decodeRecord(decoder: Self.decoder) {
-              self?.broadcast(.newVibe(vibe))
+              await self?.broadcast(.newVibe(vibe))
             }
           }
         }
         group.addTask { [weak self] in
           for await change in reactionsInsert {
             if let r: Reaction = try? change.decodeRecord(decoder: Self.decoder) {
-              self?.broadcast(.newReaction(r))
+              await self?.broadcast(.newReaction(r))
             }
           }
         }

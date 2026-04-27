@@ -5,7 +5,7 @@ Social network basato su presenza umana a cerchi concentrici. iOS 17+, SwiftUI, 
 ## Stato attuale
 
 Bootstrap scaffolding (step 1–2 del piano):
-- XcodeGen `project.yml` con target app + widget extension + pacchetto locale `HaloShared`.
+- Progetto Xcode standard (`Halo.xcodeproj`) con target app + widget extension + pacchetto locale `HaloShared`.
 - Migrations Postgres (`supabase/migrations/0001_init.sql`, `0002_rls.sql`, `0003_tier_triggers.sql`).
 - `seed.sql` con 8 profili tier mix.
 - Edge function `purge-expired`.
@@ -15,23 +15,31 @@ Step 3+ (design system, auth, home orbital field, widget, IAP…) da implementar
 
 ## Setup dev
 
-Requisiti locali: macOS 14+, Xcode 15+, `supabase` CLI, `xcodegen`.
+Requisiti locali: macOS 14+, Xcode 15+, `supabase` CLI.
 
 ```bash
-brew install xcodegen supabase/tap/supabase
+brew install supabase/tap/supabase
 
-# 1. Secrets
-cp Secrets.xcconfig.template Secrets.xcconfig
-# compila SUPABASE_ANON_KEY dopo `supabase start`
-
-# 2. Supabase locale
+# 1. Supabase locale
 supabase start
 supabase db reset   # applica migrations + seed.sql
 
-# 3. Progetto Xcode
-xcodegen generate
+# 2. Progetto Xcode
 open Halo.xcodeproj
 ```
+
+Poi in Xcode apri il target `HaloApp` e imposta i valori in `Build Settings`:
+
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `APP_GROUP_ID`
+- `HALO_URL_SCHEME`
+
+Per il target `HaloWidget` imposta almeno:
+
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `APP_GROUP_ID`
 
 ## Architettura (riassunto)
 
@@ -57,7 +65,6 @@ HaloApp/           — main app target (SwiftUI)
 HaloWidget/        — widget extension (lockscreen + StandBy)
 HaloShared/        — Swift package condiviso (models + supabase lite client)
 supabase/          — migrations, functions, seed
-project.yml        — XcodeGen
 ```
 
 Dettagli nel piano interno.

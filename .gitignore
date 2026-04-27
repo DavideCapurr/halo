@@ -34,7 +34,6 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 
 # Secrets / env
-Secrets.xcconfig
 .env
 .env.*
 !.env.example

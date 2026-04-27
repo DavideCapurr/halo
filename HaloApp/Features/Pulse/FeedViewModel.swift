@@ -50,10 +50,6 @@ final class FeedViewModel {
     self.bootstrap = bootstrap
   }
 
-  deinit {
-    realtimeTask?.cancel()
-  }
-
   // MARK: - load
 
   func load() async {

@@ -3,6 +3,7 @@ import SwiftUI
 enum HaloTheme {
   // Background tokens (Deep Space, theme "nocturne")
   static let pureBlack         = Color.black
+  static let background        = pureBlack
   static let surface           = Color(red: 20 / 255, green: 18 / 255, blue: 30 / 255).opacity(0.55)
   static let surfaceModal      = Color(red: 20 / 255, green: 18 / 255, blue: 30 / 255).opacity(0.72)
   static let portraitBacking   = Color(red: 26 / 255, green: 22 / 255, blue: 24 / 255)
