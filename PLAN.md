@@ -114,7 +114,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [ ] `PulseFeedView` — view principale, scroll verticale
 - [x] `FeedViewModel` — `@Observable`, carica `feedPosts()` + vibes
 - [x] `MomentCard` — unità base del feed (vedi spec sotto)
-- [ ] `PresenceBar` — strip orizzontale in alto con vibe attive, tier-sorted
+- [x] `PresenceBar` — strip orizzontale in alto con vibe attive, tier-sorted
 - [ ] Sezioni visive per tier (header leggero: "Inner & Close" / "Orbit" / "Nebula")
 - [ ] Sezione "Adesso" in testa se ci sono post < 30 min
 
