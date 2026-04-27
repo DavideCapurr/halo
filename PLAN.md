@@ -71,7 +71,8 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 
 ### DB — Supabase
 - [x] Migration per indice `follows` mutualità (ottimizzazione query mutual check)
-- [ ] Edge function `realtime-feed` se necessario per live reactions
+- [x] Edge function `realtime-feed` se necessario per live reactions
+      *(non necessaria: il subscribe è gestito client-side in `FeedRealtime.swift` via `RealtimeChannelV2` su INSERT di halo_posts/vibes/reactions, sotto RLS)*
 
 ---
 
