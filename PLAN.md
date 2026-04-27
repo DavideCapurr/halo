@@ -121,7 +121,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 ### MomentCard
 - [x] Portrait con aura mood-color pulsante (usa `SelfCenterView` o nuovo)
 - [x] Nome + tier badge + timestamp
-- [ ] Vibe note (se attiva): mood chip + nota testuale
+- [x] Vibe note (se attiva): mood chip + nota testuale
 - [ ] Ultimo post dentro la card (foto / testo / audio) — opzionale, se c'è
 - [ ] Decay ring visibile intorno al post (anello che si svuota nelle 72h)
 - [ ] Reazioni: count per tier Orbit+, chi ha reagito per Inner/Close

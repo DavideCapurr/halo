@@ -20,7 +20,9 @@ struct MomentCard: View {
 
       VStack(alignment: .leading, spacing: 8) {
         header
-        // Vibe note + last-post inline arrivano nelle microtappe successive.
+        if person.hasActiveVibe {
+          vibeNote
+        }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -106,6 +108,38 @@ struct MomentCard: View {
       .padding(.vertical, 2.5)
       .background(.white.opacity(0.06), in: Capsule())
       .overlay(Capsule().strokeBorder(Color.white.opacity(0.12), lineWidth: 0.5))
+  }
+
+  // MARK: - vibe note
+
+  private var vibeNote: some View {
+    HStack(spacing: 8) {
+      moodChip
+      if !person.note.isEmpty {
+        Text("\u{201C}\(person.note)\u{201D}")
+          .font(.system(size: 13))
+          .italic()
+          .foregroundStyle(Color.white.opacity(0.62))
+          .lineLimit(2)
+      }
+    }
+  }
+
+  private var moodChip: some View {
+    HStack(spacing: 6) {
+      Circle()
+        .fill(MoodPalette.auraColor(person.mood, l: 0.82))
+        .frame(width: 7, height: 7)
+        .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 3)
+      Text(person.mood.rawValue)
+        .font(.system(size: 11, weight: .medium))
+        .kerning(0.1)
+        .foregroundStyle(Color.white.opacity(0.82))
+    }
+    .padding(.horizontal, 8)
+    .padding(.vertical, 4)
+    .background(.white.opacity(0.05), in: Capsule())
+    .overlay(Capsule().strokeBorder(Color.white.opacity(0.10), lineWidth: 0.5))
   }
 
   /// "Adesso" se < 30 min, altrimenti "Xm" / "Xh" / "Xg".
