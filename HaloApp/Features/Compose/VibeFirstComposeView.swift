@@ -254,14 +254,99 @@ struct VibeFirstComposeView: View {
     }
   }
 
-  // MARK: - step 4: tier (placeholder; completato nelle microtappe successive)
+  // MARK: - step 4: tier — anti-cringe, mostra conteggi reali
 
   private var tierStep: some View {
     VStack(alignment: .leading, spacing: 12) {
       stepHeading(eyebrow: "STEP 4 · CON CHI", title: "condividi con…")
-      Text("Tier selector qui")
-        .foregroundStyle(.white.opacity(0.6))
+      Text("Halo parte dal tuo cerchio più stretto. Allargare è una scelta.")
+        .font(.system(size: 13))
+        .foregroundStyle(Color.white.opacity(0.55))
+
+      VStack(spacing: 8) {
+        ForEach(FriendshipTier.allCases.reversed(), id: \.self) { t in
+          tierRow(t)
+        }
+      }
+
+      if let warning = wideningWarning {
+        HStack(spacing: 8) {
+          Image(systemName: "exclamationmark.circle")
+            .foregroundStyle(MoodPalette.auraColor(.warm, l: 0.78))
+          Text(warning)
+            .font(.system(size: 12))
+            .foregroundStyle(Color.white.opacity(0.70))
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(MoodPalette.auraRing(.warm, alpha: 0.10), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(
+          RoundedRectangle(cornerRadius: 12)
+            .strokeBorder(MoodPalette.auraRing(.warm, alpha: 0.40), lineWidth: 0.5)
+        )
+        .transition(.opacity.combined(with: .move(edge: .top)))
+      }
     }
+    .animation(.easeInOut(duration: 0.20), value: tier)
+  }
+
+  private func tierRow(_ t: FriendshipTier) -> some View {
+    let on = t == tier
+    let n = tierCounts[t] ?? 0
+    return Button {
+      tier = t
+      UISelectionFeedbackGenerator().selectionChanged()
+    } label: {
+      HStack(spacing: 12) {
+        Circle()
+          .fill(on ? MoodPalette.auraColor(mood, l: 0.85) : Color.white.opacity(0.30))
+          .frame(width: 9, height: 9)
+          .shadow(color: on ? MoodPalette.auraRing(mood, alpha: 0.55) : .clear, radius: 4)
+        VStack(alignment: .leading, spacing: 2) {
+          Text(t.label)
+            .font(.system(size: 15, weight: on ? .semibold : .medium))
+            .foregroundStyle(on ? .white : Color.white.opacity(0.85))
+          Text(audienceLabel(for: t, count: n))
+            .font(.system(size: 11))
+            .foregroundStyle(Color.white.opacity(0.55))
+        }
+        Spacer()
+        Text("\(n)")
+          .font(HaloTheme.mono)
+          .kerning(0.3)
+          .foregroundStyle(Color.white.opacity(on ? 0.85 : 0.45))
+      }
+      .padding(.horizontal, 14).padding(.vertical, 12)
+      .background(
+        on ? MoodPalette.auraRing(mood, alpha: 0.18) : Color.white.opacity(0.04),
+        in: RoundedRectangle(cornerRadius: 14)
+      )
+      .overlay(
+        RoundedRectangle(cornerRadius: 14).strokeBorder(
+          on ? MoodPalette.auraRing(mood, alpha: 0.55) : HaloTheme.hairline,
+          lineWidth: on ? 1 : 0.5
+        )
+      )
+    }
+    .buttonStyle(.plain)
+  }
+
+  private func audienceLabel(for t: FriendshipTier, count: Int) -> String {
+    switch t {
+    case .inner:  return "i tuoi \(count) Inner"
+    case .close:  return "Inner + i tuoi \(count) Close"
+    case .orbit:  return "Inner + Close + i tuoi \(count) Orbit"
+    case .nebula: return "tutti quelli che ti seguono (\(count) in Nebula)"
+    }
+  }
+
+  /// Warning soft quando si sale di tier (più persone vedranno).
+  private var wideningWarning: String? {
+    guard tier != .inner else { return nil }
+    let inner = tierCounts[.inner] ?? 0
+    let now = tierCounts[tier] ?? 0
+    let extras = max(now - inner, 0)
+    guard extras > 0 else { return nil }
+    return "anche \(extras) persone in più lo vedranno"
   }
 
   // MARK: - footer (back / next / send)

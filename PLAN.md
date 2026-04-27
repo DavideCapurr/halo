@@ -147,17 +147,17 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [x] Step 1: mood chip selector (obbligatorio, anti-cringe: solo un colore)
 - [x] Step 2: nota testuale 60ch (opzionale, skip esplicito)
 - [x] Step 3: "Vuoi aggiungere un momento?" → [Foto] [Testo] [Audio] [Salta]
-- [ ] Step 4: tier selector — mostra **numero reale** ("condividi con i tuoi 4 Inner")
-- [ ] CTA: "Manda" (non "Pubblica", non "Posta")
+- [x] Step 4: tier selector — mostra **numero reale** ("condividi con i tuoi 4 Inner")
+- [x] CTA: "Manda" (non "Pubblica", non "Posta")
 
 ### Accesso rapido
 - [ ] Long-press su `SelfCenterView` → apre `VibeFirstComposeView`
 - [ ] Bottom bar: pulsante compose porta a vibe-first (non direttamente alla camera)
 
 ### Tier selector anti-cringe
-- [ ] Mostra: `●Inner · 4 persone` / `●Close · 12 persone` / etc.
-- [ ] Default selezionato = Inner
-- [ ] Ogni tap più largo mostra warning soft ("anche 12 persone in più lo vedranno")
+- [x] Mostra: `●Inner · 4 persone` / `●Close · 12 persone` / etc.
+- [x] Default selezionato = Inner
+- [x] Ogni tap più largo mostra warning soft ("anche 12 persone in più lo vedranno")
 
 ### Audio
 - [ ] `AudioRecorderView` (già esiste stub) — completare
