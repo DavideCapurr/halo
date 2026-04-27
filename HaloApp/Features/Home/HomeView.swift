@@ -7,10 +7,13 @@ import HaloShared
 /// quando gli step 4-8 saranno integrati.
 struct HomeView: View {
   @State private var me: DemoPerson = SeedPeople.me
-  @State private var people: [DemoPerson] = SeedPeople.all
+  @State private var people: [DemoPerson] = SeedPeople.all + SeedPeople.asteroids
   @State private var peek: DemoPerson? = nil
   @State private var showVibeSetter: Bool = false
   @State private var pendingProposal: TierConfirmationSheet.Proposal? = nil
+  @State private var fieldZoom: ZoomLevel = .full
+
+  private var asteroids: [DemoPerson] { people.filter { !$0.isMutual } }
 
   var body: some View {
     ZStack {
@@ -32,9 +35,19 @@ struct HomeView: View {
           onSelfTap: { showVibeSetter = true },
           onProposeTier: { person, toTier in
             pendingProposal = .init(person: person, from: person.tier, to: toTier)
-          }
+          },
+          onZoomChange: { fieldZoom = $0 }
         )
         .frame(maxHeight: .infinity)
+
+        if fieldZoom == .asteroids && !asteroids.isEmpty {
+          AsteroidBeltView(
+            people: asteroids,
+            onTap: { peek = $0 }
+          )
+          .padding(.bottom, 6)
+          .transition(.opacity.combined(with: .move(edge: .bottom)))
+        }
 
         BottomBarView(
           selfMood: me.mood,
@@ -43,6 +56,7 @@ struct HomeView: View {
         .padding(.bottom, 16)
       }
       .padding(.top, 4)
+      .animation(.easeInOut(duration: 0.30), value: fieldZoom)
     }
     .preferredColorScheme(.dark)
     .sheet(item: $peek) { person in
