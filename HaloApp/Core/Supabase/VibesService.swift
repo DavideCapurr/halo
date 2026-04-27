@@ -11,9 +11,8 @@ final class VibesService {
 
   private var client: SupabaseClient { SupabaseClientProvider.shared }
 
-  /// Inserisce una nuova vibe per l'utente corrente. L'unique partial index
-  /// `vibes_one_active_per_user` garantisce una sola vibe attiva alla volta:
-  /// per sostituirla cancelliamo prima quelle ancora vive.
+  /// Inserisce una nuova vibe per l'utente corrente.
+  /// Per mantenere una sola vibe attiva alla volta cancelliamo prima quelle ancora vive.
   @discardableResult
   func setCurrent(mood: Mood, colorHex: String, note: String?) async throws -> Vibe {
     guard let userId = AuthService.shared.currentUserId() else {

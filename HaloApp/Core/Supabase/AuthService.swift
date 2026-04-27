@@ -10,6 +10,24 @@ final class AuthService {
   private init() {}
 
   enum AuthError: Error { case cancelled, invalidResponse, missingProfile }
+  enum EmailSignInError: LocalizedError {
+    case invalidCredentials
+    case emailNotConfirmed
+    case profileBootstrapFailed(message: String)
+    case unknown(message: String)
+
+    var errorDescription: String? {
+      switch self {
+      case .invalidCredentials:
+        return "Email o password non valide."
+      case .emailNotConfirmed:
+        return "Devi confermare l'email prima di entrare."
+      case .profileBootstrapFailed(let message),
+        .unknown(let message):
+        return message
+      }
+    }
+  }
 
   private var client: SupabaseClient { SupabaseClientProvider.shared }
 
@@ -56,17 +74,28 @@ final class AuthService {
   // MARK: - Email / Password
 
   func signInWithEmail(email: String, password: String) async throws -> Profile {
-    _ = try await client.auth.signIn(email: email, password: password)
-    return try await currentOrBootstrapProfile(email: email)
+    do {
+      _ = try await client.auth.signIn(email: email, password: password)
+    } catch {
+      throw classifyEmailSignInError(error)
+    }
+
+    do {
+      return try await currentOrBootstrapProfile()
+    } catch {
+      let details = describe(error)
+      throw EmailSignInError.profileBootstrapFailed(
+        message: "Accesso riuscito, ma non riesco a caricare il profilo. \(details)"
+      )
+    }
   }
 
-  private func currentOrBootstrapProfile(email: String) async throws -> Profile {
+  private func currentOrBootstrapProfile() async throws -> Profile {
     if let existing = try? await ProfilesService.shared.currentProfile() {
       return existing
     }
     let userId = try requireUserId()
-    let local = email.split(separator: "@").first.map(String.init) ?? "halo"
-    let new = Profile(id: userId, handle: sanitizeHandle(local), displayName: "Halo")
+    let new = Profile(id: userId, handle: randomBootstrapHandle(), displayName: "Halo")
     try await ProfilesService.shared.update(new)
     return new
   }
@@ -96,5 +125,33 @@ final class AuthService {
     let allowed = lower.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) || $0 == "_" || $0 == "." }
     let cleaned = String(String.UnicodeScalarView(allowed))
     return cleaned.isEmpty ? "halo_\(UUID().uuidString.prefix(6).lowercased())" : cleaned
+  }
+
+  private func randomBootstrapHandle() -> String {
+    "halo_\(UUID().uuidString.prefix(6).lowercased())"
+  }
+
+  private func classifyEmailSignInError(_ error: Error) -> EmailSignInError {
+    let description = describe(error).lowercased()
+    if description.contains("invalid login credentials") {
+      return .invalidCredentials
+    }
+    if description.contains("email not confirmed") {
+      return .emailNotConfirmed
+    }
+    return .unknown(message: describe(error))
+  }
+
+  private func describe(_ error: Error) -> String {
+    if let error = error as? EmailSignInError, let description = error.errorDescription {
+      return description
+    }
+    let localized = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !localized.isEmpty,
+       localized != "The operation couldn’t be completed. (Supabase.AuthService.AuthError error 0.)"
+    {
+      return localized
+    }
+    return String(describing: error)
   }
 }

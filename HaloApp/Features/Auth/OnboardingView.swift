@@ -167,18 +167,33 @@ struct OnboardingView: View {
   private func save() async {
     isWorking = true; defer { isWorking = false }
     do {
+      let normalizedHandle = handle.trimmingCharacters(in: .whitespacesAndNewlines)
+      let normalizedDisplayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+
+      guard !normalizedHandle.isEmpty, !normalizedDisplayName.isEmpty else {
+        errorMessage = "Compila handle e nome prima di continuare."
+        return
+      }
+
+      let available = try await ProfilesService.shared.isHandleAvailable(normalizedHandle, excluding: initialProfile.id)
+      guard available else {
+        errorMessage = "Questo handle e gia preso."
+        return
+      }
+
       var avatarPath: String? = initialProfile.avatarPath
       if let data = avatarData {
         avatarPath = try await StorageService.shared.uploadAvatar(data: data, contentType: "image/jpeg")
       }
       var profile = initialProfile
-      profile.handle = handle
-      profile.displayName = displayName
+      profile.handle = normalizedHandle
+      profile.displayName = normalizedDisplayName
       profile.avatarPath = avatarPath
       try await ProfilesService.shared.update(profile)
       onDone(profile)
     } catch {
-      errorMessage = "Non riesco a salvare il profilo. Riprova."
+      let description = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+      errorMessage = description.isEmpty ? "Non riesco a salvare il profilo. Riprova." : description
     }
   }
 }

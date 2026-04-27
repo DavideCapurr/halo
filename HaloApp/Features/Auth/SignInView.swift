@@ -180,13 +180,11 @@ struct SignInView: View {
   }
 
   private func message(for error: Error) -> String {
-    let description = error.localizedDescription.lowercased()
-    if description.contains("invalid login credentials") {
-      return "Email o password non valide."
+    if let error = error as? AuthService.EmailSignInError,
+       let description = error.errorDescription {
+      return description
     }
-    if description.contains("email not confirmed") {
-      return "Devi confermare l'email prima di entrare."
-    }
-    return "Non riesco ad accedere. Riprova."
+    let description = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+    return description.isEmpty ? "Non riesco ad accedere. Riprova." : description
   }
 }

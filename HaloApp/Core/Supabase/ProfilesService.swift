@@ -7,7 +7,25 @@ final class ProfilesService {
   static let shared = ProfilesService()
   private init() {}
 
-  enum ProfilesError: Error { case notAuthenticated, notFound }
+  enum ProfilesError: LocalizedError {
+    case notAuthenticated
+    case notFound
+    case handleTaken
+    case saveFailed(message: String)
+
+    var errorDescription: String? {
+      switch self {
+      case .notAuthenticated:
+        return "Sessione non valida. Esci e rientra."
+      case .notFound:
+        return "Profilo non trovato."
+      case .handleTaken:
+        return "Questo handle e gia preso."
+      case .saveFailed(let message):
+        return message
+      }
+    }
+  }
 
   private var client: SupabaseClient { SupabaseClientProvider.shared }
 
@@ -34,10 +52,36 @@ final class ProfilesService {
 
   /// Upsert sul profilo corrente. La policy RLS richiede `id = auth.uid()`.
   func update(_ profile: Profile) async throws {
-    try await client
+    do {
+      try await client
+        .from("profiles")
+        .upsert(profile)
+        .execute()
+    } catch let error as PostgrestError {
+      if error.code == "23505" {
+        throw ProfilesError.handleTaken
+      }
+      throw ProfilesError.saveFailed(message: error.detail ?? error.message)
+    } catch {
+      throw ProfilesError.saveFailed(message: error.localizedDescription)
+    }
+  }
+
+  func isHandleAvailable(_ handle: String, excluding userId: UUID) async throws -> Bool {
+    struct ProfileIdentity: Decodable {
+      let id: UUID
+    }
+
+    let matches: [ProfileIdentity] = try await client
       .from("profiles")
-      .upsert(profile)
+      .select("id")
+      .eq("handle", value: handle)
+      .limit(1)
       .execute()
+      .value
+
+    guard let first = matches.first else { return true }
+    return first.id == userId
   }
 
   /// Ricerca per prefisso di handle (case-insensitive grazie a `citext`).

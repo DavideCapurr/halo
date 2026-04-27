@@ -47,7 +47,10 @@ create table if not exists public.profiles (
 create index if not exists profiles_handle_idx on public.profiles (handle);
 
 -- ---------- vibes ----------
--- Una vibe attiva per utente (expires_at > now()). Vincolato da indice parziale unique.
+-- Una vibe attiva per utente (expires_at > now()).
+-- In v1 la sostituzione della vibe attiva viene gestita dal client cancellando
+-- prima le vibes ancora vive dell'utente corrente. Evitiamo un partial unique
+-- index con `now()` perche Postgres richiede predicati IMMUTABLE.
 create table if not exists public.vibes (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null references public.profiles(id) on delete cascade,
@@ -57,10 +60,6 @@ create table if not exists public.vibes (
   created_at  timestamptz not null default now(),
   expires_at  timestamptz not null default (now() + interval '24 hours')
 );
-
-create unique index if not exists vibes_one_active_per_user
-  on public.vibes (user_id)
-  where expires_at > now();
 
 create index if not exists vibes_user_expires_idx
   on public.vibes (user_id, expires_at desc);
@@ -82,8 +81,7 @@ create index if not exists halo_posts_user_expires_idx
   on public.halo_posts (user_id, expires_at desc);
 
 create index if not exists halo_posts_alive_idx
-  on public.halo_posts (expires_at)
-  where expires_at > now();
+  on public.halo_posts (expires_at desc);
 
 -- ---------- reactions ----------
 create table if not exists public.reactions (
