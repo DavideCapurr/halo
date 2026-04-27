@@ -218,9 +218,9 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [x] "Like" → rimosso, solo reazioni glyph
 
 ### Nessuna metrica pubblica
-- [ ] Verificare: zero `follower count` visibile in UI
-- [ ] Verificare: zero `like count` / `view count` visibili
-- [ ] Verificare: zero streak, zero badge, zero gamification
+- [x] Verificare: zero `follower count` visibile in UI
+- [x] Verificare: zero `like count` / `view count` visibili
+- [x] Verificare: zero streak, zero badge, zero gamification
 
 ### Animazioni & polish
 - [ ] Micro-drift sulle card del feed (subliminale)
