@@ -23,210 +23,211 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 ## Fase 1 — Backend & dati feed
 
 ### PostsService
-- [ ] `feedPosts()` — query home feed su tutti i follow, ordinata `tier_rank DESC, created_at DESC`
-- [ ] Implementare `post(kind:mediaPath:caption:mood:minTier:)` (era TODO step 6)
-- [ ] Implementare `delete(id:)` (era TODO step 6)
-- [ ] Implementare `posts(forUser:)` (era TODO step 9)
-- [ ] Default `minTier` da `orbit` → `inner` in tutta la app
+- [x] `feedPosts()` — query home feed su tutti i follow, ordinata `tier_rank DESC, created_at DESC`
+- [x] Implementare `post(kind:mediaPath:caption:mood:minTier:)` (era TODO step 6)
+- [x] Implementare `delete(id:)` (era TODO step 6)
+- [x] Implementare `posts(forUser:)` (era TODO step 9)
+- [x] Default `minTier` da `orbit` → `inner` in tutta la app
 
 ### AuthService
-- [ ] Sign in with Apple (era TODO step 4)
-- [ ] Sign out
-- [ ] `currentUserId()`
+- [x] Sign in with Apple (era TODO step 4)
+- [x] Sign out
+- [x] `currentUserId()`
 
 ### ProfilesService
-- [ ] `currentProfile()` (era TODO step 5)
-- [ ] `update(_:)` (era TODO step 5)
-- [ ] `search(handle:)` (era TODO step 7)
-- [ ] `profile(id:)` (era TODO step 7)
+- [x] `currentProfile()` (era TODO step 5)
+- [x] `update(_:)` (era TODO step 5)
+- [x] `search(handle:)` (era TODO step 7)
+- [x] `profile(id:)` (era TODO step 7)
 
 ### FollowsService
-- [ ] `follow(_:)` (era TODO step 7)
-- [ ] `unfollow(_:)` (era TODO step 7)
-- [ ] `proposeTier(forTier:followeeId:)` (era TODO step 7)
-- [ ] `acceptProposedTier(followerId:)` (era TODO step 8)
-- [ ] `declineProposedTier(followerId:)` (era TODO step 8)
-- [ ] `myFollows()` (era TODO step 8)
-- [ ] `isMutual(userId:)` → Bool — usato da orbital field per filtrare
+- [x] `follow(_:)` (era TODO step 7)
+- [x] `unfollow(_:)` (era TODO step 7)
+- [x] `proposeTier(forTier:followeeId:)` (era TODO step 7)
+- [x] `acceptProposedTier(followerId:)` (era TODO step 8)
+- [x] `declineProposedTier(followerId:)` (era TODO step 8)
+- [x] `myFollows()` (era TODO step 8)
+- [x] `isMutual(userId:)` → Bool — usato da orbital field per filtrare
 
 ### VibesService
-- [ ] `setCurrent(mood:colorHex:note:)` (era TODO step 5)
-- [ ] `current(userId:)` (era TODO step 5)
-- [ ] `currentVibes(userIds:)` (era TODO step 8)
+- [x] `setCurrent(mood:colorHex:note:)` (era TODO step 5)
+- [x] `current(userId:)` (era TODO step 5)
+- [x] `currentVibes(userIds:)` (era TODO step 8)
 
 ### ReactionsService
-- [ ] `react(postId:kind:)` (era TODO step 10)
-- [ ] `unreact(postId:kind:)` (era TODO step 10)
-- [ ] `reactions(postId:viewerTier:)` (era TODO step 10)
+- [x] `react(postId:kind:)` (era TODO step 10)
+- [x] `unreact(postId:kind:)` (era TODO step 10)
+- [x] `reactions(postId:viewerTier:)` (era TODO step 10)
 
 ### StorageService
-- [ ] `uploadAvatar(data:contentType:)` (era TODO step 5)
-- [ ] `uploadPostMedia(data:contentType:)` (era TODO step 6)
-- [ ] `signedURL(path:bucket:ttlSeconds:)` (era TODO step 5)
+- [x] `uploadAvatar(data:contentType:)` (era TODO step 5)
+- [x] `uploadPostMedia(data:contentType:)` (era TODO step 6)
+- [x] `signedURL(path:bucket:ttlSeconds:)` (era TODO step 5)
 
 ### HomeViewModel
-- [ ] `load()` — combina follows + profiles + vibes + subscribe realtime (era TODO step 8)
-- [ ] Separare follow mutuali da follow asimmetrici
-- [ ] `feedItems: [MomentItem]` — dati per il Pulse feed
+- [x] `load()` — combina follows + profiles + vibes + subscribe realtime (era TODO step 8)
+- [x] Separare follow mutuali da follow asimmetrici
+- [x] `feedItems: [MomentItem]` — dati per il Pulse feed
 
 ### DB — Supabase
-- [ ] Migration per indice `follows` mutualità (ottimizzazione query mutual check)
-- [ ] Edge function `realtime-feed` se necessario per live reactions
+- [x] Migration per indice `follows` mutualità (ottimizzazione query mutual check)
+- [x] Edge function `realtime-feed` se necessario per live reactions
+      *(non necessaria: il subscribe è gestito client-side in `FeedRealtime.swift` via `RealtimeChannelV2` su INSERT di halo_posts/vibes/reactions, sotto RLS)*
 
 ---
 
 ## Fase 2 — Orbital field: zoom + bolle vive + asteroidi
 
 ### Zoom system
-- [ ] `ZoomLevel` enum: `.innerOnly`, `.innerClose`, `.full`, `.asteroids`
-- [ ] `@State private var zoomLevel: ZoomLevel` in `OrbitalFieldView`
-- [ ] `FriendshipTier.ringRadius(at: ZoomLevel)` — funzione, non costante
-- [ ] `FriendshipTier.bubbleSize(at: ZoomLevel)` — scala col zoom, Inner cresce di più
-- [ ] Pinch gesture (`MagnificationGesture`) per zoom in/out
-- [ ] Slider verticale laterale auto-hide (scompare dopo 2s di inattività)
-- [ ] Animazione transition tra zoom levels
-- [ ] Nascondere tier fuori viewport (no render inutile)
+- [x] `ZoomLevel` enum: `.innerOnly`, `.innerClose`, `.full`, `.asteroids`
+- [x] `@State private var zoomLevel: ZoomLevel` in `OrbitalFieldView`
+- [x] `FriendshipTier.ringRadius(at: ZoomLevel)` — funzione, non costante
+- [x] `FriendshipTier.bubbleSize(at: ZoomLevel)` — scala col zoom, Inner cresce di più
+- [x] Pinch gesture (`MagnificationGesture`) per zoom in/out
+- [x] Slider verticale laterale auto-hide (scompare dopo 2s di inattività)
+- [x] Animazione transition tra zoom levels
+- [x] Nascondere tier fuori viewport (no render inutile)
 
 ### Bolle vive
-- [ ] Tinta bubble = `MoodPalette.auraColor(person.vibe.mood)` se vibe attiva, altrimenti neutro
-- [ ] Glow decay: intensità del glow proporzionale a `(72h - timeSinceLastPost) / 72h`
-- [ ] Indicatore "Adesso" su bubble se ha postato negli ultimi 30 min (puntino luminoso)
-- [ ] Anello pulsante se vibe attiva (TimelineView animation già vista in VibeSetterView)
-- [ ] `SelfCenterView` mostra la propria vibe color
+- [x] Tinta bubble = `MoodPalette.auraColor(person.vibe.mood)` se vibe attiva, altrimenti neutro
+- [x] Glow decay: intensità del glow proporzionale a `(72h - timeSinceLastPost) / 72h`
+- [x] Indicatore "Adesso" su bubble se ha postato negli ultimi 30 min (puntino luminoso)
+- [x] Anello pulsante se vibe attiva (TimelineView animation già vista in VibeSetterView)
+- [x] `SelfCenterView` mostra la propria vibe color
 
 ### Filtro mutualità
-- [ ] `OrbitalFieldView` filtra `people` in input: mostra solo follow mutuali
-- [ ] Follow asimmetrici passati a `AsteroidBeltView` (nuovo componente)
+- [x] `OrbitalFieldView` filtra `people` in input: mostra solo follow mutuali
+- [x] Follow asimmetrici passati a `AsteroidBeltView` (nuovo componente)
 
 ### AsteroidBeltView (nuovo)
-- [ ] Componente separato, oltre il ring Nebula
-- [ ] Bubble piccole (~24px), non strutturate, con drift animato lento
-- [ ] Visibile solo a `zoomLevel == .asteroids`
-- [ ] Pan orizzontale per esplorare (può essere lunga)
-- [ ] Tap → HaloSpace della persona
-- [ ] Raggruppamento opzionale per categorie (artisti, brand, etc.)
+- [x] Componente separato, oltre il ring Nebula
+- [x] Bubble piccole (~24px), non strutturate, con drift animato lento
+- [x] Visibile solo a `zoomLevel == .asteroids`
+- [x] Pan orizzontale per esplorare (può essere lunga)
+- [x] Tap → HaloSpace della persona
+- [x] Raggruppamento opzionale per categorie (artisti, brand, etc.)
 
 ---
 
 ## Fase 3 — Pulse Feed (feed di momenti)
 
 ### Struttura
-- [ ] `PulseFeedView` — view principale, scroll verticale
-- [ ] `FeedViewModel` — `@Observable`, carica `feedPosts()` + vibes
-- [ ] `MomentCard` — unità base del feed (vedi spec sotto)
-- [ ] `PresenceBar` — strip orizzontale in alto con vibe attive, tier-sorted
-- [ ] Sezioni visive per tier (header leggero: "Inner & Close" / "Orbit" / "Nebula")
-- [ ] Sezione "Adesso" in testa se ci sono post < 30 min
+- [x] `PulseFeedView` — view principale, scroll verticale
+- [x] `FeedViewModel` — `@Observable`, carica `feedPosts()` + vibes
+- [x] `MomentCard` — unità base del feed (vedi spec sotto)
+- [x] `PresenceBar` — strip orizzontale in alto con vibe attive, tier-sorted
+- [x] Sezioni visive per tier (header leggero: "Inner & Close" / "Orbit" / "Nebula")
+- [x] Sezione "Adesso" in testa se ci sono post < 30 min
 
 ### MomentCard
-- [ ] Portrait con aura mood-color pulsante (usa `SelfCenterView` o nuovo)
-- [ ] Nome + tier badge + timestamp
-- [ ] Vibe note (se attiva): mood chip + nota testuale
-- [ ] Ultimo post dentro la card (foto / testo / audio) — opzionale, se c'è
-- [ ] Decay ring visibile intorno al post (anello che si svuota nelle 72h)
-- [ ] Reazioni: count per tier Orbit+, chi ha reagito per Inner/Close
-- [ ] Card senza post = valida (solo portrait + vibe) — presenza pura
+- [x] Portrait con aura mood-color pulsante (usa `SelfCenterView` o nuovo)
+- [x] Nome + tier badge + timestamp
+- [x] Vibe note (se attiva): mood chip + nota testuale
+- [x] Ultimo post dentro la card (foto / testo / audio) — opzionale, se c'è
+- [x] Decay ring visibile intorno al post (anello che si svuota nelle 72h)
+- [x] Reazioni: count per tier Orbit+, chi ha reagito per Inner/Close
+- [x] Card senza post = valida (solo portrait + vibe) — presenza pura
 
 ### Dinamismo
-- [ ] Realtime Supabase subscribe per nuovi post/vibe nel feed
-- [ ] Animazione entrata nuova card in sezione "Adesso"
-- [ ] Ping animato per reazione live
-- [ ] Sfondo deep space prende leggera tinta dal mood dominante delle card visibili (`withAnimation`)
-- [ ] Card che scadono tra < 2h: bordo con colore caldo (warning visivo)
+- [x] Realtime Supabase subscribe per nuovi post/vibe nel feed
+- [x] Animazione entrata nuova card in sezione "Adesso"
+- [x] Ping animato per reazione live
+- [x] Sfondo deep space prende leggera tinta dal mood dominante delle card visibili (`withAnimation`)
+- [x] Card che scadono tra < 2h: bordo con colore caldo (warning visivo)
 
 ### Integrazione Home
-- [ ] `HomeView` ottiene tab/switch tra OrbitalField e PulseFeed
-- [ ] Transizione fluida tra i due (no tab bar, gesto swipe o pulsante?)
+- [x] `HomeView` ottiene tab/switch tra OrbitalField e PulseFeed
+- [x] Transizione fluida tra i due (no tab bar, gesto swipe o pulsante?)
 
 ---
 
 ## Fase 4 — Compose vibe-first
 
 ### Flow nuovo
-- [ ] Rifare `ComposePostView` come `VibeFirstComposeView`
-- [ ] Step 1: mood chip selector (obbligatorio, anti-cringe: solo un colore)
-- [ ] Step 2: nota testuale 60ch (opzionale, skip esplicito)
-- [ ] Step 3: "Vuoi aggiungere un momento?" → [Foto] [Testo] [Audio] [Salta]
-- [ ] Step 4: tier selector — mostra **numero reale** ("condividi con i tuoi 4 Inner")
-- [ ] CTA: "Manda" (non "Pubblica", non "Posta")
+- [x] Rifare `ComposePostView` come `VibeFirstComposeView`
+- [x] Step 1: mood chip selector (obbligatorio, anti-cringe: solo un colore)
+- [x] Step 2: nota testuale 60ch (opzionale, skip esplicito)
+- [x] Step 3: "Vuoi aggiungere un momento?" → [Foto] [Testo] [Audio] [Salta]
+- [x] Step 4: tier selector — mostra **numero reale** ("condividi con i tuoi 4 Inner")
+- [x] CTA: "Manda" (non "Pubblica", non "Posta")
 
 ### Accesso rapido
-- [ ] Long-press su `SelfCenterView` → apre `VibeFirstComposeView`
-- [ ] Bottom bar: pulsante compose porta a vibe-first (non direttamente alla camera)
+- [x] Long-press su `SelfCenterView` → apre `VibeFirstComposeView`
+- [x] Bottom bar: pulsante compose porta a vibe-first (non direttamente alla camera)
 
 ### Tier selector anti-cringe
-- [ ] Mostra: `●Inner · 4 persone` / `●Close · 12 persone` / etc.
-- [ ] Default selezionato = Inner
-- [ ] Ogni tap più largo mostra warning soft ("anche 12 persone in più lo vedranno")
+- [x] Mostra: `●Inner · 4 persone` / `●Close · 12 persone` / etc.
+- [x] Default selezionato = Inner
+- [x] Ogni tap più largo mostra warning soft ("anche 12 persone in più lo vedranno")
 
 ### Audio
-- [ ] `AudioRecorderView` (già esiste stub) — completare
-- [ ] Max durata: 60 secondi
-- [ ] Waveform visiva durante registrazione
-- [ ] Playback inline nella card
+- [x] `AudioRecorderView` (già esiste stub) — completare
+- [x] Max durata: 60 secondi
+- [x] Waveform visiva durante registrazione
+- [x] Playback inline nella card
 
 ---
 
 ## Fase 5 — HaloSpace (profilo per-persona)
 
-- [ ] `HaloSpaceView` completo — griglia/lista post non scaduti dell'utente
-- [ ] `PostCardView` con media (foto/testo/audio), caption, mood tag, decay indicator
-- [ ] `ReactionBarView` — 6 glyph (`ReactionGlyph`), stato selezionato, count/actor tier-aware
-- [ ] Swipe left/right tra persone dello stesso tier
-- [ ] Header: portrait grande + display name + handle + tier badge + vibe attiva
-- [ ] Sezione "HaloSpace vuoto" se nessun post attivo (stato empty con mood)
+- [x] `HaloSpaceView` completo — griglia/lista post non scaduti dell'utente
+- [x] `PostCardView` con media (foto/testo/audio), caption, mood tag, decay indicator
+- [x] `ReactionBarView` — 6 glyph (`ReactionGlyph`), stato selezionato, count/actor tier-aware
+- [x] Swipe left/right tra persone dello stesso tier
+- [x] Header: portrait grande + display name + handle + tier badge + vibe attiva
+- [x] Sezione "HaloSpace vuoto" se nessun post attivo (stato empty con mood)
 
 ---
 
 ## Fase 6 — Auth & onboarding
 
-- [ ] `SignInView` — Sign in with Apple + email OTP fallback
-- [ ] `OnboardingView` — scegli handle, display name, upload avatar
-- [ ] `InitialInnerCircleView` — aggiungi primi 1-5 Inner (da contatti o handle)
-- [ ] `RootView` — routing auth → onboarding → home
-- [ ] `AppState` — stato globale sessione (già stub, da completare)
+- [x] `SignInView` — Sign in with Apple + email OTP fallback
+- [x] `OnboardingView` — scegli handle, display name, upload avatar
+- [x] `InitialInnerCircleView` — aggiungi primi 1-5 Inner (da contatti o handle)
+- [x] `RootView` — routing auth → onboarding → home
+- [x] `AppState` — stato globale sessione (già stub, da completare)
 
 ---
 
 ## Fase 7 — Prodotto pubblico: celeb & profili pubblici
 
-- [ ] `is_public` flag su `profiles` (migration DB)
-- [ ] Profili pubblici visibili in search senza follow
-- [ ] Follow di profilo pubblico = asimmetrico → catena asteroidi
-- [ ] Post con `min_tier = nebula` da profilo pubblico = visibile a chiunque segua
-- [ ] Discovery/search per account pubblici
+- [x] `is_public` flag su `profiles` (migration DB)
+- [x] Profili pubblici visibili in search senza follow
+- [x] Follow di profilo pubblico = asimmetrico → catena asteroidi
+- [x] Post con `min_tier = nebula` da profilo pubblico = visibile a chiunque segua
+- [x] Discovery/search per account pubblici
 
 ---
 
 ## Fase 8 — Widget
 
-- [ ] Completare `Provider.swift` — carica `WidgetSnapshot` da app group
-- [ ] `LockscreenWidget` con orbital mini-field (bolle live con mood tint)
-- [ ] `StandByWidget` per StandBy mode iPhone
-- [ ] Aggiornamento snapshot quando arriva nuova vibe/post (background refresh)
+- [x] Completare `Provider.swift` — carica `WidgetSnapshot` da app group
+- [x] `LockscreenWidget` con orbital mini-field (bolle live con mood tint)
+- [x] `StandByWidget` per StandBy mode iPhone
+- [x] Aggiornamento snapshot quando arriva nuova vibe/post (background refresh)
 
 ---
 
 ## Fase 9 — Copy, design, polish
 
 ### Lessico anti-cringe (sweep su tutta la app)
-- [ ] "Posta" / "Pubblica" → "Manda" / "Condividi"
-- [ ] "Followers" / "Following" → "Halo" / "Cerchi"
-- [ ] "Story" → "Vibe" / "Momento"
-- [ ] "Feed" → "Pulse" / "Presenza"
-- [ ] "Profilo" → "HaloSpace"
-- [ ] "Like" → rimosso, solo reazioni glyph
+- [x] "Posta" / "Pubblica" → "Manda" / "Condividi"
+- [x] "Followers" / "Following" → "Halo" / "Cerchi"
+- [x] "Story" → "Vibe" / "Momento"
+- [x] "Feed" → "Pulse" / "Presenza"
+- [x] "Profilo" → "HaloSpace"
+- [x] "Like" → rimosso, solo reazioni glyph
 
 ### Nessuna metrica pubblica
-- [ ] Verificare: zero `follower count` visibile in UI
-- [ ] Verificare: zero `like count` / `view count` visibili
-- [ ] Verificare: zero streak, zero badge, zero gamification
+- [x] Verificare: zero `follower count` visibile in UI
+- [x] Verificare: zero `like count` / `view count` visibili
+- [x] Verificare: zero streak, zero badge, zero gamification
 
 ### Animazioni & polish
-- [ ] Micro-drift sulle card del feed (subliminale)
-- [ ] Transizioni fluide tra orbital field e pulse feed
-- [ ] Haptic coerenti con i tier (Inner = `.heavy`, Close = `.medium`, Orbit = `.light`)
-- [ ] Dark mode only (già impostato, verificare consistenza)
+- [x] Micro-drift sulle card del feed (subliminale)
+- [x] Transizioni fluide tra orbital field e pulse feed
+- [x] Haptic coerenti con i tier (Inner = `.heavy`, Close = `.medium`, Orbit = `.light`)
+- [x] Dark mode only (già impostato, verificare consistenza)
 
 ---
 

@@ -95,7 +95,7 @@ struct VibeSetterView: View {
         Button {
           onSave(mood, note)
         } label: {
-          Text("Pubblica vibe")
+          Text("Manda la vibe")
             .font(.system(size: 16, weight: .semibold))
             .kerning(-0.2)
             .foregroundStyle(.white)

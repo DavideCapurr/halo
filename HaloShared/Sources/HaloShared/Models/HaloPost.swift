@@ -20,7 +20,7 @@ public struct HaloPost: Codable, Identifiable, Hashable, Sendable {
     mediaPath: String? = nil,
     caption: String? = nil,
     mood: Mood? = nil,
-    minTier: FriendshipTier = .orbit,
+    minTier: FriendshipTier = .inner,
     createdAt: Date = .now,
     expiresAt: Date = .now.addingTimeInterval(72 * 3600)
   ) {

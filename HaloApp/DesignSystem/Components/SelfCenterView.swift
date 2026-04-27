@@ -3,22 +3,27 @@ import HaloShared
 
 /// Self center: portrait con anello vibe + doppio halo (uno blurred, uno netto)
 /// + badge "+" bianco bottom-right per aprire il vibe setter.
+/// Se `hasActiveVibe == false` il ring va in tonalità neutra e gli halo non pulsano.
 struct SelfCenterView: View {
   let mood: Mood
   var size: CGFloat = 128
-  var onTap: () -> Void = {}
+  var hasActiveVibe: Bool = true
 
-  private var ringColor: Color  { MoodPalette.auraColor(mood, l: 0.78) }
-  private var ringGlow: Color   { MoodPalette.auraRing(mood, alpha: 0.65) }
+  private var ringColor: Color {
+    hasActiveVibe ? MoodPalette.auraColor(mood, l: 0.78) : Color.white.opacity(0.20)
+  }
+  private var ringGlow: Color {
+    hasActiveVibe ? MoodPalette.auraRing(mood, alpha: 0.65) : Color.white.opacity(0.12)
+  }
   private var ringWidth: CGFloat { max(3.5, size * 0.05) }
 
   var body: some View {
     ZStack {
-      // outer breathing halo (large, blurred)
-      TimelineView(.animation(minimumInterval: 1.0 / 24)) { ctx in
+      // outer breathing halo (large, blurred) — anima solo se vibe attiva
+      TimelineView(.animation(minimumInterval: 1.0 / 24, paused: !hasActiveVibe)) { ctx in
         let t = ctx.date.timeIntervalSinceReferenceDate
         let phase = sin((t / 4.5) * .pi * 2)
-        let scale = 1.0 + 0.04 * phase
+        let scale = hasActiveVibe ? (1.0 + 0.04 * phase) : 1.0
         Circle()
           .fill(
             RadialGradient(
@@ -31,7 +36,7 @@ struct SelfCenterView: View {
           .frame(width: size * 2.8, height: size * 2.8)
           .blur(radius: 6)
           .scaleEffect(scale)
-          .opacity(0.95)
+          .opacity(hasActiveVibe ? 0.95 : 0.55)
       }
       .allowsHitTesting(false)
 
@@ -39,7 +44,7 @@ struct SelfCenterView: View {
       Circle()
         .fill(
           RadialGradient(
-            colors: [MoodPalette.auraRing(mood, alpha: 0.4), .clear],
+            colors: [hasActiveVibe ? MoodPalette.auraRing(mood, alpha: 0.4) : Color.white.opacity(0.08), .clear],
             center: .center,
             startRadius: 0,
             endRadius: size * 0.75
@@ -73,14 +78,16 @@ struct SelfCenterView: View {
     }
     .frame(width: size, height: size)
     .contentShape(Circle())
-    .onTapGesture(perform: onTap)
   }
 }
 
 #Preview {
   ZStack {
     Color.black
-    SelfCenterView(mood: .chill, size: 128) {}
+    HStack(spacing: 24) {
+      SelfCenterView(mood: .chill, size: 128, hasActiveVibe: true)
+      SelfCenterView(mood: .chill, size: 128, hasActiveVibe: false)
+    }
   }
-  .frame(width: 400, height: 400)
+  .frame(width: 400, height: 300)
 }

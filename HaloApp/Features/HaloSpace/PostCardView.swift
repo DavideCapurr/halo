@@ -1,20 +1,190 @@
 import SwiftUI
 import HaloShared
 
-/// Step 9: card di un singolo post con caption + mood + reactions bar.
+/// Card di un singolo `HaloPost` con body specifico per tipo (foto/testo/audio),
+/// caption opzionale, mood tag e decay indicator (anello che si svuota nelle 72h).
 struct PostCardView: View {
   let post: HaloPost
+  /// Tier del viewer verso l'autore (per la ReactionBar e gating UI futuro).
+  let viewerTier: FriendshipTier
+  /// Aggregati di reazioni sul post.
+  var reactions: [ReactionsService.Aggregate] = []
+  /// Reazioni del viewer (toggle UI).
+  var viewerSelected: Set<ReactionKind> = []
+  /// Mood usato per accents quando `post.mood` è nil.
+  var fallbackMood: Mood = .chill
+  var onReact: (ReactionKind) -> Void = { _ in }
+
+  private var accentMood: Mood { post.mood ?? fallbackMood }
+
+  /// Decay 0..1 in base ad `expiresAt - now`.
+  private var decay: Double {
+    let total = post.expiresAt.timeIntervalSince(post.createdAt)
+    let remaining = post.expiresAt.timeIntervalSince(Date.now)
+    guard total > 0 else { return 0 }
+    return max(0, min(1, remaining / total))
+  }
+
+  private var isExpiringSoon: Bool {
+    decay > 0 && post.expiresAt.timeIntervalSince(Date.now) < 2 * 3600
+  }
+
+  private var ageLabel: String {
+    let s = Date.now.timeIntervalSince(post.createdAt)
+    if s < 60 { return "adesso" }
+    if s < 3600 { return "\(Int(s / 60))m" }
+    if s < 86400 { return "\(Int(s / 3600))h" }
+    return "\(Int(s / 86400))g"
+  }
+
   var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      if let caption = post.caption {
-        Text(caption).foregroundStyle(.white)
+    VStack(spacing: 0) {
+      header
+      mediaSlot
+      if let caption = post.caption, !caption.isEmpty, post.kind != .text {
+        Text(caption)
+          .font(.system(size: 14)).italic()
+          .foregroundStyle(Color.white.opacity(0.78))
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.horizontal, 16).padding(.vertical, 10)
       }
-      if let mood = post.mood {
-        Text(mood.rawValue).font(.caption).foregroundStyle(HaloTheme.textMuted)
-      }
-      // TODO step 10: ReactionBarView
+      Divider().background(Color.white.opacity(0.05))
+      ReactionBarView(
+        viewerTier: viewerTier,
+        aggregates: reactions,
+        selected: viewerSelected,
+        accentMood: accentMood,
+        onTap: onReact
+      )
     }
-    .padding()
-    .background(HaloTheme.surface, in: .rect(cornerRadius: HaloTheme.cornerRadius))
+    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 18))
+    .overlay(
+      RoundedRectangle(cornerRadius: 18)
+        .strokeBorder(
+          isExpiringSoon
+            ? MoodPalette.auraColor(.warm, l: 0.65)
+            : HaloTheme.hairlineSoft,
+          lineWidth: isExpiringSoon ? 1.2 : 0.5
+        )
+    )
+    .clipShape(RoundedRectangle(cornerRadius: 18))
+  }
+
+  // MARK: - header (decay ring + age + mood tag)
+
+  private var header: some View {
+    HStack(spacing: 10) {
+      ZStack {
+        Circle()
+          .stroke(Color.white.opacity(0.10), lineWidth: 1.5)
+          .frame(width: 22, height: 22)
+        Circle()
+          .trim(from: 0, to: decay)
+          .stroke(MoodPalette.auraColor(accentMood, l: 0.78),
+                  style: .init(lineWidth: 1.8, lineCap: .round))
+          .rotationEffect(.degrees(-90))
+          .frame(width: 22, height: 22)
+        Image(systemName: kindIcon(post.kind))
+          .font(.system(size: 9, weight: .semibold))
+          .foregroundStyle(Color.white.opacity(0.85))
+      }
+
+      Text(ageLabel)
+        .font(HaloTheme.mono)
+        .foregroundStyle(Color.white.opacity(0.55))
+
+      Spacer()
+
+      if let mood = post.mood {
+        HStack(spacing: 6) {
+          Circle()
+            .fill(MoodPalette.auraColor(mood, l: 0.82))
+            .frame(width: 6, height: 6)
+          Text(mood.rawValue)
+            .font(.system(size: 11, weight: .medium))
+            .foregroundStyle(Color.white.opacity(0.75))
+        }
+        .padding(.horizontal, 8).padding(.vertical, 4)
+        .background(.white.opacity(0.05), in: Capsule())
+      }
+    }
+    .padding(.horizontal, 14).padding(.vertical, 10)
+  }
+
+  private func kindIcon(_ k: PostKind) -> String {
+    switch k {
+    case .photo: return "photo.fill"
+    case .text:  return "text.alignleft"
+    case .audio: return "waveform"
+    }
+  }
+
+  // MARK: - body specific
+
+  @ViewBuilder
+  private var mediaSlot: some View {
+    switch post.kind {
+    case .photo: photoBody
+    case .text:  textBody
+    case .audio: audioBody
+    }
+  }
+
+  private var photoBody: some View {
+    ZStack(alignment: .bottomLeading) {
+      LinearGradient(
+        colors: [
+          MoodPalette.auraColor(accentMood, l: 0.50),
+          MoodPalette.auraColor(accentMood, l: 0.25),
+        ],
+        startPoint: .topLeading, endPoint: .bottomTrailing
+      )
+      Canvas { ctx, size in
+        ctx.opacity = 0.15
+        var path = Path()
+        let step: CGFloat = 8
+        var x: CGFloat = -size.height
+        while x < size.width {
+          path.move(to: CGPoint(x: x, y: size.height))
+          path.addLine(to: CGPoint(x: x + size.height, y: 0))
+          x += step
+        }
+        ctx.stroke(path, with: .color(.white), lineWidth: 0.5)
+      }
+    }
+    .frame(height: 220)
+  }
+
+  private var textBody: some View {
+    Text(post.caption ?? "—")
+      .font(.system(size: 16))
+      .kerning(-0.1)
+      .lineSpacing(4)
+      .foregroundStyle(.white)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 16).padding(.vertical, 16)
+  }
+
+  private var audioBody: some View {
+    HStack(spacing: 12) {
+      ZStack {
+        Circle().fill(MoodPalette.auraColor(accentMood, l: 0.7))
+        Image(systemName: "play.fill")
+          .font(.system(size: 12, weight: .bold))
+          .foregroundStyle(.white)
+          .offset(x: 1)
+      }
+      .frame(width: 36, height: 36)
+      HStack(spacing: 2) {
+        ForEach(0..<24, id: \.self) { i in
+          Capsule()
+            .fill(Color.white.opacity(0.18 + (Double(i) / 30) * 0.50))
+            .frame(width: 2.5, height: CGFloat(8 + abs(sin(Double(i) * 1.4)) * 18))
+        }
+      }
+      .frame(height: 26)
+      Spacer(minLength: 0)
+    }
+    .padding(.horizontal, 14).padding(.vertical, 14)
   }
 }

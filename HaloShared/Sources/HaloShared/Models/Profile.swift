@@ -7,6 +7,7 @@ public struct Profile: Codable, Identifiable, Hashable, Sendable {
   public var avatarPath: String?
   public var bio: String?
   public var hasPlus: Bool
+  public var isPublic: Bool
   public var createdAt: Date
 
   public init(
@@ -16,6 +17,7 @@ public struct Profile: Codable, Identifiable, Hashable, Sendable {
     avatarPath: String? = nil,
     bio: String? = nil,
     hasPlus: Bool = false,
+    isPublic: Bool = false,
     createdAt: Date = .now
   ) {
     self.id = id
@@ -24,6 +26,7 @@ public struct Profile: Codable, Identifiable, Hashable, Sendable {
     self.avatarPath = avatarPath
     self.bio = bio
     self.hasPlus = hasPlus
+    self.isPublic = isPublic
     self.createdAt = createdAt
   }
 
@@ -32,6 +35,7 @@ public struct Profile: Codable, Identifiable, Hashable, Sendable {
     case displayName = "display_name"
     case avatarPath  = "avatar_path"
     case hasPlus     = "has_plus"
+    case isPublic    = "is_public"
     case createdAt   = "created_at"
   }
 }

@@ -5,15 +5,22 @@ import HaloShared
 /// Campo orbitale "Deep Space": 4 anelli hairline + bolle portrait + self center.
 /// Drag radiale di una bolla → `onProposeTier(person, ghostTier)`.
 /// Tap singolo → `onBubbleTap(person)`.
+/// Pinch → cambia `ZoomLevel` (innerOnly · innerClose · full · asteroids).
 struct OrbitalFieldView: View {
   let people: [DemoPerson]
   let me: DemoPerson
   var pulsing: Bool = true
   var onBubbleTap: (DemoPerson) -> Void = { _ in }
   var onSelfTap: () -> Void = {}
+  var onSelfLongPress: () -> Void = {}
   var onProposeTier: (DemoPerson, FriendshipTier) -> Void = { _, _ in }
 
   @State private var drag: DragState? = nil
+  @State private var zoomLevel: ZoomLevel = .full
+  @State private var pinchInProgress: Bool = false
+
+  /// Espone il livello corrente al parent (per uno slider esterno o per AsteroidBeltView).
+  var onZoomChange: (ZoomLevel) -> Void = { _ in }
 
   private struct DragState: Equatable {
     var personId: String
@@ -31,46 +38,58 @@ struct OrbitalFieldView: View {
       let cy = H / 2
       // Espande lateralmente: l'anello esterno tocca quasi i bordi.
       let maxR = min(W, H) * 0.56
-      let placements = OrbitalLayout.placements(for: people.map { ($0.id, $0.tier) })
+      // Solo follow mutuali finiscono sugli anelli; gli asimmetrici sono asteroidi.
+      let mutuals = people.filter(\.isMutual)
+      let placements = OrbitalLayout.placements(for: mutuals.map { ($0.id, $0.tier) })
       let placementByPerson = Dictionary(uniqueKeysWithValues: placements.map { ($0.personId, $0) })
 
       ZStack {
         // 1. anelli (illuminati se ghostTier li attraversa)
-        ForEach(FriendshipTier.allCases, id: \.self) { tier in
+        ForEach(FriendshipTier.allCases.filter { $0.isVisible(at: zoomLevel) }, id: \.self) { tier in
           OrbitalRing(
             tier: tier,
-            diameter: tier.ringRadius * maxR * 2,
+            diameter: tier.ringRadius(at: zoomLevel) * maxR * 2,
             active: drag?.ghostTier == tier
           )
           .position(x: cx, y: cy)
+          .transition(.opacity)
         }
 
         // 2. self center
-        SelfCenterView(mood: me.mood, size: 128, onTap: onSelfTap)
-          .position(x: cx, y: cy)
-          .zIndex(15)
+        SelfCenterView(
+          mood: me.mood,
+          size: selfCenterSize,
+          hasActiveVibe: me.hasActiveVibe
+        )
+        .position(x: cx, y: cy)
+        .zIndex(15)
+        .onTapGesture(perform: onSelfTap)
+        .onLongPressGesture(minimumDuration: 0.45) {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          onSelfLongPress()
+        }
 
         // 3. ghost outline nella posizione originale durante un drag
         if let d = drag,
            let original = placementByPerson[d.personId],
            d.ghostTier != original.tier {
           let pos = polarToXY(tier: original.tier, angle: original.angle, cx: cx, cy: cy, maxR: maxR)
-          let s = original.tier.bubbleSize
+          let s = original.tier.bubbleSize(at: zoomLevel)
           Circle()
             .stroke(Color.white.opacity(0.4), style: .init(lineWidth: 1, dash: [3, 3]))
             .frame(width: s, height: s)
             .position(x: pos.x, y: pos.y)
         }
 
-        // 4. bolle
-        ForEach(people) { p in
-          if let placement = placementByPerson[p.id] {
+        // 4. bolle (solo mutuali, solo tier visibili al livello corrente)
+        ForEach(mutuals) { p in
+          if let placement = placementByPerson[p.id], placement.tier.isVisible(at: zoomLevel) {
             let isDragging = drag?.personId == p.id
             let effectiveTier = isDragging ? (drag?.ghostTier ?? placement.tier) : placement.tier
             let xy = isDragging
               ? (drag?.location ?? polarToXY(tier: effectiveTier, angle: placement.angle, cx: cx, cy: cy, maxR: maxR))
               : polarToXY(tier: effectiveTier, angle: placement.angle, cx: cx, cy: cy, maxR: maxR)
-            let size = effectiveTier.bubbleSize
+            let size = effectiveTier.bubbleSize(at: zoomLevel)
             BubbleView(
               personId: p.id,
               handle: p.handle,
@@ -78,13 +97,20 @@ struct OrbitalFieldView: View {
               size: size,
               hasNew: p.hasNew,
               showName: effectiveTier == .inner || effectiveTier == .close,
-              pulsing: pulsing
+              pulsing: pulsing,
+              hasActiveVibe: p.hasActiveVibe,
+              lastPostAt: p.lastPostAt
             )
             .position(x: xy.x, y: xy.y)
             .zIndex(isDragging ? 50 : 10)
             .animation(isDragging ? nil : .spring(response: 0.55, dampingFraction: 0.78), value: effectiveTier)
+            .animation(.easeInOut(duration: 0.35), value: zoomLevel)
             .gesture(bubbleGesture(for: p, cx: cx, cy: cy, maxR: maxR))
-            .onTapGesture { onBubbleTap(p) }
+            .onTapGesture {
+              HapticEngine.tap(for: p.tier)
+              onBubbleTap(p)
+            }
+            .transition(.scale(scale: 0.6).combined(with: .opacity))
           }
         }
 
@@ -111,27 +137,45 @@ struct OrbitalFieldView: View {
         }
       }
       .animation(.easeInOut(duration: 0.2), value: drag?.ghostTier)
+      .animation(.spring(response: 0.55, dampingFraction: 0.82), value: zoomLevel)
+      .gesture(pinchGesture)
+      .overlay(alignment: .trailing) {
+        ZoomSlider(level: zoomLevelBinding)
+          .padding(.trailing, 14)
+      }
+      .onChange(of: zoomLevel) { _, newValue in onZoomChange(newValue) }
     }
     .coordinateSpace(name: fieldSpace)
   }
 
-  // MARK: helpers
-
-  private func polarToXY(tier: FriendshipTier, angle: Double, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> CGPoint {
-    let r = tier.ringRadius * Double(maxR)
-    return CGPoint(x: cx + CGFloat(cos(angle) * r), y: cy + CGFloat(sin(angle) * r))
+  private var zoomLevelBinding: Binding<ZoomLevel> {
+    Binding(
+      get: { zoomLevel },
+      set: { zoomLevel = $0 }
+    )
   }
 
-  private func nearestTier(to location: CGPoint, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> FriendshipTier {
-    let d = hypot(location.x - cx, location.y - cy)
-    var best: FriendshipTier = .nebula
-    var bestDiff: CGFloat = .infinity
-    for t in FriendshipTier.allCases {
-      let r = CGFloat(t.ringRadius) * maxR
-      let diff = abs(d - r)
-      if diff < bestDiff { bestDiff = diff; best = t }
-    }
-    return best
+  // MARK: gestures
+
+  /// Pinch out (>1) → zoom in (innerClose, innerOnly).
+  /// Pinch in (<1) → zoom out (asteroids).
+  private var pinchGesture: some Gesture {
+    MagnificationGesture(minimumScaleDelta: 0.05)
+      .onChanged { scale in
+        guard !pinchInProgress else { return }
+        if scale > 1.25 {
+          pinchInProgress = true
+          UIImpactFeedbackGenerator(style: .light).impactOccurred()
+          zoomLevel = zoomLevel.zoomedIn()
+        } else if scale < 0.78 {
+          pinchInProgress = true
+          UIImpactFeedbackGenerator(style: .light).impactOccurred()
+          zoomLevel = zoomLevel.zoomedOut()
+        }
+      }
+      .onEnded { _ in
+        pinchInProgress = false
+      }
   }
 
   private func bubbleGesture(for person: DemoPerson, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> some Gesture {
@@ -151,5 +195,33 @@ struct OrbitalFieldView: View {
         }
         drag = nil
       }
+  }
+
+  // MARK: helpers
+
+  private var selfCenterSize: CGFloat {
+    switch zoomLevel {
+    case .innerOnly:  return 168
+    case .innerClose: return 144
+    case .full:       return 128
+    case .asteroids:  return 96
+    }
+  }
+
+  private func polarToXY(tier: FriendshipTier, angle: Double, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> CGPoint {
+    let r = tier.ringRadius(at: zoomLevel) * Double(maxR)
+    return CGPoint(x: cx + CGFloat(cos(angle) * r), y: cy + CGFloat(sin(angle) * r))
+  }
+
+  private func nearestTier(to location: CGPoint, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> FriendshipTier {
+    let d = hypot(location.x - cx, location.y - cy)
+    var best: FriendshipTier = .nebula
+    var bestDiff: CGFloat = .infinity
+    for t in FriendshipTier.allCases where t.isVisible(at: zoomLevel) {
+      let r = CGFloat(t.ringRadius(at: zoomLevel)) * maxR
+      let diff = abs(d - r)
+      if diff < bestDiff { bestDiff = diff; best = t }
+    }
+    return best
   }
 }
