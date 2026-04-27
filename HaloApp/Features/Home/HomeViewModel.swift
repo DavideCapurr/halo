@@ -93,6 +93,9 @@ final class HomeViewModel {
       }
       self.feedItems = items
       self.lastError = nil
+
+      // Aggiorna lo snapshot widget (App Group + reload timeline).
+      try? WidgetSnapshotStore.refresh(from: items)
     } catch {
       self.lastError = String(describing: error)
     }

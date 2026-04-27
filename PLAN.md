@@ -200,10 +200,10 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 
 ## Fase 8 — Widget
 
-- [ ] Completare `Provider.swift` — carica `WidgetSnapshot` da app group
+- [x] Completare `Provider.swift` — carica `WidgetSnapshot` da app group
 - [ ] `LockscreenWidget` con orbital mini-field (bolle live con mood tint)
 - [ ] `StandByWidget` per StandBy mode iPhone
-- [ ] Aggiornamento snapshot quando arriva nuova vibe/post (background refresh)
+- [x] Aggiornamento snapshot quando arriva nuova vibe/post (background refresh)
 
 ---
 
