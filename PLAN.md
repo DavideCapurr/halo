@@ -135,8 +135,8 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [x] Card che scadono tra < 2h: bordo con colore caldo (warning visivo)
 
 ### Integrazione Home
-- [ ] `HomeView` ottiene tab/switch tra OrbitalField e PulseFeed
-- [ ] Transizione fluida tra i due (no tab bar, gesto swipe o pulsante?)
+- [x] `HomeView` ottiene tab/switch tra OrbitalField e PulseFeed
+- [x] Transizione fluida tra i due (no tab bar, gesto swipe o pulsante?)
 
 ---
 
