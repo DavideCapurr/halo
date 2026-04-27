@@ -54,7 +54,7 @@ final class AppState {
     if profile.handle.hasPrefix("halo_") || profile.displayName == "Halo" {
       phase = .onboarding
     } else {
-      phase = .initialCircleNeeded ? .initialCircle : .ready
+      phase = initialCircleNeeded ? .initialCircle : .ready
     }
   }
 
@@ -65,7 +65,7 @@ final class AppState {
 
   func didFinishOnboarding(_ profile: Profile) {
     currentProfile = profile
-    phase = .initialCircleNeeded ? .initialCircle : .ready
+    phase = initialCircleNeeded ? .initialCircle : .ready
   }
 
   func didFinishInitialCircle() {

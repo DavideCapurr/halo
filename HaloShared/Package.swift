@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
   name: "HaloShared",
-  platforms: [.iOS(.v17)],
+  platforms: [.iOS(.v17), .macOS(.v12)],
   products: [
     .library(name: "HaloShared", targets: ["HaloShared"])
   ],

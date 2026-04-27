@@ -38,15 +38,19 @@ private struct PresenceBubble: View {
   let person: DemoPerson
   let size: CGFloat
 
+  private var pulseSeed: UInt32 {
+    var seed: UInt32 = 17
+    for u in person.id.unicodeScalars { seed = seed &* 31 &+ u.value }
+    return seed
+  }
+
   var body: some View {
     ZStack {
       // pulsing aura per ogni vibe attiva
       TimelineView(.animation(minimumInterval: 1.0 / 24)) { ctx in
         let t = ctx.date.timeIntervalSinceReferenceDate
         // micro sfasamento per evitare che pulsino in fase
-        var seed: UInt32 = 17
-        for u in person.id.unicodeScalars { seed = seed &* 31 &+ u.value }
-        let phase = sin((t / 3.2 + Double(seed % 100) / 100) * .pi * 2)
+        let phase = sin((t / 3.2 + Double(pulseSeed % 100) / 100) * .pi * 2)
         Circle()
           .fill(
             RadialGradient(

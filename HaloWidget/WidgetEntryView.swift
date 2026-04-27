@@ -25,19 +25,19 @@ struct WidgetEntryView: View {
 
   // MARK: - Lockscreen circular
 
+  private var circularBubbles: [WidgetSnapshot.Bubble] {
+    Array(entry.snapshot.bubbles.prefix(6))
+  }
+
   private var circularBody: some View {
-    let bubbles = Array(entry.snapshot.bubbles.prefix(6))
-    return ZStack {
+    ZStack {
       Circle().strokeBorder(.white.opacity(0.30), style: .init(lineWidth: 0.6, dash: [2, 2]))
-      ForEach(Array(bubbles.enumerated()), id: \.offset) { (i, b) in
-        let angle = Double(i) * (2 * .pi / Double(max(bubbles.count, 1))) - .pi / 2
-        Circle()
-          .fill(bubbleColor(for: b))
-          .frame(width: 7, height: 7)
-          .position(
-            x: 28 + cos(angle) * 18,
-            y: 28 + sin(angle) * 18
-          )
+      ForEach(Array(circularBubbles.enumerated()), id: \.offset) { index, bubble in
+        CircularWidgetBubble(
+          color: bubbleColor(for: bubble),
+          index: index,
+          total: circularBubbles.count
+        )
       }
       Text("\(entry.snapshot.bubbles.count)")
         .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -51,14 +51,7 @@ struct WidgetEntryView: View {
   private var rectangularBody: some View {
     HStack(spacing: 4) {
       ForEach(entry.snapshot.bubbles.prefix(4), id: \.userId) { b in
-        Circle()
-          .fill(bubbleColor(for: b))
-          .frame(width: 14, height: 14)
-          .overlay(
-            Text(String(b.handle.prefix(1)))
-              .font(.system(size: 8, weight: .bold))
-              .foregroundStyle(.black.opacity(0.7))
-          )
+        RectangularWidgetBubble(color: bubbleColor(for: b), handle: b.handle)
       }
       if entry.snapshot.bubbles.count > 4 {
         Text("+\(entry.snapshot.bubbles.count - 4)")
@@ -82,37 +75,12 @@ struct WidgetEntryView: View {
       .ignoresSafeArea()
 
       GeometryReader { geo in
-        let cx = geo.size.width / 2
-        let cy = geo.size.height / 2
-        let r = min(geo.size.width, geo.size.height) * 0.40
-
-        Circle()
-          .strokeBorder(.white.opacity(0.10), style: .init(lineWidth: 0.5, dash: [3, 3]))
-          .frame(width: r * 2, height: r * 2)
-          .position(x: cx, y: cy)
-
-        // hero center (ipotetico self)
-        Circle()
-          .fill(Color.white.opacity(0.35))
-          .frame(width: 26, height: 26)
-          .shadow(color: .white.opacity(0.4), radius: 6)
-          .position(x: cx, y: cy)
-
-        let ring = Array(entry.snapshot.bubbles.prefix(8))
-        ForEach(Array(ring.enumerated()), id: \.offset) { (i, b) in
-          let angle = Double(i) * (2 * .pi / Double(max(ring.count, 1))) - .pi / 2
-          Circle()
-            .fill(bubbleColor(for: b))
-            .frame(width: 16, height: 16)
-            .shadow(color: bubbleGlow(for: b), radius: 4)
-            .position(x: cx + cos(angle) * r, y: cy + sin(angle) * r)
-        }
-
-        // Footer count
-        Text("\(entry.snapshot.bubbles.count) bolle")
-          .font(.system(size: 10, weight: .medium, design: .monospaced))
-          .foregroundStyle(.white.opacity(0.55))
-          .position(x: cx, y: geo.size.height - 14)
+        StandByWidgetOrbit(
+          snapshot: entry.snapshot,
+          size: geo.size,
+          color: bubbleColor(for:),
+          glow: bubbleGlow(for:)
+        )
       }
     }
   }
@@ -131,6 +99,113 @@ struct WidgetEntryView: View {
 
   private func bubbleGlow(for b: WidgetSnapshot.Bubble) -> Color {
     bubbleColor(for: b).opacity(0.55)
+  }
+}
+
+private struct CircularWidgetBubble: View {
+  let color: Color
+  let index: Int
+  let total: Int
+
+  private var angle: CGFloat {
+    CGFloat(index) * (2 * .pi / CGFloat(max(total, 1))) - .pi / 2
+  }
+
+  var body: some View {
+    Circle()
+      .fill(color)
+      .frame(width: 7, height: 7)
+      .position(
+        x: 28 + cos(angle) * 18,
+        y: 28 + sin(angle) * 18
+      )
+  }
+}
+
+private struct RectangularWidgetBubble: View {
+  let color: Color
+  let handle: String
+
+  var body: some View {
+    Circle()
+      .fill(color)
+      .frame(width: 14, height: 14)
+      .overlay(
+        Text(String(handle.prefix(1)))
+          .font(.system(size: 8, weight: .bold))
+          .foregroundStyle(.black.opacity(0.7))
+      )
+  }
+}
+
+private struct StandByWidgetOrbit: View {
+  let snapshot: WidgetSnapshot
+  let size: CGSize
+  let color: (WidgetSnapshot.Bubble) -> Color
+  let glow: (WidgetSnapshot.Bubble) -> Color
+
+  private var center: CGPoint {
+    CGPoint(x: size.width / 2, y: size.height / 2)
+  }
+
+  private var radius: CGFloat {
+    min(size.width, size.height) * 0.40
+  }
+
+  private var ringBubbles: [WidgetSnapshot.Bubble] {
+    Array(snapshot.bubbles.prefix(8))
+  }
+
+  var body: some View {
+    ZStack {
+      Circle()
+        .strokeBorder(.white.opacity(0.10), style: .init(lineWidth: 0.5, dash: [3, 3]))
+        .frame(width: radius * 2, height: radius * 2)
+        .position(center)
+
+      Circle()
+        .fill(Color.white.opacity(0.35))
+        .frame(width: 26, height: 26)
+        .shadow(color: .white.opacity(0.4), radius: 6)
+        .position(center)
+
+      ForEach(Array(ringBubbles.enumerated()), id: \.offset) { index, bubble in
+        StandByWidgetBubble(
+          color: color(bubble),
+          glow: glow(bubble),
+          index: index,
+          total: ringBubbles.count,
+          center: center,
+          radius: radius
+        )
+      }
+
+      Text("\(snapshot.bubbles.count) bolle")
+        .font(.system(size: 10, weight: .medium, design: .monospaced))
+        .foregroundStyle(.white.opacity(0.55))
+        .position(x: center.x, y: size.height - 14)
+    }
+  }
+}
+
+private struct StandByWidgetBubble: View {
+  let color: Color
+  let glow: Color
+  let index: Int
+  let total: Int
+  let center: CGPoint
+  let radius: CGFloat
+
+  private var angle: CGFloat {
+    CGFloat(index) * (2 * .pi / CGFloat(max(total, 1))) - .pi / 2
+  }
+
+  var body: some View {
+    Circle()
+      .fill(color)
+      .frame(width: 16, height: 16)
+      .shadow(color: glow, radius: 4)
+      .position(x: center.x + cos(angle) * radius, y: center.y + sin(angle) * radius)
   }
 }
 
