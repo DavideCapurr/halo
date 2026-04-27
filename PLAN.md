@@ -184,7 +184,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [ ] `OnboardingView` — scegli handle, display name, upload avatar
 - [ ] `InitialInnerCircleView` — aggiungi primi 1-5 Inner (da contatti o handle)
 - [ ] `RootView` — routing auth → onboarding → home
-- [ ] `AppState` — stato globale sessione (già stub, da completare)
+- [x] `AppState` — stato globale sessione (già stub, da completare)
 
 ---
 
