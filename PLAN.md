@@ -111,12 +111,12 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 ## Fase 3 — Pulse Feed (feed di momenti)
 
 ### Struttura
-- [ ] `PulseFeedView` — view principale, scroll verticale
+- [x] `PulseFeedView` — view principale, scroll verticale
 - [x] `FeedViewModel` — `@Observable`, carica `feedPosts()` + vibes
 - [x] `MomentCard` — unità base del feed (vedi spec sotto)
 - [x] `PresenceBar` — strip orizzontale in alto con vibe attive, tier-sorted
-- [ ] Sezioni visive per tier (header leggero: "Inner & Close" / "Orbit" / "Nebula")
-- [ ] Sezione "Adesso" in testa se ci sono post < 30 min
+- [x] Sezioni visive per tier (header leggero: "Inner & Close" / "Orbit" / "Nebula")
+- [x] Sezione "Adesso" in testa se ci sono post < 30 min
 
 ### MomentCard
 - [x] Portrait con aura mood-color pulsante (usa `SelfCenterView` o nuovo)
@@ -129,9 +129,9 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 
 ### Dinamismo
 - [ ] Realtime Supabase subscribe per nuovi post/vibe nel feed
-- [ ] Animazione entrata nuova card in sezione "Adesso"
+- [x] Animazione entrata nuova card in sezione "Adesso"
 - [ ] Ping animato per reazione live
-- [ ] Sfondo deep space prende leggera tinta dal mood dominante delle card visibili (`withAnimation`)
+- [x] Sfondo deep space prende leggera tinta dal mood dominante delle card visibili (`withAnimation`)
 - [x] Card che scadono tra < 2h: bordo con colore caldo (warning visivo)
 
 ### Integrazione Home
