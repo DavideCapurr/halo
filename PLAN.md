@@ -113,7 +113,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 ### Struttura
 - [ ] `PulseFeedView` — view principale, scroll verticale
 - [x] `FeedViewModel` — `@Observable`, carica `feedPosts()` + vibes
-- [~] `MomentCard` — unità base del feed (vedi spec sotto)
+- [x] `MomentCard` — unità base del feed (vedi spec sotto)
 - [ ] `PresenceBar` — strip orizzontale in alto con vibe attive, tier-sorted
 - [ ] Sezioni visive per tier (header leggero: "Inner & Close" / "Orbit" / "Nebula")
 - [ ] Sezione "Adesso" in testa se ci sono post < 30 min
@@ -124,7 +124,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [x] Vibe note (se attiva): mood chip + nota testuale
 - [x] Ultimo post dentro la card (foto / testo / audio) — opzionale, se c'è
 - [x] Decay ring visibile intorno al post (anello che si svuota nelle 72h)
-- [ ] Reazioni: count per tier Orbit+, chi ha reagito per Inner/Close
+- [x] Reazioni: count per tier Orbit+, chi ha reagito per Inner/Close
 - [x] Card senza post = valida (solo portrait + vibe) — presenza pura
 
 ### Dinamismo
@@ -132,7 +132,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [ ] Animazione entrata nuova card in sezione "Adesso"
 - [ ] Ping animato per reazione live
 - [ ] Sfondo deep space prende leggera tinta dal mood dominante delle card visibili (`withAnimation`)
-- [ ] Card che scadono tra < 2h: bordo con colore caldo (warning visivo)
+- [x] Card che scadono tra < 2h: bordo con colore caldo (warning visivo)
 
 ### Integrazione Home
 - [ ] `HomeView` ottiene tab/switch tra OrbitalField e PulseFeed

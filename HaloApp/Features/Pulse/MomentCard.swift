@@ -13,6 +13,8 @@ struct MomentCard: View {
   let person: DemoPerson
   /// Tap sull'intera card (apre HaloSpace).
   var onTap: () -> Void = {}
+  /// Tap su una reazione (no-op nel demo).
+  var onReact: (ReactionKind) -> Void = { _ in }
 
   var body: some View {
     HStack(alignment: .top, spacing: 14) {
@@ -25,6 +27,7 @@ struct MomentCard: View {
         }
         if person.lastPostAt != nil, let preview = postPreview {
           postWithDecayRing(preview)
+          reactionsRow
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -36,7 +39,7 @@ struct MomentCard: View {
         .fill(.white.opacity(0.04))
         .overlay(
           RoundedRectangle(cornerRadius: 22)
-            .strokeBorder(HaloTheme.hairlineSoft, lineWidth: 0.5)
+            .strokeBorder(borderColor, lineWidth: borderWidth)
         )
     )
     .contentShape(RoundedRectangle(cornerRadius: 22))
@@ -273,6 +276,87 @@ struct MomentCard: View {
     }
     .padding(.horizontal, 12).padding(.vertical, 8)
     .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
+  }
+
+  // MARK: - reactions (tier-aware)
+
+  /// Conteggio finto deterministico per kind (bridge demo finché Reactions
+  /// non è cablato live). Per `inner`/`close` mostriamo `actors` (initials),
+  /// per `orbit`/`nebula` solo il count aggregato come da spec UX.
+  private var reactionTallies: [(ReactionKind, Int, [String])] {
+    var h: UInt32 = 1009
+    for u in person.id.unicodeScalars { h = h &* 17 &+ u.value }
+    let pool = ["g", "f", "t", "c", "l", "a", "n", "b", "j", "v"]
+    var out: [(ReactionKind, Int, [String])] = []
+    for (i, kind) in ReactionKind.allCases.enumerated() {
+      let n = Int((h >> UInt32(i)) & 0b111) // 0…7
+      guard n > 0 else { continue }
+      let actors = (0..<min(n, 3)).map { pool[Int(((h >> UInt32(i + $0))) % 10)] }
+      out.append((kind, n, actors))
+    }
+    return out
+  }
+
+  private var canSeeActors: Bool {
+    person.tier == .inner || person.tier == .close
+  }
+
+  private var reactionsRow: some View {
+    HStack(spacing: 10) {
+      ForEach(reactionTallies, id: \.0) { (kind, count, actors) in
+        Button {
+          onReact(kind)
+        } label: {
+          HStack(spacing: 5) {
+            ReactionGlyph(kind: kind, size: 14, color: Color.white.opacity(0.65))
+            if canSeeActors {
+              Text(actors.prefix(2).map { "@\($0)" }.joined(separator: " "))
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(Color.white.opacity(0.55))
+              if count > 2 {
+                Text("+\(count - 2)")
+                  .font(HaloTheme.mono)
+                  .foregroundStyle(Color.white.opacity(0.45))
+              }
+            } else {
+              Text("\(count)")
+                .font(HaloTheme.mono)
+                .foregroundStyle(Color.white.opacity(0.55))
+            }
+          }
+          .padding(.horizontal, 6).padding(.vertical, 4)
+          .background(.white.opacity(0.04), in: Capsule())
+        }
+        .buttonStyle(.plain)
+      }
+    }
+    .padding(.top, 6)
+  }
+
+  // MARK: - warning border (post in scadenza < 2h)
+
+  /// Tempo residuo prima della scadenza (post live 72h dal `lastPostAt`).
+  private var hoursUntilExpiry: Double? {
+    guard let t = person.lastPostAt else { return nil }
+    let age = Date.now.timeIntervalSince(t)
+    let remaining = 72 * 3600 - age
+    return remaining > 0 ? remaining / 3600 : nil
+  }
+
+  private var isExpiringSoon: Bool {
+    if let h = hoursUntilExpiry { return h < 2 }
+    return false
+  }
+
+  private var borderColor: Color {
+    if isExpiringSoon {
+      return MoodPalette.auraColor(.warm, l: 0.65)
+    }
+    return HaloTheme.hairlineSoft
+  }
+
+  private var borderWidth: CGFloat {
+    isExpiringSoon ? 1.2 : 0.5
   }
 
   /// "Adesso" se < 30 min, altrimenti "Xm" / "Xh" / "Xg".
