@@ -210,12 +210,12 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 ## Fase 9 — Copy, design, polish
 
 ### Lessico anti-cringe (sweep su tutta la app)
-- [ ] "Posta" / "Pubblica" → "Manda" / "Condividi"
-- [ ] "Followers" / "Following" → "Halo" / "Cerchi"
-- [ ] "Story" → "Vibe" / "Momento"
-- [ ] "Feed" → "Pulse" / "Presenza"
-- [ ] "Profilo" → "HaloSpace"
-- [ ] "Like" → rimosso, solo reazioni glyph
+- [x] "Posta" / "Pubblica" → "Manda" / "Condividi"
+- [x] "Followers" / "Following" → "Halo" / "Cerchi"
+- [x] "Story" → "Vibe" / "Momento"
+- [x] "Feed" → "Pulse" / "Presenza"
+- [x] "Profilo" → "HaloSpace"
+- [x] "Like" → rimosso, solo reazioni glyph
 
 ### Nessuna metrica pubblica
 - [ ] Verificare: zero `follower count` visibile in UI
