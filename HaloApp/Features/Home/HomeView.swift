@@ -14,6 +14,12 @@ struct HomeView: View {
   @State private var pendingProposal: TierConfirmationSheet.Proposal? = nil
   @State private var fieldZoom: ZoomLevel = .full
   @State private var mode: Mode = .field
+  @State private var showCompose: Bool = false
+
+  /// Conteggio dei tier delle proprie cerchie per il `VibeFirstComposeView`.
+  private var tierCounts: [FriendshipTier: Int] {
+    Dictionary(grouping: people.filter(\.isMutual), by: \.tier).mapValues(\.count)
+  }
 
   private var asteroids: [DemoPerson] { people.filter { !$0.isMutual } }
 
@@ -49,7 +55,7 @@ struct HomeView: View {
 
         BottomBarView(
           selfMood: me.mood,
-          onCompose: { showVibeSetter = true },
+          onCompose: { showCompose = true },
           onOrbit: { withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) { mode = .field } },
           onPulse: { withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) { mode = .pulse } }
         )
@@ -72,6 +78,19 @@ struct HomeView: View {
           showVibeSetter = false
         },
         onClose: { showVibeSetter = false }
+      )
+    }
+    .sheet(isPresented: $showCompose) {
+      VibeFirstComposeView(
+        tierCounts: tierCounts,
+        initialMood: me.mood,
+        onSend: { result in
+          // Demo: aggiorna la propria vibe; il post effettivo passerà da PostsService.post.
+          me.mood = result.mood
+          me.note = result.note
+          showCompose = false
+        },
+        onClose: { showCompose = false }
       )
     }
     .sheet(item: $pendingProposal) { proposal in
@@ -98,6 +117,7 @@ struct HomeView: View {
         pulsing: true,
         onBubbleTap: { peek = $0 },
         onSelfTap: { showVibeSetter = true },
+        onSelfLongPress: { showCompose = true },
         onProposeTier: { person, toTier in
           pendingProposal = .init(person: person, from: person.tier, to: toTier)
         },

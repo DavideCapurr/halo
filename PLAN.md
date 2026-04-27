@@ -151,8 +151,8 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [x] CTA: "Manda" (non "Pubblica", non "Posta")
 
 ### Accesso rapido
-- [ ] Long-press su `SelfCenterView` → apre `VibeFirstComposeView`
-- [ ] Bottom bar: pulsante compose porta a vibe-first (non direttamente alla camera)
+- [x] Long-press su `SelfCenterView` → apre `VibeFirstComposeView`
+- [x] Bottom bar: pulsante compose porta a vibe-first (non direttamente alla camera)
 
 ### Tier selector anti-cringe
 - [x] Mostra: `●Inner · 4 persone` / `●Close · 12 persone` / etc.

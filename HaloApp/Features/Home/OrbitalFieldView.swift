@@ -12,6 +12,7 @@ struct OrbitalFieldView: View {
   var pulsing: Bool = true
   var onBubbleTap: (DemoPerson) -> Void = { _ in }
   var onSelfTap: () -> Void = {}
+  var onSelfLongPress: () -> Void = {}
   var onProposeTier: (DemoPerson, FriendshipTier) -> Void = { _, _ in }
 
   @State private var drag: DragState? = nil
@@ -63,6 +64,10 @@ struct OrbitalFieldView: View {
         .position(x: cx, y: cy)
         .zIndex(15)
         .onTapGesture(perform: onSelfTap)
+        .onLongPressGesture(minimumDuration: 0.45) {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          onSelfLongPress()
+        }
 
         // 3. ghost outline nella posizione originale durante un drag
         if let d = drag,
