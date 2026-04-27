@@ -223,10 +223,10 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [x] Verificare: zero streak, zero badge, zero gamification
 
 ### Animazioni & polish
-- [ ] Micro-drift sulle card del feed (subliminale)
-- [ ] Transizioni fluide tra orbital field e pulse feed
-- [ ] Haptic coerenti con i tier (Inner = `.heavy`, Close = `.medium`, Orbit = `.light`)
-- [ ] Dark mode only (già impostato, verificare consistenza)
+- [x] Micro-drift sulle card del feed (subliminale)
+- [x] Transizioni fluide tra orbital field e pulse feed
+- [x] Haptic coerenti con i tier (Inner = `.heavy`, Close = `.medium`, Orbit = `.light`)
+- [x] Dark mode only (già impostato, verificare consistenza)
 
 ---
 

@@ -20,7 +20,25 @@ struct MomentCard: View {
   /// nuovo `id` qui (UUID) avvia un'animazione concentrica e poi rimuove l'id.
   @State private var livePings: [UUID: ReactionKind] = [:]
 
+  /// Micro-drift seed per dare un offset deterministico alla card (subliminale).
+  private var driftSeed: Double {
+    var h: UInt32 = 13
+    for u in person.id.unicodeScalars { h = h &* 31 &+ u.value }
+    return Double(h % 1000) / 1000
+  }
+
   var body: some View {
+    TimelineView(.animation(minimumInterval: 1.0 / 18, paused: !person.hasActiveVibe)) { ctx in
+      let t = ctx.date.timeIntervalSinceReferenceDate
+      let dy = sin((t / (12.0 + driftSeed * 4)) * .pi * 2) * 1.2 // ±1.2pt
+      let dx = cos((t / (16.0 + driftSeed * 5)) * .pi * 2) * 0.6 // ±0.6pt
+      cardBody
+        .offset(x: person.hasActiveVibe ? CGFloat(dx) : 0,
+                y: person.hasActiveVibe ? CGFloat(dy) : 0)
+    }
+  }
+
+  private var cardBody: some View {
     HStack(alignment: .top, spacing: 14) {
       portraitColumn
 

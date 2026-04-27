@@ -106,7 +106,10 @@ struct OrbitalFieldView: View {
             .animation(isDragging ? nil : .spring(response: 0.55, dampingFraction: 0.78), value: effectiveTier)
             .animation(.easeInOut(duration: 0.35), value: zoomLevel)
             .gesture(bubbleGesture(for: p, cx: cx, cy: cy, maxR: maxR))
-            .onTapGesture { onBubbleTap(p) }
+            .onTapGesture {
+              HapticEngine.tap(for: p.tier)
+              onBubbleTap(p)
+            }
             .transition(.scale(scale: 0.6).combined(with: .opacity))
           }
         }
