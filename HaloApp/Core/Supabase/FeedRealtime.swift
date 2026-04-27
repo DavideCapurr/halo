@@ -56,28 +56,37 @@ final class FeedRealtime {
     let vibesInsert = ch.postgresChange(InsertAction.self, schema: "public", table: "vibes")
     let reactionsInsert = ch.postgresChange(InsertAction.self, schema: "public", table: "reactions")
 
+    do {
+      try await ch.subscribeWithError()
+    } catch {
+      self.channel = nil
+      return
+    }
+
     self.channel = ch
-    await ch.subscribe()
 
     self.observerTask = Task { [weak self] in
       await withTaskGroup(of: Void.self) { group in
         group.addTask { [weak self] in
+          let decoder = Self.makeDecoder()
           for await change in postsInsert {
-            if let post: HaloPost = try? change.decodeRecord(decoder: Self.decoder) {
+            if let post: HaloPost = try? change.decodeRecord(decoder: decoder) {
               await self?.broadcast(.newPost(post))
             }
           }
         }
         group.addTask { [weak self] in
+          let decoder = Self.makeDecoder()
           for await change in vibesInsert {
-            if let vibe: Vibe = try? change.decodeRecord(decoder: Self.decoder) {
+            if let vibe: Vibe = try? change.decodeRecord(decoder: decoder) {
               await self?.broadcast(.newVibe(vibe))
             }
           }
         }
         group.addTask { [weak self] in
+          let decoder = Self.makeDecoder()
           for await change in reactionsInsert {
-            if let r: Reaction = try? change.decodeRecord(decoder: Self.decoder) {
+            if let r: Reaction = try? change.decodeRecord(decoder: decoder) {
               await self?.broadcast(.newReaction(r))
             }
           }
@@ -91,19 +100,19 @@ final class FeedRealtime {
   }
 
   /// Decoder configurato per i timestamps `timestamptz` di Postgres.
-  private static let decoder: JSONDecoder = {
+  private nonisolated static func makeDecoder() -> JSONDecoder {
     let d = JSONDecoder()
-    let f = ISO8601DateFormatter()
-    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     d.dateDecodingStrategy = .custom { dec in
       let s = try dec.singleValueContainer().decode(String.self)
-      if let date = f.date(from: s) { return date }
-      let f2 = ISO8601DateFormatter()
-      f2.formatOptions = [.withInternetDateTime]
-      if let date = f2.date(from: s) { return date }
+      let fractional = ISO8601DateFormatter()
+      fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+      if let date = fractional.date(from: s) { return date }
+      let plain = ISO8601DateFormatter()
+      plain.formatOptions = [.withInternetDateTime]
+      if let date = plain.date(from: s) { return date }
       throw DecodingError.dataCorruptedError(in: try dec.singleValueContainer(),
                                              debugDescription: "Invalid date: \(s)")
     }
     return d
-  }()
+  }
 }

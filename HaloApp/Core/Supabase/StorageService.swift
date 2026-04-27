@@ -41,8 +41,8 @@ final class StorageService {
     _ = try await client.storage
       .from(bucket)
       .upload(
-        path: path,
-        file: data,
+        path,
+        data: data,
         options: FileOptions(contentType: contentType, upsert: false)
       )
     return path

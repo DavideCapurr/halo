@@ -1,6 +1,8 @@
 import SwiftUI
 import AuthenticationServices
+import CryptoKit
 import HaloShared
+import Security
 
 /// Sign in con Apple + fallback email OTP. Bridge ad `AuthService`.
 struct SignInView: View {
@@ -12,6 +14,7 @@ struct SignInView: View {
   @State private var awaitingOTP: Bool = false
   @State private var errorMessage: String?
   @State private var isWorking: Bool = false
+  @State private var appleNonce: String = ""
 
   var body: some View {
     ZStack {
@@ -28,7 +31,7 @@ struct SignInView: View {
 
         SignInWithAppleButton(
           onRequest: { request in
-            request.requestedScopes = [.fullName, .email]
+            prepareAppleRequest(request)
           },
           onCompletion: { result in
             handleApple(result)
@@ -143,10 +146,11 @@ struct SignInView: View {
       errorMessage = e.localizedDescription
     case .success(let auth):
       isWorking = true
+      let nonce = appleNonce
       Task {
         defer { isWorking = false }
         do {
-          let profile = try await AuthService.shared.signInWithApple(authorization: auth)
+          let profile = try await AuthService.shared.signInWithApple(authorization: auth, nonce: nonce)
           onSignedIn(profile)
         } catch {
           errorMessage = "Sign in fallito. Riprova."
@@ -174,5 +178,41 @@ struct SignInView: View {
     } catch {
       errorMessage = "Codice non valido."
     }
+  }
+
+  private func prepareAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
+    let nonce = randomNonce()
+    appleNonce = nonce
+    request.requestedScopes = [.fullName, .email]
+    request.nonce = sha256(nonce)
+  }
+
+  private func randomNonce(length: Int = 32) -> String {
+    precondition(length > 0)
+    let charset = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+    var result = ""
+    result.reserveCapacity(length)
+
+    while result.count < length {
+      var bytes = [UInt8](repeating: 0, count: 16)
+      let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+      guard status == errSecSuccess else {
+        fatalError("Impossibile generare un nonce sicuro.")
+      }
+
+      for byte in bytes {
+        if result.count == length { break }
+        if byte < charset.count {
+          result.append(charset[Int(byte)])
+        }
+      }
+    }
+
+    return result
+  }
+
+  private func sha256(_ input: String) -> String {
+    let digest = SHA256.hash(data: Data(input.utf8))
+    return digest.map { String(format: "%02x", $0) }.joined()
   }
 }

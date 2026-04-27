@@ -15,7 +15,7 @@ final class AuthService {
 
   /// Completa il flusso `SignInWithAppleButton`: prende l'`ASAuthorization`, estrae l'identityToken
   /// e fa lo scambio con Supabase. Restituisce il `Profile` corrente (creandolo se mancante).
-  func signInWithApple(authorization: ASAuthorization) async throws -> Profile {
+  func signInWithApple(authorization: ASAuthorization, nonce: String) async throws -> Profile {
     guard
       let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
       let tokenData = credential.identityToken,
@@ -24,7 +24,6 @@ final class AuthService {
       throw AuthError.invalidResponse
     }
 
-    let nonce: String? = nil // SignInWithAppleButton di SwiftUI non espone il raw nonce; basato su token Apple.
     _ = try await client.auth.signInWithIdToken(
       credentials: .init(provider: .apple, idToken: idToken, nonce: nonce)
     )
