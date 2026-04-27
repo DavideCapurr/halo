@@ -16,6 +16,10 @@ struct MomentCard: View {
   /// Tap su una reazione (no-op nel demo).
   var onReact: (ReactionKind) -> Void = { _ in }
 
+  /// Reazioni "live" che pingano transitoriamente sulla card. Aggiungere un
+  /// nuovo `id` qui (UUID) avvia un'animazione concentrica e poi rimuove l'id.
+  @State private var livePings: [UUID: ReactionKind] = [:]
+
   var body: some View {
     HStack(alignment: .top, spacing: 14) {
       portraitColumn
@@ -43,7 +47,26 @@ struct MomentCard: View {
         )
     )
     .contentShape(RoundedRectangle(cornerRadius: 22))
+    .overlay(alignment: .topTrailing) {
+      ForEach(Array(livePings), id: \.key) { (id, kind) in
+        LivePingView(kind: kind, color: MoodPalette.auraColor(person.mood, l: 0.85))
+          .id(id)
+          .padding(.trailing, 16)
+          .padding(.top, 12)
+      }
+    }
     .onTapGesture(perform: onTap)
+  }
+
+  /// Trigger esterno per simulare un ping di reazione live.
+  /// Quando `ReactionsService` realtime sarà cablato, chiamare questo da fuori.
+  func triggerLivePing(_ kind: ReactionKind) {
+    let id = UUID()
+    livePings[id] = kind
+    Task { @MainActor in
+      try? await Task.sleep(nanoseconds: 900_000_000)
+      livePings.removeValue(forKey: id)
+    }
   }
 
   // MARK: - portrait
@@ -369,6 +392,33 @@ struct MomentCard: View {
     if s < 3600 { return "\(Int(s / 60))m" }
     if s < 24 * 3600 { return "\(Int(s / 3600))h" }
     return "\(Int(s / (24 * 3600)))g"
+  }
+}
+
+// MARK: - LivePingView
+
+/// Cerchio che si espande e svanisce; usato per "ping" reattivi live.
+private struct LivePingView: View {
+  let kind: ReactionKind
+  let color: Color
+  @State private var scale: CGFloat = 0.4
+  @State private var opacity: Double = 0.9
+
+  var body: some View {
+    ZStack {
+      Circle()
+        .stroke(color.opacity(opacity * 0.6), lineWidth: 1.5)
+        .frame(width: 36, height: 36)
+        .scaleEffect(scale)
+      ReactionGlyph(kind: kind, size: 16, color: color)
+        .opacity(opacity)
+    }
+    .onAppear {
+      withAnimation(.easeOut(duration: 0.85)) {
+        scale = 1.7
+        opacity = 0
+      }
+    }
   }
 }
 

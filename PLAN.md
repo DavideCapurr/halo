@@ -130,7 +130,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 ### Dinamismo
 - [ ] Realtime Supabase subscribe per nuovi post/vibe nel feed
 - [x] Animazione entrata nuova card in sezione "Adesso"
-- [ ] Ping animato per reazione live
+- [x] Ping animato per reazione live
 - [x] Sfondo deep space prende leggera tinta dal mood dominante delle card visibili (`withAnimation`)
 - [x] Card che scadono tra < 2h: bordo con colore caldo (warning visivo)
 
