@@ -4,14 +4,13 @@ import CryptoKit
 import HaloShared
 import Security
 
-/// Sign in con Apple + fallback email OTP. Bridge ad `AuthService`.
+/// Sign in con Apple + fallback email/password. Bridge ad `AuthService`.
 struct SignInView: View {
   var onSignedIn: (Profile) -> Void = { _ in }
 
   @State private var showEmail: Bool = false
   @State private var email: String = ""
-  @State private var otp: String = ""
-  @State private var awaitingOTP: Bool = false
+  @State private var password: String = ""
   @State private var errorMessage: String?
   @State private var isWorking: Bool = false
   @State private var appleNonce: String = ""
@@ -76,65 +75,39 @@ struct SignInView: View {
 
   @ViewBuilder
   private var emailBlock: some View {
-    if !awaitingOTP {
-      VStack(spacing: 10) {
-        TextField("la tua email", text: $email)
-          .textFieldStyle(.plain)
-          .font(.system(size: 15))
-          .foregroundStyle(.white)
-          .keyboardType(.emailAddress)
-          .textContentType(.emailAddress)
-          .textInputAutocapitalization(.never)
-          .autocorrectionDisabled()
-          .padding(.horizontal, 14).padding(.vertical, 12)
-          .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-          .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+    VStack(spacing: 10) {
+      TextField("la tua email", text: $email)
+        .textFieldStyle(.plain)
+        .font(.system(size: 15))
+        .foregroundStyle(.white)
+        .keyboardType(.emailAddress)
+        .textContentType(.emailAddress)
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled()
+        .padding(.horizontal, 14).padding(.vertical, 12)
+        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
 
-        Button {
-          Task { await requestOTP() }
-        } label: {
-          Text("Mandami il codice")
-            .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.white.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
-      }
-    } else {
-      VStack(spacing: 10) {
-        Text("ti abbiamo mandato un codice a \(email)")
-          .font(.system(size: 12))
-          .foregroundStyle(HaloTheme.textMuted)
+      SecureField("password", text: $password)
+        .textFieldStyle(.plain)
+        .font(.system(size: 15))
+        .foregroundStyle(.white)
+        .textContentType(.password)
+        .padding(.horizontal, 14).padding(.vertical, 12)
+        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
 
-        TextField("000000", text: $otp)
-          .textFieldStyle(.plain)
-          .font(.system(.title3, design: .monospaced))
-          .kerning(8)
-          .multilineTextAlignment(.center)
+      Button {
+        Task { await signInWithEmail() }
+      } label: {
+        Text("Entra")
+          .font(.system(size: 15, weight: .semibold))
           .foregroundStyle(.white)
-          .keyboardType(.numberPad)
-          .textContentType(.oneTimeCode)
+          .frame(maxWidth: .infinity)
           .padding(.vertical, 12)
-          .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-          .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
-          .onChange(of: otp) { _, v in
-            if v.count > 6 { otp = String(v.prefix(6)) }
-          }
-
-        Button {
-          Task { await verifyOTP() }
-        } label: {
-          Text("Entra")
-            .font(.system(size: 15, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.white.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
+          .background(Color.white.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
       }
+      .buttonStyle(.plain)
     }
   }
 
@@ -159,24 +132,14 @@ struct SignInView: View {
     }
   }
 
-  private func requestOTP() async {
+  private func signInWithEmail() async {
     isWorking = true; defer { isWorking = false }
     do {
-      try await AuthService.shared.requestEmailOTP(email: email)
-      awaitingOTP = true
+      let profile = try await AuthService.shared.signInWithEmail(email: email, password: password)
+      onSignedIn(profile)
       errorMessage = nil
     } catch {
-      errorMessage = "Non riesco a mandare il codice. Controlla l'email."
-    }
-  }
-
-  private func verifyOTP() async {
-    isWorking = true; defer { isWorking = false }
-    do {
-      let profile = try await AuthService.shared.verifyEmailOTP(email: email, code: otp)
-      onSignedIn(profile)
-    } catch {
-      errorMessage = "Codice non valido."
+      errorMessage = message(for: error)
     }
   }
 
@@ -214,5 +177,16 @@ struct SignInView: View {
   private func sha256(_ input: String) -> String {
     let digest = SHA256.hash(data: Data(input.utf8))
     return digest.map { String(format: "%02x", $0) }.joined()
+  }
+
+  private func message(for error: Error) -> String {
+    let description = error.localizedDescription.lowercased()
+    if description.contains("invalid login credentials") {
+      return "Email o password non valide."
+    }
+    if description.contains("email not confirmed") {
+      return "Devi confermare l'email prima di entrare."
+    }
+    return "Non riesco ad accedere. Riprova."
   }
 }

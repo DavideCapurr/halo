@@ -3,7 +3,7 @@ import AuthenticationServices
 import HaloShared
 import Supabase
 
-/// Sign in with Apple + email OTP. Espone session tracking sincrono via `currentUserId()`.
+/// Sign in with Apple + email/password. Espone session tracking sincrono via `currentUserId()`.
 @MainActor
 final class AuthService {
   static let shared = AuthService()
@@ -53,16 +53,14 @@ final class AuthService {
     return id
   }
 
-  // MARK: - Email OTP
+  // MARK: - Email / Password
 
-  /// Manda un codice OTP via email (magic link disabled, solo OTP a 6 cifre).
-  func requestEmailOTP(email: String) async throws {
-    try await client.auth.signInWithOTP(email: email, shouldCreateUser: true)
+  func signInWithEmail(email: String, password: String) async throws -> Profile {
+    _ = try await client.auth.signIn(email: email, password: password)
+    return try await currentOrBootstrapProfile(email: email)
   }
 
-  /// Verifica il codice OTP e ritorna (creandolo se manca) il profilo dell'utente.
-  func verifyEmailOTP(email: String, code: String) async throws -> Profile {
-    _ = try await client.auth.verifyOTP(email: email, token: code, type: .email)
+  private func currentOrBootstrapProfile(email: String) async throws -> Profile {
     if let existing = try? await ProfilesService.shared.currentProfile() {
       return existing
     }
