@@ -5,7 +5,10 @@ import HaloShared
 /// + sheets (peek / vibe setter / tier confirm).
 /// Switch tra le due viste tramite swipe orizzontale o pulsanti dedicati nella BottomBar.
 struct HomeView: View {
-  enum Mode { case field, pulse }
+  enum Tab: Hashable {
+    case orbit
+    case pulse
+  }
 
   @State private var me: DemoPerson = SeedPeople.me
   @State private var people: [DemoPerson] = SeedPeople.all + SeedPeople.asteroids
@@ -13,7 +16,7 @@ struct HomeView: View {
   @State private var showVibeSetter: Bool = false
   @State private var pendingProposal: TierConfirmationSheet.Proposal? = nil
   @State private var fieldZoom: ZoomLevel = .full
-  @State private var mode: Mode = .field
+  @State private var selectedTab: Tab = .orbit
   @State private var showCompose: Bool = false
 
   /// Conteggio dei tier delle proprie cerchie per il `VibeFirstComposeView`.
@@ -27,42 +30,23 @@ struct HomeView: View {
     ZStack {
       DeepSpaceBackground()
 
-      VStack(spacing: 0) {
-        TopBarView(
-          mood: me.mood,
-          onVibeTap: { showVibeSetter = true },
-          onSearchTap: {}
-        )
-        .padding(.top, 8)
-
-        ZStack {
-          if mode == .field {
-            fieldArea
-              .transition(.asymmetric(
-                insertion: .move(edge: .leading).combined(with: .opacity),
-                removal: .move(edge: .leading).combined(with: .opacity)
-              ))
-          } else {
-            PulseFeedView(onPersonTap: { peek = $0 })
-              .transition(.asymmetric(
-                insertion: .move(edge: .trailing).combined(with: .opacity),
-                removal: .move(edge: .trailing).combined(with: .opacity)
-              ))
+      TabView(selection: $selectedTab) {
+        orbitTab
+          .tag(Tab.orbit)
+          .tabItem {
+            Label("Orbita", systemImage: "circle.dotted")
           }
-        }
-        .frame(maxHeight: .infinity)
-        .gesture(modeSwipeGesture)
 
-        BottomBarView(
-          selfMood: me.mood,
-          onCompose: { showCompose = true },
-          onOrbit: { withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) { mode = .field } },
-          onPulse: { withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) { mode = .pulse } }
-        )
-        .padding(.bottom, 16)
+        PulseFeedView(onPersonTap: { peek = $0 })
+          .tag(Tab.pulse)
+          .tabItem {
+            Label("Pulse", systemImage: "list.dash")
+          }
       }
-      .padding(.top, 4)
+      .tint(.white)
       .animation(.easeInOut(duration: 0.30), value: fieldZoom)
+
+      composeButton
     }
     .preferredColorScheme(.dark)
     .sheet(item: $peek) { person in
@@ -107,6 +91,23 @@ struct HomeView: View {
     }
   }
 
+  // MARK: - tabs
+
+  private var orbitTab: some View {
+    VStack(spacing: 0) {
+      TopBarView(
+        mood: me.mood,
+        onVibeTap: { showVibeSetter = true },
+        onSearchTap: {}
+      )
+      .padding(.top, 8)
+
+      fieldArea
+        .frame(maxHeight: .infinity)
+    }
+    .padding(.top, 4)
+  }
+
   // MARK: - field area (orbital + asteroids)
 
   private var fieldArea: some View {
@@ -119,7 +120,13 @@ struct HomeView: View {
         onSelfTap: { showVibeSetter = true },
         onSelfLongPress: { showCompose = true },
         onProposeTier: { person, toTier in
-          pendingProposal = .init(person: person, from: person.tier, to: toTier)
+          guard let idx = people.firstIndex(where: { $0.id == person.id }) else { return }
+
+          if requiresTierConfirmation(from: person.tier, to: toTier) {
+            pendingProposal = .init(person: person, from: person.tier, to: toTier)
+          } else {
+            people[idx].tier = toTier
+          }
         },
         onZoomChange: { fieldZoom = $0 }
       )
@@ -136,20 +143,31 @@ struct HomeView: View {
     }
   }
 
-  // MARK: - swipe between modes
-
-  private var modeSwipeGesture: some Gesture {
-    DragGesture(minimumDistance: 22)
-      .onEnded { value in
-        let dx = value.translation.width
-        let dy = value.translation.height
-        // Solo gesti prevalentemente orizzontali, abbastanza ampi.
-        guard abs(dx) > abs(dy) * 1.5, abs(dx) > 60 else { return }
-        withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
-          if dx < 0, mode == .field { mode = .pulse }
-          else if dx > 0, mode == .pulse { mode = .field }
+  private var composeButton: some View {
+    VStack {
+      Spacer()
+      HStack {
+        Spacer()
+        Button {
+          showCompose = true
+        } label: {
+          Image(systemName: "plus")
+            .font(.system(size: 20, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: 54, height: 54)
+            .haloGlass(in: Circle(), tint: MoodPalette.auraColor(me.mood, l: 0.58), interactive: true)
+            .shadow(color: MoodPalette.auraRing(me.mood, alpha: 0.24), radius: 10, y: 4)
         }
+        .buttonStyle(.plain)
+        .padding(.trailing, 18)
+        .padding(.bottom, 74)
       }
+    }
+    .allowsHitTesting(true)
+  }
+
+  private func requiresTierConfirmation(from: FriendshipTier, to: FriendshipTier) -> Bool {
+    from == .nebula && to != .nebula
   }
 }
 

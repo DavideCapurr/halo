@@ -1,10 +1,18 @@
 import SwiftUI
 import HaloShared
 
-/// BottomBar: glass capsule con 5 slot (orbita / feed / compose / pulse / profile).
-/// Il compose centrale è una bolla pulsante colorata col mood corrente.
+/// Bottom tab bar ispirata al layer di navigazione di iOS 26:
+/// floating glass, tab attiva leggibile, compose centrale prominente.
 struct BottomBarView: View {
+  enum Tab {
+    case orbit
+    case feed
+    case pulse
+    case profile
+  }
+
   let selfMood: Mood
+  var activeTab: Tab = .orbit
   var onCompose: () -> Void = {}
   var onOrbit: () -> Void = {}
   var onFeed: () -> Void = {}
@@ -12,57 +20,85 @@ struct BottomBarView: View {
   var onProfile: () -> Void = {}
 
   var body: some View {
-    HStack(spacing: 18) {
-      iconButton("circle.dotted", action: onOrbit)
-      iconButton("text.alignleft", action: onFeed)
+    HStack(spacing: 10) {
+      tabButton(.orbit, title: "Orbita", icon: "circle.dotted", selectedIcon: "circle.dotted.circle.fill", action: onOrbit)
+      tabButton(.feed, title: "Feed", icon: "text.alignleft", selectedIcon: "text.alignleft", action: onFeed)
       composeButton()
-      iconButton("list.dash", action: onPulse)
-      iconButton("person.circle", action: onProfile)
+      tabButton(.pulse, title: "Pulse", icon: "list.dash", selectedIcon: "list.bullet.rectangle.fill", action: onPulse)
+      tabButton(.profile, title: "Tu", icon: "person.circle", selectedIcon: "person.circle.fill", action: onProfile)
     }
-    .padding(.horizontal, 12).padding(.vertical, 8)
+    .padding(.horizontal, 10)
+    .padding(.vertical, 8)
+    .frame(maxWidth: .infinity)
     .haloGlass(in: Capsule(), interactive: true)
-    .padding(.horizontal, 22)
+    .padding(.horizontal, 18)
   }
 
-  private func iconButton(_ system: String, action: @escaping () -> Void) -> some View {
-    Button(action: action) {
-      Image(systemName: system)
-        .font(.system(size: 18, weight: .regular))
-        .foregroundStyle(.white.opacity(0.6))
-        .frame(width: 36, height: 36)
+  private func tabButton(
+    _ tab: Tab,
+    title: String,
+    icon: String,
+    selectedIcon: String,
+    action: @escaping () -> Void
+  ) -> some View {
+    let isSelected = activeTab == tab
+    let tint = tabTint(for: tab)
+
+    return Button(action: action) {
+      VStack(spacing: 3) {
+        Image(systemName: isSelected ? selectedIcon : icon)
+          .font(.system(size: 17, weight: isSelected ? .semibold : .regular))
+        Text(title)
+          .font(.system(size: 10, weight: isSelected ? .semibold : .medium))
+          .lineLimit(1)
+      }
+      .foregroundStyle(isSelected ? Color.white : Color.white.opacity(0.62))
+      .frame(maxWidth: .infinity)
+      .frame(height: 44)
+      .contentShape(Rectangle())
+      .background {
+        if isSelected {
+          Capsule()
+            .fill(.clear)
+            .haloGlass(in: Capsule(), tint: tint, interactive: true)
+        }
+      }
     }
     .buttonStyle(.plain)
+    .accessibilityLabel(title)
   }
 
   private func composeButton() -> some View {
     Button(action: onCompose) {
       ZStack {
         Circle()
-          .fill(
-            RadialGradient(
-              colors: [
-                MoodPalette.auraColor(selfMood, l: 0.9),
-                MoodPalette.auraColor(selfMood, l: 0.55),
-              ],
-              center: UnitPoint(x: 0.3, y: 0.3),
-              startRadius: 0, endRadius: 28
-            )
-          )
-          .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.6), radius: 12)
+          .fill(.clear)
+          .haloGlass(in: Circle(), tint: MoodPalette.auraColor(selfMood, l: 0.58), interactive: true)
         Image(systemName: "plus")
-          .font(.system(size: 22, weight: .semibold))
+          .font(.system(size: 20, weight: .semibold))
           .foregroundStyle(.white)
       }
-      .frame(width: 52, height: 52)
+      .frame(width: 50, height: 50)
+      .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.26), radius: 10, y: 3)
     }
     .buttonStyle(.plain)
+    .accessibilityLabel("Compose")
+  }
+
+  private func tabTint(for tab: Tab) -> Color {
+    switch tab {
+    case .orbit:   return MoodPalette.auraColor(selfMood, l: 0.48)
+    case .feed:    return Color.white.opacity(0.18)
+    case .pulse:   return MoodPalette.auraColor(.electric, l: 0.55)
+    case .profile: return MoodPalette.auraColor(.soft, l: 0.58)
+    }
   }
 }
 
 #Preview {
   ZStack {
     Color.black
-    BottomBarView(selfMood: .focused)
+    BottomBarView(selfMood: .focused, activeTab: .pulse)
   }
   .frame(width: 402, height: 120)
 }
