@@ -168,8 +168,7 @@ private struct HaloSpacePage: View {
       .foregroundStyle(.white.opacity(0.78))
       .padding(.horizontal, 7)
       .padding(.vertical, 2.5)
-      .background(.white.opacity(0.06), in: Capsule())
-      .overlay(Capsule().strokeBorder(Color.white.opacity(0.12), lineWidth: 0.5))
+      .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(person.mood, l: 0.50))
   }
 
   // MARK: - empty state

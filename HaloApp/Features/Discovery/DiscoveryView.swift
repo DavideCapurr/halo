@@ -77,8 +77,7 @@ struct DiscoveryView: View {
         .foregroundStyle(.white)
     }
     .padding(.horizontal, 14).padding(.vertical, 12)
-    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
     .padding(.horizontal, 16)
   }
 
@@ -120,20 +119,12 @@ struct DiscoveryView: View {
           .font(.system(size: 12, weight: .semibold))
           .foregroundStyle(on ? Color.white.opacity(0.55) : .white)
           .padding(.horizontal, 12).padding(.vertical, 6)
-          .background(
-            on ? Color.white.opacity(0.06) : MoodPalette.auraRing(.electric, alpha: 0.30),
-            in: Capsule()
-          )
-          .overlay(Capsule().strokeBorder(
-            on ? HaloTheme.hairline : MoodPalette.auraRing(.electric, alpha: 0.55),
-            lineWidth: 0.5
-          ))
+          .haloGlass(in: Capsule(), tint: on ? nil : MoodPalette.auraColor(.electric, l: 0.55), interactive: true)
       }
       .buttonStyle(.plain)
     }
     .padding(.horizontal, 12).padding(.vertical, 10)
-    .background(.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 12))
-    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairlineSoft, lineWidth: 0.5))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
   }
 
   // MARK: - actions

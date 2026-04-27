@@ -70,8 +70,7 @@ struct InitialInnerCircleView: View {
         }
     }
     .padding(.horizontal, 14).padding(.vertical, 12)
-    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
   }
 
   @ViewBuilder
@@ -99,8 +98,7 @@ struct InitialInnerCircleView: View {
                   .foregroundStyle(.white.opacity(0.55))
               }
               .padding(.horizontal, 10).padding(.vertical, 6)
-              .background(MoodPalette.auraRing(.warm, alpha: 0.20), in: Capsule())
-              .overlay(Capsule().strokeBorder(MoodPalette.auraRing(.warm, alpha: 0.45), lineWidth: 0.5))
+              .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(.warm, l: 0.55), interactive: true)
             }
             .buttonStyle(.plain)
           }
@@ -147,8 +145,7 @@ struct InitialInnerCircleView: View {
                     : Color.white.opacity(0.40))
               }
               .padding(.horizontal, 12).padding(.vertical, 10)
-              .background(.white.opacity(isPicked(p) ? 0.06 : 0.03), in: RoundedRectangle(cornerRadius: 12))
-              .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairlineSoft, lineWidth: 0.5))
+              .haloGlass(in: RoundedRectangle(cornerRadius: 12), tint: isPicked(p) ? MoodPalette.auraColor(.warm, l: 0.55) : nil, interactive: true)
             }
             .buttonStyle(.plain)
           }
@@ -180,6 +177,7 @@ struct InitialInnerCircleView: View {
             in: Capsule()
           )
           .shadow(color: MoodPalette.auraRing(.warm, alpha: 0.4), radius: 10, y: 4)
+          .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(.warm, l: 0.55), interactive: true)
       }
       .buttonStyle(.plain)
     }

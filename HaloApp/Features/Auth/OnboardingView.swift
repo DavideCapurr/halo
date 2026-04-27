@@ -118,8 +118,7 @@ struct OnboardingView: View {
           }
       }
       .padding(.horizontal, 14).padding(.vertical, 12)
-      .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-      .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+      .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
     }
   }
 
@@ -132,8 +131,7 @@ struct OnboardingView: View {
       TextField("come vuoi essere chiamato", text: $displayName)
         .foregroundStyle(.white)
         .padding(.horizontal, 14).padding(.vertical, 12)
-        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+        .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
     }
   }
 
@@ -155,6 +153,7 @@ struct OnboardingView: View {
           in: RoundedRectangle(cornerRadius: 14)
         )
         .shadow(color: MoodPalette.auraRing(.warm, alpha: 0.4), radius: 12, y: 4)
+        .haloGlass(in: RoundedRectangle(cornerRadius: 14), tint: MoodPalette.auraColor(.warm, l: 0.55), interactive: true)
     }
     .buttonStyle(.plain)
     .disabled(disabled)

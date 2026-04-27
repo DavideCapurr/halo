@@ -57,15 +57,9 @@ struct PostCardView: View {
         onTap: onReact
       )
     }
-    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 18))
-    .overlay(
-      RoundedRectangle(cornerRadius: 18)
-        .strokeBorder(
-          isExpiringSoon
-            ? MoodPalette.auraColor(.warm, l: 0.65)
-            : HaloTheme.hairlineSoft,
-          lineWidth: isExpiringSoon ? 1.2 : 0.5
-        )
+    .haloContentGlass(
+      in: RoundedRectangle(cornerRadius: 18),
+      stroke: isExpiringSoon ? MoodPalette.auraColor(.warm, l: 0.65) : HaloTheme.glassStrokeSoft
     )
     .clipShape(RoundedRectangle(cornerRadius: 18))
   }
@@ -105,7 +99,7 @@ struct PostCardView: View {
             .foregroundStyle(Color.white.opacity(0.75))
         }
         .padding(.horizontal, 8).padding(.vertical, 4)
-        .background(.white.opacity(0.05), in: Capsule())
+        .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(mood, l: 0.55))
       }
     }
     .padding(.horizontal, 14).padding(.vertical, 10)

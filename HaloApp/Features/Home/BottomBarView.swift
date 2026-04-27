@@ -20,9 +20,7 @@ struct BottomBarView: View {
       iconButton("person.circle", action: onProfile)
     }
     .padding(.horizontal, 12).padding(.vertical, 8)
-    .background(HaloTheme.surface, in: Capsule())
-    .background(.ultraThinMaterial, in: Capsule())
-    .overlay(Capsule().strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+    .haloGlass(in: Capsule(), interactive: true)
     .padding(.horizontal, 22)
   }
 

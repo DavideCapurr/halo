@@ -39,14 +39,16 @@ struct TierConfirmationSheet: View {
         .textCase(.uppercase)
         .foregroundStyle(HaloTheme.textCaption)
 
-      (
-        Text(proposal.closer ? "Porta " : "Sposta ")
-          .foregroundStyle(.white) +
-        Text(proposal.person.name)
-          .foregroundStyle(MoodPalette.auraColor(proposal.person.mood, l: 0.85)) +
-        Text("\n" + (proposal.closer ? "più vicino" : "più distante") + "?")
+      VStack(spacing: 2) {
+        HStack(spacing: 5) {
+          Text(proposal.closer ? "Porta" : "Sposta")
+            .foregroundStyle(.white)
+          Text(proposal.person.name)
+            .foregroundStyle(MoodPalette.auraColor(proposal.person.mood, l: 0.85))
+        }
+        Text(proposal.closer ? "più vicino?" : "più distante?")
           .foregroundStyle(.white)
-      )
+      }
       .font(.system(size: 24, weight: .semibold))
       .kerning(-0.5)
       .multilineTextAlignment(.center)
@@ -111,8 +113,7 @@ struct TierConfirmationSheet: View {
     }
     .padding(.horizontal, 16).padding(.vertical, 14)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 16))
-    .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(HaloTheme.hairlineSoft, lineWidth: 0.5))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: 16))
     .padding(.horizontal, 22)
   }
 
@@ -124,8 +125,7 @@ struct TierConfirmationSheet: View {
           .foregroundStyle(Color.white.opacity(0.75))
           .frame(maxWidth: .infinity)
           .padding(.vertical, 14)
-          .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 16))
-          .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5))
+          .haloGlass(in: RoundedRectangle(cornerRadius: 16), interactive: true)
       }
       .buttonStyle(.plain)
 
@@ -146,6 +146,7 @@ struct TierConfirmationSheet: View {
             in: RoundedRectangle(cornerRadius: 16)
           )
           .shadow(color: MoodPalette.auraRing(proposal.person.mood, alpha: 0.5), radius: 12, y: 4)
+          .haloGlass(in: RoundedRectangle(cornerRadius: 16), tint: MoodPalette.auraColor(proposal.person.mood, l: 0.55), interactive: true)
       }
       .buttonStyle(.plain)
       .layoutPriority(1.3)

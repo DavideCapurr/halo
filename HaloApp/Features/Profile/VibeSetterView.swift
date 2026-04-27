@@ -87,8 +87,7 @@ struct VibeSetterView: View {
             .foregroundStyle(Color.white.opacity(0.35))
         }
         .padding(.horizontal, 14).padding(.vertical, 12)
-        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+        .haloContentGlass(in: RoundedRectangle(cornerRadius: 14))
         .padding(.horizontal, 22).padding(.bottom, 14)
 
         // CTA
@@ -109,6 +108,7 @@ struct VibeSetterView: View {
               in: RoundedRectangle(cornerRadius: 16)
             )
             .shadow(color: MoodPalette.auraRing(mood, alpha: 0.4), radius: 14, y: 6)
+            .haloGlass(in: RoundedRectangle(cornerRadius: 16), tint: MoodPalette.auraColor(mood, l: 0.55), interactive: true)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 22).padding(.bottom, 30)
@@ -156,13 +156,7 @@ struct VibeSetterView: View {
           .foregroundStyle(on ? .white : Color.white.opacity(0.75))
       }
       .padding(.horizontal, 16).padding(.vertical, 9)
-      .background(on ? MoodPalette.auraRing(m, alpha: 0.25) : Color.white.opacity(0.04), in: Capsule())
-      .overlay(
-        Capsule().strokeBorder(
-          on ? MoodPalette.auraRing(m, alpha: 0.7) : HaloTheme.hairline,
-          lineWidth: on ? 1 : 0.5
-        )
-      )
+      .haloGlass(in: Capsule(), tint: on ? MoodPalette.auraColor(m, l: 0.55) : nil, interactive: true)
     }
     .buttonStyle(.plain)
   }

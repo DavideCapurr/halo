@@ -20,12 +20,49 @@ enum HaloTheme {
   static let hairlineSoft      = Color.white.opacity(0.08)
   static let ringInactive      = Color.white.opacity(0.07)
   static let ringActive        = Color.white.opacity(0.42)
+  static let glassFallbackFill = Color.white.opacity(0.055)
+  static let glassStroke       = Color.white.opacity(0.16)
+  static let glassStrokeSoft   = Color.white.opacity(0.10)
 
   static let cornerRadius: CGFloat = 20
   static let sheetCornerRadius: CGFloat = 32
 
   // Mono digit font, used per timestamp e counter (ui-monospace nel design)
   static let mono = Font.system(.caption2, design: .monospaced)
+}
+
+extension View {
+  /// Liquid Glass token per controlli e navigazione, con fallback material
+  /// sulle versioni precedenti a iOS 26.
+  @ViewBuilder
+  func haloGlass<S: InsettableShape>(
+    in shape: S,
+    tint: Color? = nil,
+    interactive: Bool = false,
+    stroke: Color = HaloTheme.glassStroke
+  ) -> some View {
+    if #available(iOS 26.0, *) {
+      self.glassEffect(.regular.tint(tint).interactive(interactive), in: shape)
+    } else {
+      self
+        .background(HaloTheme.glassFallbackFill, in: shape)
+        .background(.ultraThinMaterial, in: shape)
+        .overlay(shape.strokeBorder(stroke, lineWidth: 0.6))
+    }
+  }
+
+  /// Glass più quieto per card e contenuti: mantiene gerarchia senza trasformare
+  /// tutto il contenuto in controlli fluttuanti.
+  @ViewBuilder
+  func haloContentGlass<S: InsettableShape>(
+    in shape: S,
+    stroke: Color = HaloTheme.glassStrokeSoft
+  ) -> some View {
+    self
+      .background(Color.white.opacity(0.035), in: shape)
+      .background(.regularMaterial, in: shape)
+      .overlay(shape.strokeBorder(stroke, lineWidth: 0.5))
+  }
 }
 
 extension Color {

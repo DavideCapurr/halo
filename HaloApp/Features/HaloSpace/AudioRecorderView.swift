@@ -42,11 +42,7 @@ struct AudioRecorderView: View {
     }
     .padding(.vertical, 22)
     .frame(maxWidth: .infinity)
-    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 22))
-    .overlay(
-      RoundedRectangle(cornerRadius: 22)
-        .strokeBorder(Color.white.opacity(0.10), lineWidth: 0.5)
-    )
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: 22))
     .onDisappear { cleanup() }
   }
 
@@ -111,8 +107,7 @@ struct AudioRecorderView: View {
         .font(.system(size: 22, weight: .bold))
         .foregroundStyle(color)
         .frame(width: 64, height: 64)
-        .background(bg, in: Circle())
-        .overlay(Circle().strokeBorder(Color.white.opacity(0.20), lineWidth: 0.5))
+        .haloGlass(in: Circle(), tint: bg, interactive: true)
     }
     .buttonStyle(.plain)
   }

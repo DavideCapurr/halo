@@ -145,13 +145,7 @@ struct VibeFirstComposeView: View {
           .foregroundStyle(on ? .white : Color.white.opacity(0.75))
       }
       .padding(.horizontal, 16).padding(.vertical, 9)
-      .background(on ? MoodPalette.auraRing(m, alpha: 0.25) : Color.white.opacity(0.04), in: Capsule())
-      .overlay(
-        Capsule().strokeBorder(
-          on ? MoodPalette.auraRing(m, alpha: 0.7) : HaloTheme.hairline,
-          lineWidth: on ? 1 : 0.5
-        )
-      )
+      .haloGlass(in: Capsule(), tint: on ? MoodPalette.auraColor(m, l: 0.55) : nil, interactive: true)
     }
     .buttonStyle(.plain)
   }
@@ -177,8 +171,7 @@ struct VibeFirstComposeView: View {
           .foregroundStyle(Color.white.opacity(0.35))
       }
       .padding(.horizontal, 14).padding(.vertical, 12)
-      .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 14))
-      .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+      .haloContentGlass(in: RoundedRectangle(cornerRadius: 14))
 
       Button { note = ""; advance() } label: {
         Text("salta")
@@ -206,8 +199,7 @@ struct VibeFirstComposeView: View {
           .foregroundStyle(.white)
           .lineLimit(6, reservesSpace: true)
           .padding(.horizontal, 14).padding(.vertical, 12)
-          .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 14))
-          .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+          .haloContentGlass(in: RoundedRectangle(cornerRadius: 14))
       }
     }
   }
@@ -238,16 +230,7 @@ struct VibeFirstComposeView: View {
             Spacer()
           }
           .padding(.horizontal, 14).padding(.vertical, 14)
-          .background(
-            on ? MoodPalette.auraRing(mood, alpha: 0.20) : Color.white.opacity(0.04),
-            in: RoundedRectangle(cornerRadius: 14)
-          )
-          .overlay(
-            RoundedRectangle(cornerRadius: 14).strokeBorder(
-              on ? MoodPalette.auraRing(mood, alpha: 0.6) : HaloTheme.hairline,
-              lineWidth: on ? 1 : 0.5
-            )
-          )
+          .haloGlass(in: RoundedRectangle(cornerRadius: 14), tint: on ? MoodPalette.auraColor(mood, l: 0.55) : nil, interactive: true)
         }
         .buttonStyle(.plain)
       }
@@ -278,11 +261,7 @@ struct VibeFirstComposeView: View {
             .foregroundStyle(Color.white.opacity(0.70))
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(MoodPalette.auraRing(.warm, alpha: 0.10), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(
-          RoundedRectangle(cornerRadius: 12)
-            .strokeBorder(MoodPalette.auraRing(.warm, alpha: 0.40), lineWidth: 0.5)
-        )
+        .haloGlass(in: RoundedRectangle(cornerRadius: 12), tint: MoodPalette.auraColor(.warm, l: 0.55))
         .transition(.opacity.combined(with: .move(edge: .top)))
       }
     }
@@ -316,16 +295,7 @@ struct VibeFirstComposeView: View {
           .foregroundStyle(Color.white.opacity(on ? 0.85 : 0.45))
       }
       .padding(.horizontal, 14).padding(.vertical, 12)
-      .background(
-        on ? MoodPalette.auraRing(mood, alpha: 0.18) : Color.white.opacity(0.04),
-        in: RoundedRectangle(cornerRadius: 14)
-      )
-      .overlay(
-        RoundedRectangle(cornerRadius: 14).strokeBorder(
-          on ? MoodPalette.auraRing(mood, alpha: 0.55) : HaloTheme.hairline,
-          lineWidth: on ? 1 : 0.5
-        )
-      )
+      .haloGlass(in: RoundedRectangle(cornerRadius: 14), tint: on ? MoodPalette.auraColor(mood, l: 0.55) : nil, interactive: true)
     }
     .buttonStyle(.plain)
   }
@@ -378,6 +348,7 @@ struct VibeFirstComposeView: View {
             in: Capsule()
           )
           .shadow(color: MoodPalette.auraRing(mood, alpha: 0.4), radius: 10, y: 4)
+          .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(mood, l: 0.55), interactive: true)
       }
       .buttonStyle(.plain)
     }

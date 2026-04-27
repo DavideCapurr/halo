@@ -85,8 +85,7 @@ struct SignInView: View {
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
         .padding(.horizontal, 14).padding(.vertical, 12)
-        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+        .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
 
       SecureField("password", text: $password)
         .textFieldStyle(.plain)
@@ -94,8 +93,7 @@ struct SignInView: View {
         .foregroundStyle(.white)
         .textContentType(.password)
         .padding(.horizontal, 14).padding(.vertical, 12)
-        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+        .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
 
       Button {
         Task { await signInWithEmail() }
@@ -105,7 +103,7 @@ struct SignInView: View {
           .foregroundStyle(.white)
           .frame(maxWidth: .infinity)
           .padding(.vertical, 12)
-          .background(Color.white.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+          .haloGlass(in: RoundedRectangle(cornerRadius: 12), interactive: true)
       }
       .buttonStyle(.plain)
     }

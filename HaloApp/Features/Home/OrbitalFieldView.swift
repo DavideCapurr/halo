@@ -18,6 +18,7 @@ struct OrbitalFieldView: View {
   @State private var drag: DragState? = nil
   @State private var zoomLevel: ZoomLevel = .full
   @State private var pinchInProgress: Bool = false
+  @State private var zoomDragStart: ZoomLevel? = nil
 
   /// Espone il livello corrente al parent (per uno slider esterno o per AsteroidBeltView).
   var onZoomChange: (ZoomLevel) -> Void = { _ in }
@@ -44,8 +45,9 @@ struct OrbitalFieldView: View {
       let placementByPerson = Dictionary(uniqueKeysWithValues: placements.map { ($0.personId, $0) })
 
       ZStack {
-        // 1. anelli (illuminati se ghostTier li attraversa)
-        ForEach(FriendshipTier.allCases.filter { $0.isVisible(at: zoomLevel) }, id: \.self) { tier in
+        // 1. anelli (illuminati se ghostTier li attraversa). Nebula in dezoom
+        // diventa una fascia diffusa, non un anello orbitale classico.
+        ForEach(FriendshipTier.allCases.filter { $0.isVisible(at: zoomLevel) && !($0 == .nebula && zoomLevel == .asteroids) }, id: \.self) { tier in
           OrbitalRing(
             tier: tier,
             diameter: tier.ringRadius(at: zoomLevel) * maxR * 2,
@@ -53,6 +55,10 @@ struct OrbitalFieldView: View {
           )
           .position(x: cx, y: cy)
           .transition(.opacity)
+        }
+
+        if zoomLevel == .asteroids {
+          nebulaBand(cx: cx, cy: cy, maxR: maxR)
         }
 
         // 2. self center
@@ -83,13 +89,16 @@ struct OrbitalFieldView: View {
 
         // 4. bolle (solo mutuali, solo tier visibili al livello corrente)
         ForEach(mutuals) { p in
-          if let placement = placementByPerson[p.id], placement.tier.isVisible(at: zoomLevel) {
+          if let placement = placementByPerson[p.id],
+             placement.tier.isVisible(at: zoomLevel),
+             !(placement.tier == .nebula && zoomLevel == .asteroids) {
             let isDragging = drag?.personId == p.id
             let effectiveTier = isDragging ? (drag?.ghostTier ?? placement.tier) : placement.tier
             let xy = isDragging
               ? (drag?.location ?? polarToXY(tier: effectiveTier, angle: placement.angle, cx: cx, cy: cy, maxR: maxR))
               : polarToXY(tier: effectiveTier, angle: placement.angle, cx: cx, cy: cy, maxR: maxR)
             let size = effectiveTier.bubbleSize(at: zoomLevel)
+            let hitSize = max(size, 56)
             BubbleView(
               personId: p.id,
               handle: p.handle,
@@ -101,6 +110,8 @@ struct OrbitalFieldView: View {
               hasActiveVibe: p.hasActiveVibe,
               lastPostAt: p.lastPostAt
             )
+            .frame(width: hitSize, height: hitSize)
+            .contentShape(Circle())
             .position(x: xy.x, y: xy.y)
             .zIndex(isDragging ? 50 : 10)
             .animation(isDragging ? nil : .spring(response: 0.55, dampingFraction: 0.78), value: effectiveTier)
@@ -128,17 +139,25 @@ struct OrbitalFieldView: View {
           .font(.system(size: 13, weight: .medium))
           .kerning(-0.1)
           .padding(.horizontal, 16).padding(.vertical, 8)
-          .background(.black.opacity(0.6), in: Capsule())
-          .overlay(Capsule().strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5))
-          .background(.ultraThinMaterial, in: Capsule())
+          .haloGlass(in: Capsule(), interactive: false)
           .position(x: cx, y: 32)
           .zIndex(60)
           .transition(.opacity.combined(with: .move(edge: .top)))
         }
       }
+      .contentShape(Rectangle())
       .animation(.easeInOut(duration: 0.2), value: drag?.ghostTier)
       .animation(.spring(response: 0.55, dampingFraction: 0.82), value: zoomLevel)
       .gesture(pinchGesture)
+      .simultaneousGesture(
+        fieldZoomDragGesture(
+          mutuals: mutuals,
+          placementByPerson: placementByPerson,
+          cx: cx,
+          cy: cy,
+          maxR: maxR
+        )
+      )
       .overlay(alignment: .trailing) {
         ZoomSlider(level: zoomLevelBinding)
           .padding(.trailing, 14)
@@ -153,6 +172,59 @@ struct OrbitalFieldView: View {
       get: { zoomLevel },
       set: { zoomLevel = $0 }
     )
+  }
+
+  @ViewBuilder
+  private func nebulaBand(cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> some View {
+    let nebulaPeople = people.filter { $0.isMutual && $0.tier == .nebula }
+
+    ZStack {
+      ForEach([0.66, 0.76, 0.86, 0.96], id: \.self) { radius in
+        Circle()
+          .stroke(
+            Color.white.opacity(radius == 0.76 ? 0.11 : 0.06),
+            style: StrokeStyle(lineWidth: 1, dash: [2, 9], dashPhase: radius * 17)
+          )
+          .frame(width: maxR * CGFloat(radius) * 2, height: maxR * CGFloat(radius) * 2)
+          .position(x: cx, y: cy)
+      }
+
+      ForEach(nebulaPeople) { p in
+        let xy = nebulaBeltPosition(for: p, cx: cx, cy: cy, maxR: maxR)
+        let size = p.tier.bubbleSize(at: zoomLevel)
+        let hitSize = max(size, 56)
+
+        TimelineView(.animation(minimumInterval: 1.0 / 24, paused: !pulsing)) { ctx in
+          let seed = nebulaSeed(for: p.id)
+          let t = ctx.date.timeIntervalSinceReferenceDate
+          let dx = CGFloat(sin((t / (8.5 + seed * 3.5)) * .pi * 2)) * 5
+          let dy = CGFloat(cos((t / (10.5 + seed * 4.0)) * .pi * 2)) * 4
+
+          BubbleView(
+            personId: p.id,
+            handle: p.handle,
+            mood: p.mood,
+            size: size,
+            hasNew: p.hasNew,
+            showName: false,
+            pulsing: pulsing,
+            hasActiveVibe: p.hasActiveVibe,
+            lastPostAt: p.lastPostAt
+          )
+          .frame(width: hitSize, height: hitSize)
+          .contentShape(Circle())
+          .offset(x: dx, y: dy)
+          .onTapGesture {
+            HapticEngine.tap(for: p.tier)
+            onBubbleTap(p)
+          }
+        }
+        .frame(width: hitSize, height: hitSize)
+        .position(x: xy.x, y: xy.y)
+        .zIndex(8)
+      }
+    }
+    .transition(.opacity)
   }
 
   // MARK: gestures
@@ -175,6 +247,45 @@ struct OrbitalFieldView: View {
       }
       .onEnded { _ in
         pinchInProgress = false
+      }
+  }
+
+  private func fieldZoomDragGesture(
+    mutuals: [DemoPerson],
+    placementByPerson: [String: OrbitalLayout.Placement],
+    cx: CGFloat,
+    cy: CGFloat,
+    maxR: CGFloat
+  ) -> some Gesture {
+    DragGesture(minimumDistance: 18, coordinateSpace: .named(fieldSpace))
+      .onChanged { value in
+        guard drag == nil else { return }
+        guard !isNearBubble(
+          value.startLocation,
+          mutuals: mutuals,
+          placementByPerson: placementByPerson,
+          cx: cx,
+          cy: cy,
+          maxR: maxR
+        ) else { return }
+
+        let dx = value.translation.width
+        let dy = value.translation.height
+        guard abs(dy) > abs(dx) * 1.25 else { return }
+
+        let start = zoomDragStart ?? zoomLevel
+        zoomDragStart = start
+        let steps = Int((dy / 58).rounded())
+        let raw = min(
+          max(start.rawValue + steps, ZoomLevel.innerOnly.rawValue),
+          ZoomLevel.asteroids.rawValue
+        )
+        guard let next = ZoomLevel(rawValue: raw), next != zoomLevel else { return }
+        UISelectionFeedbackGenerator().selectionChanged()
+        zoomLevel = next
+      }
+      .onEnded { _ in
+        zoomDragStart = nil
       }
   }
 
@@ -211,6 +322,38 @@ struct OrbitalFieldView: View {
   private func polarToXY(tier: FriendshipTier, angle: Double, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> CGPoint {
     let r = tier.ringRadius(at: zoomLevel) * Double(maxR)
     return CGPoint(x: cx + CGFloat(cos(angle) * r), y: cy + CGFloat(sin(angle) * r))
+  }
+
+  private func nebulaBeltPosition(for person: DemoPerson, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> CGPoint {
+    let seed = nebulaSeed(for: person.id)
+    let angle = Double(OrbitalLayout.angleSeedFor(person.id, tier: .nebula, seed: 19)) * .pi / 180.0
+    let radius = maxR * CGFloat(0.68 + seed * 0.26)
+    return CGPoint(x: cx + CGFloat(cos(angle)) * radius, y: cy + CGFloat(sin(angle)) * radius)
+  }
+
+  private func nebulaSeed(for id: String) -> Double {
+    var h: UInt32 = 2166136261
+    for u in id.unicodeScalars { h = (h ^ u.value) &* 16777619 }
+    return Double(h % 1000) / 1000.0
+  }
+
+  private func isNearBubble(
+    _ location: CGPoint,
+    mutuals: [DemoPerson],
+    placementByPerson: [String: OrbitalLayout.Placement],
+    cx: CGFloat,
+    cy: CGFloat,
+    maxR: CGFloat
+  ) -> Bool {
+    for p in mutuals {
+      guard let placement = placementByPerson[p.id], placement.tier.isVisible(at: zoomLevel) else { continue }
+      let pos = (placement.tier == .nebula && zoomLevel == .asteroids)
+        ? nebulaBeltPosition(for: p, cx: cx, cy: cy, maxR: maxR)
+        : polarToXY(tier: placement.tier, angle: placement.angle, cx: cx, cy: cy, maxR: maxR)
+      let radius = max(placement.tier.bubbleSize(at: zoomLevel), 56) / 2 + 12
+      if hypot(location.x - pos.x, location.y - pos.y) <= radius { return true }
+    }
+    return false
   }
 
   private func nearestTier(to location: CGPoint, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> FriendshipTier {

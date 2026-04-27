@@ -99,8 +99,7 @@ struct HaloSpacePeekSheet: View {
       Spacer(minLength: 0)
     }
     .padding(.horizontal, 14).padding(.vertical, 10)
-    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 14))
-    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: 14))
     .padding(.horizontal, 20).padding(.bottom, 16)
   }
 
@@ -115,8 +114,7 @@ struct HaloSpacePeekSheet: View {
       }
       reactionsRow(for: post)
     }
-    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 18))
-    .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(HaloTheme.hairlineSoft, lineWidth: 0.5))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: 18))
     .clipShape(RoundedRectangle(cornerRadius: 18))
   }
 
@@ -253,16 +251,14 @@ private struct DemoPost: Identifiable {
 // MARK: - shared sheet background
 
 func haloSheetBackground() -> some View {
-  ZStack {
-    HaloTheme.surfaceModal
-    Rectangle().fill(.ultraThinMaterial)
-  }
-  .overlay(
-    UnevenRoundedRectangle(
-      cornerRadii: .init(topLeading: HaloTheme.sheetCornerRadius, topTrailing: HaloTheme.sheetCornerRadius)
+  Rectangle()
+    .fill(.clear)
+    .haloGlass(
+      in: UnevenRoundedRectangle(
+        cornerRadii: .init(topLeading: HaloTheme.sheetCornerRadius, topTrailing: HaloTheme.sheetCornerRadius)
+      ),
+      interactive: false
     )
-    .strokeBorder(HaloTheme.hairline, lineWidth: 0.5)
-  )
   .clipShape(
     UnevenRoundedRectangle(
       cornerRadii: .init(topLeading: HaloTheme.sheetCornerRadius, topTrailing: HaloTheme.sheetCornerRadius)

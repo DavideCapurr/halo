@@ -21,9 +21,7 @@ struct TopBarView: View {
             .foregroundStyle(.white.opacity(0.95))
         }
         .padding(.leading, 8).padding(.trailing, 12).padding(.vertical, 7)
-        .background(.white.opacity(0.04), in: Capsule())
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(Capsule().strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+        .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(mood, l: 0.58), interactive: true)
       }
       .buttonStyle(.plain)
 
@@ -34,9 +32,7 @@ struct TopBarView: View {
           .font(.system(size: 15, weight: .regular))
           .foregroundStyle(.white.opacity(0.75))
           .frame(width: 36, height: 36)
-          .background(.white.opacity(0.04), in: Circle())
-          .background(.ultraThinMaterial, in: Circle())
-          .overlay(Circle().strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+          .haloGlass(in: Circle(), interactive: true)
       }
       .buttonStyle(.plain)
     }

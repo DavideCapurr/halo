@@ -39,10 +39,13 @@ struct ReactionBarView: View {
           }
           .frame(maxWidth: .infinity)
           .padding(.vertical, 8)
-          .background(
-            on ? Color.white.opacity(0.06) : Color.clear,
-            in: RoundedRectangle(cornerRadius: 10)
+          .haloGlass(
+            in: RoundedRectangle(cornerRadius: 10),
+            tint: on ? MoodPalette.auraColor(accentMood, l: 0.55) : nil,
+            interactive: true,
+            stroke: on ? HaloTheme.glassStroke : .clear
           )
+          .opacity(on ? 1 : 0.72)
         }
         .buttonStyle(.plain)
       }

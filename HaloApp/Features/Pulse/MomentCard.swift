@@ -56,14 +56,7 @@ struct MomentCard: View {
     }
     .padding(.horizontal, 18)
     .padding(.vertical, 14)
-    .background(
-      RoundedRectangle(cornerRadius: 22)
-        .fill(.white.opacity(0.04))
-        .overlay(
-          RoundedRectangle(cornerRadius: 22)
-            .strokeBorder(borderColor, lineWidth: borderWidth)
-        )
-    )
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: 22), stroke: borderColor)
     .contentShape(RoundedRectangle(cornerRadius: 22))
     .overlay(alignment: .topTrailing) {
       ForEach(Array(livePings), id: \.key) { (id, kind) in
@@ -291,7 +284,7 @@ struct MomentCard: View {
       .lineLimit(3)
       .padding(.horizontal, 12).padding(.vertical, 10)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
+      .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
   }
 
   private func audioPreview(_ p: PostPreview) -> some View {
@@ -316,7 +309,7 @@ struct MomentCard: View {
       Spacer(minLength: 0)
     }
     .padding(.horizontal, 12).padding(.vertical, 8)
-    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
   }
 
   // MARK: - reactions (tier-aware)
@@ -366,7 +359,7 @@ struct MomentCard: View {
             }
           }
           .padding(.horizontal, 6).padding(.vertical, 4)
-          .background(.white.opacity(0.04), in: Capsule())
+          .haloGlass(in: Capsule(), interactive: true)
         }
         .buttonStyle(.plain)
       }
