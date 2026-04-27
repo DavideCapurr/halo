@@ -169,12 +169,12 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 
 ## Fase 5 — HaloSpace (profilo per-persona)
 
-- [ ] `HaloSpaceView` completo — griglia/lista post non scaduti dell'utente
+- [x] `HaloSpaceView` completo — griglia/lista post non scaduti dell'utente
 - [x] `PostCardView` con media (foto/testo/audio), caption, mood tag, decay indicator
 - [x] `ReactionBarView` — 6 glyph (`ReactionGlyph`), stato selezionato, count/actor tier-aware
-- [ ] Swipe left/right tra persone dello stesso tier
-- [ ] Header: portrait grande + display name + handle + tier badge + vibe attiva
-- [ ] Sezione "HaloSpace vuoto" se nessun post attivo (stato empty con mood)
+- [x] Swipe left/right tra persone dello stesso tier
+- [x] Header: portrait grande + display name + handle + tier badge + vibe attiva
+- [x] Sezione "HaloSpace vuoto" se nessun post attivo (stato empty con mood)
 
 ---
 
