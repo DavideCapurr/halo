@@ -42,8 +42,16 @@ final class FeedViewModel {
   var isLoading: Bool = false
   var lastError: String?
 
+  // Realtime: in `.live` ci si sottoscrive a FeedRealtime; in `.seed` resta nil.
+  private let realtime = FeedRealtime()
+  private var realtimeTask: Task<Void, Never>?
+
   init(bootstrap: Bootstrap = .seed) {
     self.bootstrap = bootstrap
+  }
+
+  deinit {
+    realtimeTask?.cancel()
   }
 
   // MARK: - load
@@ -58,7 +66,31 @@ final class FeedViewModel {
     case .live:
       // TODO: cablato a PostsService/VibesService quando Auth è pronta.
       self.people = SeedPeople.all
+      startRealtime()
     }
+  }
+
+  /// Sottoscrivi i cambi live e re-load del feed quando arriva un evento.
+  private func startRealtime() {
+    realtimeTask?.cancel()
+    realtimeTask = Task { @MainActor [weak self] in
+      guard let self else { return }
+      for await event in self.realtime.subscribe() {
+        // Strategia minimale: marca lastError nil e ricarica.
+        // Quando MomentItem reali sostituiscono DemoPerson, qui verrà fatto un
+        // upsert mirato (single-event) invece del re-fetch completo.
+        switch event {
+        case .newPost, .newVibe, .newReaction:
+          await self.load()
+        }
+      }
+    }
+  }
+
+  func stopRealtime() async {
+    realtimeTask?.cancel()
+    realtimeTask = nil
+    await realtime.disconnect()
   }
 
   // MARK: - derivate
