@@ -52,4 +52,31 @@ final class ProfilesService {
       .execute()
       .value
   }
+
+  /// Discovery: account pubblici recenti, ordinati per `created_at` desc.
+  /// Usato dalla pagina di esplorazione per agganciare celeb/brand/artist.
+  func discoverPublic(limit: Int = 30) async throws -> [Profile] {
+    try await client
+      .from("profiles")
+      .select()
+      .eq("is_public", value: true)
+      .order("created_at", ascending: false)
+      .limit(limit)
+      .execute()
+      .value
+  }
+
+  /// Ricerca filtrata ai soli account pubblici.
+  func searchPublic(handle prefix: String) async throws -> [Profile] {
+    let trimmed = prefix.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return [] }
+    return try await client
+      .from("profiles")
+      .select()
+      .eq("is_public", value: true)
+      .ilike("handle", pattern: "\(trimmed)%")
+      .limit(20)
+      .execute()
+      .value
+  }
 }

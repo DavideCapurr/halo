@@ -194,7 +194,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [x] Profili pubblici visibili in search senza follow
 - [x] Follow di profilo pubblico = asimmetrico → catena asteroidi
 - [x] Post con `min_tier = nebula` da profilo pubblico = visibile a chiunque segua
-- [ ] Discovery/search per account pubblici
+- [x] Discovery/search per account pubblici
 
 ---
 
