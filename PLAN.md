@@ -160,10 +160,10 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [x] Ogni tap più largo mostra warning soft ("anche 12 persone in più lo vedranno")
 
 ### Audio
-- [ ] `AudioRecorderView` (già esiste stub) — completare
-- [ ] Max durata: 60 secondi
-- [ ] Waveform visiva durante registrazione
-- [ ] Playback inline nella card
+- [x] `AudioRecorderView` (già esiste stub) — completare
+- [x] Max durata: 60 secondi
+- [x] Waveform visiva durante registrazione
+- [x] Playback inline nella card
 
 ---
 
