@@ -54,6 +54,26 @@ final class AuthService {
     return id
   }
 
+  // MARK: - Email OTP
+
+  /// Manda un codice OTP via email (magic link disabled, solo OTP a 6 cifre).
+  func requestEmailOTP(email: String) async throws {
+    try await client.auth.signInWithOTP(email: email, shouldCreateUser: true)
+  }
+
+  /// Verifica il codice OTP e ritorna (creandolo se manca) il profilo dell'utente.
+  func verifyEmailOTP(email: String, code: String) async throws -> Profile {
+    _ = try await client.auth.verifyOTP(email: email, token: code, type: .email)
+    if let existing = try? await ProfilesService.shared.currentProfile() {
+      return existing
+    }
+    let userId = try requireUserId()
+    let local = email.split(separator: "@").first.map(String.init) ?? "halo"
+    let new = Profile(id: userId, handle: sanitizeHandle(local), displayName: "Halo")
+    try await ProfilesService.shared.update(new)
+    return new
+  }
+
   // MARK: - Bootstrap helpers
 
   private func bootstrapHandle(from credential: ASAuthorizationAppleIDCredential) -> String {

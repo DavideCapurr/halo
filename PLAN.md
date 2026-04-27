@@ -180,7 +180,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 
 ## Fase 6 — Auth & onboarding
 
-- [ ] `SignInView` — Sign in with Apple + email OTP fallback
+- [x] `SignInView` — Sign in with Apple + email OTP fallback
 - [ ] `OnboardingView` — scegli handle, display name, upload avatar
 - [ ] `InitialInnerCircleView` — aggiungi primi 1-5 Inner (da contatti o handle)
 - [ ] `RootView` — routing auth → onboarding → home
