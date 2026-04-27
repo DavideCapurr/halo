@@ -190,10 +190,10 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 
 ## Fase 7 — Prodotto pubblico: celeb & profili pubblici
 
-- [ ] `is_public` flag su `profiles` (migration DB)
-- [ ] Profili pubblici visibili in search senza follow
-- [ ] Follow di profilo pubblico = asimmetrico → catena asteroidi
-- [ ] Post con `min_tier = nebula` da profilo pubblico = visibile a chiunque segua
+- [x] `is_public` flag su `profiles` (migration DB)
+- [x] Profili pubblici visibili in search senza follow
+- [x] Follow di profilo pubblico = asimmetrico → catena asteroidi
+- [x] Post con `min_tier = nebula` da profilo pubblico = visibile a chiunque segua
 - [ ] Discovery/search per account pubblici
 
 ---
