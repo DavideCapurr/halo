@@ -146,7 +146,7 @@ Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
 - [x] Rifare `ComposePostView` come `VibeFirstComposeView`
 - [x] Step 1: mood chip selector (obbligatorio, anti-cringe: solo un colore)
 - [x] Step 2: nota testuale 60ch (opzionale, skip esplicito)
-- [ ] Step 3: "Vuoi aggiungere un momento?" → [Foto] [Testo] [Audio] [Salta]
+- [x] Step 3: "Vuoi aggiungere un momento?" → [Foto] [Testo] [Audio] [Salta]
 - [ ] Step 4: tier selector — mostra **numero reale** ("condividi con i tuoi 4 Inner")
 - [ ] CTA: "Manda" (non "Pubblica", non "Posta")
 

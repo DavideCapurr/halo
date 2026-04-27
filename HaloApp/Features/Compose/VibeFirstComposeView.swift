@@ -189,13 +189,68 @@ struct VibeFirstComposeView: View {
     }
   }
 
-  // MARK: - step 3: momento (placeholder; completato nelle microtappe successive)
+  // MARK: - step 3: momento
 
   private var momentoStep: some View {
     VStack(alignment: .leading, spacing: 12) {
-      stepHeading(eyebrow: "STEP 3 · MOMENTO", title: "vuoi aggiungere qualcosa?")
-      Text("Foto / Testo / Audio / Salta")
-        .foregroundStyle(.white.opacity(0.6))
+      stepHeading(eyebrow: "STEP 3 · MOMENTO", title: "vuoi aggiungere un momento?")
+      Text("se non aggiungi nulla, condividi solo la presenza")
+        .font(.system(size: 13))
+        .foregroundStyle(Color.white.opacity(0.55))
+
+      momentoOptions
+      if momento == .testo {
+        TextField("scrivi qui qualcosa…", text: $note, axis: .vertical)
+          .textFieldStyle(.plain)
+          .font(.system(size: 15))
+          .foregroundStyle(.white)
+          .lineLimit(6, reservesSpace: true)
+          .padding(.horizontal, 14).padding(.vertical, 12)
+          .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 14))
+          .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(HaloTheme.hairline, lineWidth: 0.5))
+      }
+    }
+  }
+
+  @ViewBuilder
+  private var momentoOptions: some View {
+    let items: [(Momento, String, String)] = [
+      (.foto,  "Foto",  "photo"),
+      (.testo, "Testo", "text.alignleft"),
+      (.audio, "Audio", "mic.fill"),
+      (.salta, "Salta", "forward.end")
+    ]
+    LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 10) {
+      ForEach(items, id: \.0) { (kind, label, icon) in
+        let on = momento == kind
+        Button {
+          momento = kind
+          UISelectionFeedbackGenerator().selectionChanged()
+        } label: {
+          HStack(spacing: 10) {
+            Image(systemName: icon)
+              .font(.system(size: 16, weight: .regular))
+              .foregroundStyle(on ? Color.white : Color.white.opacity(0.55))
+              .frame(width: 22)
+            Text(label)
+              .font(.system(size: 15, weight: on ? .semibold : .medium))
+              .foregroundStyle(on ? .white : Color.white.opacity(0.78))
+            Spacer()
+          }
+          .padding(.horizontal, 14).padding(.vertical, 14)
+          .background(
+            on ? MoodPalette.auraRing(mood, alpha: 0.20) : Color.white.opacity(0.04),
+            in: RoundedRectangle(cornerRadius: 14)
+          )
+          .overlay(
+            RoundedRectangle(cornerRadius: 14).strokeBorder(
+              on ? MoodPalette.auraRing(mood, alpha: 0.6) : HaloTheme.hairline,
+              lineWidth: on ? 1 : 0.5
+            )
+          )
+        }
+        .buttonStyle(.plain)
+      }
     }
   }
 
