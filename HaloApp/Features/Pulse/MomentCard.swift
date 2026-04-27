@@ -23,6 +23,9 @@ struct MomentCard: View {
         if person.hasActiveVibe {
           vibeNote
         }
+        if person.lastPostAt != nil, let preview = postPreview {
+          postWithDecayRing(preview)
+        }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -140,6 +143,136 @@ struct MomentCard: View {
     .padding(.vertical, 4)
     .background(.white.opacity(0.05), in: Capsule())
     .overlay(Capsule().strokeBorder(Color.white.opacity(0.10), lineWidth: 0.5))
+  }
+
+  // MARK: - post inline + decay
+
+  /// Tipo + caption di anteprima per il post inline. nil = non mostrare slot.
+  /// Demo: usa `note` come caption e una `Kind` derivata dall'id (per varietà).
+  private struct PostPreview {
+    enum Kind { case photo, text, audio }
+    let kind: Kind
+    let caption: String
+  }
+
+  private var postPreview: PostPreview? {
+    guard person.lastPostAt != nil else { return nil }
+    // Deterministico per persona: distribuzione 50% testo, 35% foto, 15% audio
+    var h: UInt32 = 5381
+    for u in person.id.unicodeScalars { h = h &* 33 &+ u.value }
+    let bucket = h % 100
+    let kind: PostPreview.Kind = (bucket < 35) ? .photo : (bucket < 85) ? .text : .audio
+    let caption = person.note.isEmpty
+      ? (kind == .text ? "qualcosa di non detto" : "")
+      : person.note
+    return PostPreview(kind: kind, caption: caption)
+  }
+
+  /// Decay 0..1 del ring intorno al post: 1 = appena postato, 0 = ≥ 72h.
+  private var postDecay: Double {
+    guard let t = person.lastPostAt else { return 0 }
+    let age = Date.now.timeIntervalSince(t)
+    let window: TimeInterval = 72 * 3600
+    return min(max((window - age) / window, 0), 1)
+  }
+
+  private func postWithDecayRing(_ preview: PostPreview) -> some View {
+    HStack(alignment: .top, spacing: 10) {
+      // Decay ring: anello sottile che si svuota nelle 72h.
+      ZStack {
+        Circle()
+          .stroke(Color.white.opacity(0.10), lineWidth: 1.5)
+          .frame(width: 22, height: 22)
+        Circle()
+          .trim(from: 0, to: postDecay)
+          .stroke(MoodPalette.auraColor(person.mood, l: 0.78),
+                  style: .init(lineWidth: 1.8, lineCap: .round))
+          .rotationEffect(.degrees(-90))
+          .frame(width: 22, height: 22)
+        Image(systemName: postIcon(preview.kind))
+          .font(.system(size: 9, weight: .semibold))
+          .foregroundStyle(Color.white.opacity(0.75))
+      }
+      .accessibilityLabel("decay")
+
+      // Body inline a seconda del tipo.
+      Group {
+        switch preview.kind {
+        case .photo: photoPreview(preview)
+        case .text:  textPreview(preview)
+        case .audio: audioPreview(preview)
+        }
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    .padding(.top, 4)
+  }
+
+  private func postIcon(_ k: PostPreview.Kind) -> String {
+    switch k {
+    case .photo: return "photo.fill"
+    case .text:  return "text.alignleft"
+    case .audio: return "waveform"
+    }
+  }
+
+  private func photoPreview(_ p: PostPreview) -> some View {
+    ZStack(alignment: .bottomLeading) {
+      LinearGradient(
+        colors: [
+          MoodPalette.auraColor(person.mood, l: 0.50),
+          MoodPalette.auraColor(person.mood, l: 0.25),
+        ],
+        startPoint: .topLeading, endPoint: .bottomTrailing
+      )
+      if !p.caption.isEmpty {
+        Text(p.caption)
+          .font(.system(size: 12)).italic()
+          .foregroundStyle(Color.white.opacity(0.85))
+          .padding(.horizontal, 10).padding(.vertical, 6)
+          .background(Color.black.opacity(0.25))
+          .clipShape(Capsule())
+          .padding(8)
+      }
+    }
+    .frame(height: 96)
+    .clipShape(RoundedRectangle(cornerRadius: 12))
+  }
+
+  private func textPreview(_ p: PostPreview) -> some View {
+    Text(p.caption)
+      .font(.system(size: 13))
+      .kerning(-0.05)
+      .foregroundStyle(Color.white.opacity(0.85))
+      .lineLimit(3)
+      .padding(.horizontal, 12).padding(.vertical, 10)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
+  }
+
+  private func audioPreview(_ p: PostPreview) -> some View {
+    HStack(spacing: 10) {
+      ZStack {
+        Circle().fill(MoodPalette.auraColor(person.mood, l: 0.7))
+        Image(systemName: "play.fill")
+          .font(.system(size: 10, weight: .bold))
+          .foregroundStyle(.white)
+          .offset(x: 1)
+      }
+      .frame(width: 28, height: 28)
+      // pseudo-waveform statica
+      HStack(spacing: 2) {
+        ForEach(0..<18, id: \.self) { i in
+          Capsule()
+            .fill(Color.white.opacity(0.20 + (Double(i) / 22) * 0.5))
+            .frame(width: 2.5, height: CGFloat(6 + abs(sin(Double(i) * 1.3)) * 14))
+        }
+      }
+      .frame(height: 22)
+      Spacer(minLength: 0)
+    }
+    .padding(.horizontal, 12).padding(.vertical, 8)
+    .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
   }
 
   /// "Adesso" se < 30 min, altrimenti "Xm" / "Xh" / "Xg".
