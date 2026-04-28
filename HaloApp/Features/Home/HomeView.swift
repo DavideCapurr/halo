@@ -39,7 +39,7 @@ struct HomeView: View {
 
       currentTab
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.bottom, 92) // tab-bar clearance
+        .padding(.bottom, 76) // tab-bar clearance
 
       VStack(spacing: 0) {
         Spacer(minLength: 0)
@@ -119,7 +119,12 @@ struct HomeView: View {
         onVibeTap: { showVibeSetter = true },
         onSearchTap: {}
       )
-      .padding(.top, 8)
+      .padding(.top, 10)
+
+      Text("chi è sveglio.")
+        .font(HaloType.serif(14))
+        .foregroundStyle(HaloInk.creamLow)
+        .padding(.top, 10)
 
       fieldArea
         .frame(maxHeight: .infinity)

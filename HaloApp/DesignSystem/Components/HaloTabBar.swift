@@ -1,17 +1,8 @@
 import SwiftUI
 import HaloShared
 
-/// Halo v2 floating glass tab bar.
-///
-/// Replaces the iOS-default `TabView` chrome with a single glass capsule
-/// that floats above the content. Three primary tabs + a centered compose
-/// "halo" button that always carries the user's current vibe colour.
-///
-/// Visual language:
-///  - hairline glass capsule with soft inner shadow
-///  - inactive tab = mono small-caps label (no icon-glyph to avoid noise)
-///  - active tab = italic serif label + bronze underline dot
-///  - compose = centered crest button (the halo ring) tinted with vibe
+/// Bottom strip editoriale: una hairline, tre comandi tipografici e un solo
+/// accento bronzo. Niente capsule glass: più 2016, meno giocattolo.
 struct HaloTabBar: View {
   enum Tab: String, Hashable, CaseIterable {
     case orbit
@@ -33,47 +24,29 @@ struct HaloTabBar: View {
   var onCompose: () -> Void = {}
 
   var body: some View {
-    // Bar layout: orbita · pulse · ◯ compose · tu
-    HStack(spacing: 0) {
-      tabSlot(.orbit)
-      tabSlot(.pulse)
-      composeSlot
-      tabSlot(.profile)
+    VStack(spacing: 14) {
+      Rectangle()
+        .fill(HaloInk.creamLine)
+        .frame(height: 0.5)
+
+      HStack(alignment: .center, spacing: 0) {
+        tabSlot(.orbit)
+        tabSlot(.pulse)
+        composeSlot
+        tabSlot(.profile)
+      }
     }
-    .padding(.horizontal, 14)
-    .padding(.vertical, 10)
-    .frame(maxWidth: .infinity)
-    .background(barBackground)
-    .overlay(
-      Capsule()
-        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
-    )
-    .shadow(color: Color.black.opacity(0.55), radius: 24, y: 14)
-    .shadow(color: HaloInk.bronzeGlow, radius: 12, y: 0)
     .padding(.horizontal, 22)
-  }
-
-  // MARK: - background (layered glass)
-
-  private var barBackground: some View {
-    ZStack {
-      // Warm-tinted near-black backstop so the glass reads on any backdrop.
-      Capsule().fill(HaloInk.nightSurface.opacity(0.55))
-      // Real material blur — what makes it feel like glass.
-      Capsule().fill(.ultraThinMaterial)
-      // Inner shimmer — top highlight, bottom darkening, to catch the eye.
-      Capsule()
-        .fill(
-          LinearGradient(
-            colors: [
-              Color.white.opacity(0.05),
-              Color.clear,
-              Color.black.opacity(0.18),
-            ],
-            startPoint: .top, endPoint: .bottom
-          )
-        )
-    }
+    .padding(.top, 2)
+    .padding(.bottom, 4)
+    .background(
+      LinearGradient(
+        colors: [.clear, HaloInk.nightSurface.opacity(0.72), HaloInk.nightSurface.opacity(0.92)],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      .ignoresSafeArea(edges: .bottom)
+    )
   }
 
   // MARK: - tab slot
@@ -83,25 +56,19 @@ struct HaloTabBar: View {
     return Button {
       onSelect(tab)
     } label: {
-      VStack(spacing: 5) {
+      HStack(spacing: 4) {
         if isActive {
-          Text(tab.label.lowercased())
-            .font(HaloType.serif(15))
-            .foregroundStyle(HaloInk.cream)
-            .kerning(-0.2)
-        } else {
-          Text(tab.label)
-            .haloEyebrow(HaloInk.creamMute, size: 9, tracking: 2.4)
+          Text("·")
+            .foregroundStyle(HaloInk.bronze)
         }
-
-        // 4px bronze dot — only on active tab.
-        Circle()
-          .fill(isActive ? HaloInk.bronze : Color.clear)
-          .frame(width: 4, height: 4)
-          .shadow(color: HaloInk.bronzeGlow, radius: isActive ? 4 : 0)
+        Text(tab.label)
       }
+      .font(HaloType.mono(9.5, weight: .medium))
+      .kerning(2.0)
+      .textCase(.uppercase)
+      .foregroundStyle(isActive ? HaloInk.cream : HaloInk.creamMute)
       .frame(maxWidth: .infinity)
-      .frame(height: 36)
+      .frame(height: 30)
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
@@ -113,35 +80,19 @@ struct HaloTabBar: View {
 
   private var composeSlot: some View {
     Button(action: onCompose) {
-      ZStack {
-        // Halo of vibe colour behind the crest — soft glow.
+      HStack(spacing: 5) {
         Circle()
-          .fill(MoodPalette.auraColor(selfMood, l: 0.55))
-          .frame(width: 38, height: 38)
-          .blur(radius: 10)
-          .opacity(0.55)
-
-        // Glass disc.
-        Circle()
-          .fill(.ultraThinMaterial)
-          .overlay(
-            Circle().strokeBorder(HaloInk.cream.opacity(0.35), lineWidth: 0.8)
-          )
-          .frame(width: 36, height: 36)
-
-        // Centered crest = a thin ring (the "halo" itself).
-        Circle()
-          .strokeBorder(HaloInk.cream, lineWidth: 1.1)
-          .frame(width: 16, height: 16)
-
-        // Tiny bronze tick to signal "tap → publish".
-        Circle()
-          .fill(HaloInk.bronze)
-          .frame(width: 4, height: 4)
-          .offset(x: 12, y: -10)
+          .strokeBorder(HaloInk.cream, lineWidth: 1.0)
+          .frame(width: 12, height: 12)
+        Text("manda")
       }
-      .frame(width: 56, height: 56)
-      .contentShape(Circle())
+      .font(HaloType.mono(9.5, weight: .medium))
+      .kerning(2.0)
+      .textCase(.uppercase)
+      .foregroundStyle(HaloInk.cream)
+      .frame(maxWidth: .infinity)
+      .frame(height: 30)
+      .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
     .accessibilityLabel("Pubblica")

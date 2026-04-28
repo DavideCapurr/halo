@@ -36,11 +36,12 @@ struct OrbitalFieldView: View {
       let W = geo.size.width
       let H = geo.size.height
       let cx = W / 2
-      let cy = H / 2
+      let cy = H * 0.52
       // Espande lateralmente: l'anello esterno tocca quasi i bordi.
       let maxR = min(W, H) * 0.56
       // Solo follow mutuali finiscono sugli anelli; gli asimmetrici sono asteroidi.
       let mutuals = people.filter(\.isMutual)
+      let counts = Dictionary(grouping: mutuals, by: \.tier).mapValues(\.count)
       let placements = OrbitalLayout.placements(for: mutuals.map { ($0.id, $0.tier) })
       let placementByPerson = Dictionary(uniqueKeysWithValues: placements.map { ($0.personId, $0) })
 
@@ -51,6 +52,7 @@ struct OrbitalFieldView: View {
           OrbitalRing(
             tier: tier,
             diameter: tier.ringRadius(at: zoomLevel) * maxR * 2,
+            count: counts[tier, default: 0],
             active: drag?.ghostTier == tier
           )
           .position(x: cx, y: cy)

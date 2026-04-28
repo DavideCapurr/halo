@@ -56,23 +56,23 @@ extension FriendshipTier {
     switch zoom {
     case .innerOnly:
       switch self {
-      case .inner:  return self.bubbleSize * 2.05
-      case .close:  return self.bubbleSize * 1.45
-      case .orbit:  return self.bubbleSize * 1.35
+      case .inner:  return self.bubbleSize * 2.15
+      case .close:  return self.bubbleSize * 1.55
+      case .orbit:  return self.bubbleSize * 1.42
       case .nebula: return self.bubbleSize * 1.25
       }
     case .innerClose:
       switch self {
-      case .inner:  return self.bubbleSize * 1.55
-      case .close:  return self.bubbleSize * 1.35
-      case .orbit:  return self.bubbleSize * 1.25
+      case .inner:  return self.bubbleSize * 1.68
+      case .close:  return self.bubbleSize * 1.46
+      case .orbit:  return self.bubbleSize * 1.30
       case .nebula: return self.bubbleSize * 1.18
       }
     case .full:
       switch self {
-      case .inner:  return self.bubbleSize * 1.08
-      case .close:  return self.bubbleSize * 1.16
-      case .orbit:  return self.bubbleSize * 1.32
+      case .inner:  return self.bubbleSize * 1.18
+      case .close:  return self.bubbleSize * 1.24
+      case .orbit:  return self.bubbleSize * 1.38
       case .nebula: return self.bubbleSize * 1.24
       }
     case .asteroids:

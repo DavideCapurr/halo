@@ -1,12 +1,8 @@
 import SwiftUI
 import HaloShared
 
-/// Bolla portrait-first del design Deep Space. Layer dall'esterno verso l'interno:
-///  1. ambient aura glow (radial gradient, intensità = decay del post)
-///  2. ring colorato (vibe color se attiva, neutro altrimenti); pulsa solo se vibe attiva
-///  3. portrait disc clippato a cerchio
-///  4. dot bianco "Adesso" se ha postato negli ultimi 30 min
-///  5. label handle sotto (solo Inner/Close)
+/// Bolla editoriale v2: monogram tile monocromatico, mood ridotto a micro-dot,
+/// underline bronzo per "adesso". Niente aura rainbow: la forma diventa brand.
 struct BubbleView: View {
   let personId: String
   let handle: String
@@ -23,16 +19,6 @@ struct BubbleView: View {
   /// Quanto fa è stato pubblicato l'ultimo post; alimenta il glow decay (72h max).
   var lastPostAt: Date? = nil
 
-  private var ringWidth: CGFloat { max(2.5, size * 0.045) }
-
-  /// Tinta vibe se attiva, altrimenti grigio caldo neutro.
-  private var ringColor: Color {
-    hasActiveVibe ? MoodPalette.auraColor(mood, l: 0.72) : Color.white.opacity(0.18)
-  }
-  private var ringGlow: Color {
-    hasActiveVibe ? MoodPalette.auraRing(mood, alpha: 0.55) : Color.white.opacity(0.10)
-  }
-
   /// Decay 0..1 del glow: 1 = appena postato, 0 = ≥ 72h fa o nessun post.
   private var glowDecay: Double {
     guard let t = lastPostAt else { return 0 }
@@ -48,66 +34,140 @@ struct BubbleView: View {
     return hasNew
   }
 
+  private var monogram: String {
+    let source = handle.isEmpty ? personId : handle
+    return String(source.prefix(1)).uppercased()
+  }
+
+  private var tile: MonogramTileSpec {
+    MonogramTileSpec(id: personId)
+  }
+
   var body: some View {
     ZStack {
-      // 1. ambient aura glow — intensità = glowDecay; pulsa solo se vibe attiva
-      TimelineView(.animation(minimumInterval: 1.0 / 24, paused: !(pulsing && hasActiveVibe))) { ctx in
-        let period = 3.0 + Double(Int(size) % 3)
-        let t = ctx.date.timeIntervalSinceReferenceDate
-        let phase = sin((t / period) * .pi * 2)
-        let pulseOpacity = (pulsing && hasActiveVibe) ? (0.55 + 0.20 * phase) : 0.55
-        // Mix tra "ring glow vibe" (forte se attiva) e decay del post.
-        let baseFloor: Double = hasActiveVibe ? 0.35 : 0.15
-        let postBoost: Double = 0.65 * glowDecay
-        let opacity = pulseOpacity * (baseFloor + postBoost)
-        Circle()
-          .fill(
-            RadialGradient(
-              colors: [ringGlow, .clear],
-              center: .center,
-              startRadius: 0,
-              endRadius: size * 0.95
-            )
-          )
-          .frame(width: size * 1.44, height: size * 1.44)
-          .opacity(opacity)
-      }
-      .allowsHitTesting(false)
+      MonogramTile(letter: monogram, spec: tile, size: size, ringTone: hasActiveVibe ? .inner : .hair)
 
-      // 2 + 3. ring + portrait
-      ZStack {
-        Circle()
-          .fill(ringColor)
-          .frame(width: size, height: size)
-          .shadow(color: ringGlow, radius: size * 0.20 * (0.6 + 0.4 * glowDecay))
+      Circle()
+        .fill(MoodPalette.auraColor(mood, l: hasActiveVibe ? 0.74 : 0.46))
+        .frame(width: max(5, size * 0.12), height: max(5, size * 0.12))
+        .overlay(Circle().stroke(HaloInk.nightSurface, lineWidth: 1))
+        .opacity(hasActiveVibe ? 0.95 : 0.45)
+        .offset(x: size * 0.43, y: -size * 0.43)
 
-        PortraitView(personId: personId, size: size - ringWidth * 2)
-          .background(HaloTheme.portraitBacking, in: Circle())
-      }
-
-      // 4. "Adesso" indicator
       if isAdesso {
-        Circle()
-          .fill(Color.white)
-          .frame(width: max(12, size * 0.18), height: max(12, size * 0.18))
-          .overlay(Circle().stroke(Color.black.opacity(0.4), lineWidth: 2))
-          .shadow(color: .white.opacity(0.9), radius: 5)
-          .offset(x: size * 0.42, y: -size * 0.42)
+        Capsule()
+          .fill(HaloInk.bronze)
+          .frame(width: size * 0.44, height: 1.2)
+          .shadow(color: HaloInk.bronzeGlow, radius: 4)
+          .offset(y: size * 0.52 + 4)
       }
 
-      // 5. handle label
       if showName {
         Text(handle)
-          .font(.system(size: max(10, size * 0.12), weight: .medium, design: .rounded))
-          .kerning(-0.1)
-          .foregroundStyle(Color.white.opacity(0.75))
+          .font(HaloType.serif(max(11, size * 0.17)))
+          .foregroundStyle(HaloInk.creamLow)
           .shadow(color: .black.opacity(0.55), radius: 6, y: 1)
           .lineLimit(1)
           .fixedSize()
-          .offset(y: size * 0.5 + 12)
+          .offset(y: size * 0.5 + 14)
       }
     }
     .frame(width: size, height: size)
+  }
+}
+
+struct MonogramTile: View {
+  enum RingTone {
+    case hair
+    case inner
+    case hero
+  }
+
+  let letter: String
+  let spec: MonogramTileSpec
+  let size: CGFloat
+  var ringTone: RingTone = .hair
+
+  private var ringColor: Color {
+    switch ringTone {
+    case .hair: return HaloInk.creamHair
+    case .inner: return HaloInk.cream.opacity(0.32)
+    case .hero: return HaloInk.bronze.opacity(0.82)
+    }
+  }
+
+  private var ringWidth: CGFloat {
+    ringTone == .hero ? 1.4 : 0.8
+  }
+
+  var body: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: size * 0.12, style: .continuous)
+        .fill(spec.background)
+        .overlay(
+          RadialGradient(
+            colors: [Color.white.opacity(0.06), .clear],
+            center: spec.hotspot,
+            startRadius: 0,
+            endRadius: size * 0.68
+          )
+        )
+        .overlay(
+          RoundedRectangle(cornerRadius: size * 0.12, style: .continuous)
+            .strokeBorder(ringColor, lineWidth: ringWidth)
+        )
+        .shadow(color: .black.opacity(0.46), radius: size * 0.18, y: size * 0.08)
+
+      Text(letter)
+        .font(HaloType.serif(size * 0.54))
+        .foregroundStyle(spec.ink)
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
+        .offset(y: size * 0.02)
+        .rotationEffect(.degrees(spec.rotation))
+        .shadow(color: .black.opacity(0.45), radius: 0, y: 1)
+    }
+    .frame(width: size, height: size)
+  }
+}
+
+struct MonogramTileSpec {
+  let background: Color
+  let ink: Color
+  let hotspot: UnitPoint
+  let rotation: Double
+
+  init(id: String) {
+    let h = Self.hash(id + "|tile")
+    let backgrounds = [
+      Color(red: 0.096, green: 0.086, blue: 0.078),
+      Color(red: 0.122, green: 0.110, blue: 0.096),
+      Color(red: 0.074, green: 0.078, blue: 0.084),
+      Color(red: 0.128, green: 0.102, blue: 0.088),
+      Color(red: 0.086, green: 0.082, blue: 0.078),
+      Color(red: 0.112, green: 0.100, blue: 0.104),
+    ]
+    let inks = [
+      HaloInk.cream.opacity(0.88),
+      HaloInk.creamLow,
+      Color(red: 0.72, green: 0.66, blue: 0.56),
+      Color(red: 0.62, green: 0.58, blue: 0.52),
+    ]
+    background = backgrounds[Int(h % UInt32(backgrounds.count))]
+    ink = inks[Int((h >> 5) % UInt32(inks.count))]
+    hotspot = UnitPoint(
+      x: 0.26 + CGFloat((h >> 8) % 50) / 100.0,
+      y: 0.18 + CGFloat((h >> 13) % 48) / 100.0
+    )
+    rotation = Double(Int((h >> 19) % 7)) - 3.0
+  }
+
+  private static func hash(_ string: String, seed: UInt32 = 2166136261) -> UInt32 {
+    var h = seed
+    for u in string.unicodeScalars {
+      h = (h ^ u.value) &* 16777619
+    }
+    return h
   }
 }
 

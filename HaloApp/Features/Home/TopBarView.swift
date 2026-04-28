@@ -1,7 +1,7 @@
 import SwiftUI
 import HaloShared
 
-/// TopBar: pill "la tua vibe · <mood>" + bottone search.
+/// TopBar v2: wordmark + data, con vibe ridotta a micro-segnale.
 struct TopBarView: View {
   let mood: Mood
   var onVibeTap: () -> Void = {}
@@ -10,34 +10,62 @@ struct TopBarView: View {
   var body: some View {
     HStack {
       Button(action: onVibeTap) {
-        HStack(spacing: 8) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+          HaloWordmark()
           Circle()
-            .fill(MoodPalette.auraColor(mood, l: 0.8))
-            .frame(width: 10, height: 10)
-            .shadow(color: MoodPalette.auraRing(mood, alpha: 0.5), radius: 5)
-          Text("la tua vibe · \(mood.rawValue)")
-            .font(.system(size: 13, weight: .medium))
-            .kerning(-0.1)
-            .foregroundStyle(.white.opacity(0.95))
+            .fill(MoodPalette.auraColor(mood, l: 0.72))
+            .frame(width: 5, height: 5)
+            .offset(y: -1)
         }
-        .padding(.leading, 8).padding(.trailing, 12).padding(.vertical, 7)
-        .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(mood, l: 0.58), interactive: true)
+        .frame(height: 38)
+        .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
 
       Spacer()
 
+      Text(Self.dateString)
+        .font(HaloType.mono(10, weight: .medium))
+        .kerning(1.2)
+        .textCase(.uppercase)
+        .foregroundStyle(HaloInk.creamMute)
+
       Button(action: onSearchTap) {
         Image(systemName: "magnifyingglass")
-          .font(.system(size: 15, weight: .regular))
-          .foregroundStyle(.white.opacity(0.75))
+          .font(.system(size: 14, weight: .regular))
+          .foregroundStyle(HaloInk.creamLow)
           .frame(width: 36, height: 36)
-          .haloGlass(in: Circle(), interactive: true)
+          .contentShape(Circle())
       }
       .buttonStyle(.plain)
     }
-    .padding(.horizontal, 18)
-    .frame(height: 44)
+    .padding(.horizontal, 22)
+    .frame(height: 38)
+  }
+
+  private static var dateString: String {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "it_IT")
+    formatter.setLocalizedDateFormatFromTemplate("EEE d")
+    return formatter.string(from: .now).replacingOccurrences(of: ".", with: "")
+  }
+}
+
+private struct HaloWordmark: View {
+  var body: some View {
+    HStack(alignment: .top, spacing: 4) {
+      Text("HALO")
+        .font(HaloType.ui(11, weight: .medium))
+        .kerning(4.2)
+        .foregroundStyle(HaloInk.cream)
+        .overlay(alignment: .topLeading) {
+          Circle()
+            .strokeBorder(HaloInk.cream, lineWidth: 0.8)
+            .frame(width: 8, height: 8)
+            .offset(x: 1, y: -8)
+        }
+    }
+    .padding(.top, 7)
   }
 }
 
