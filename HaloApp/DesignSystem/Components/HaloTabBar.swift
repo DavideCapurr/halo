@@ -1,8 +1,7 @@
 import SwiftUI
 import HaloShared
 
-/// Bottom strip editoriale: una hairline, tre comandi tipografici e un solo
-/// accento bronzo. Niente capsule glass: più 2016, meno giocattolo.
+/// Pulse-style tab bar: glass surface, clear labels, one central compose action.
 struct HaloTabBar: View {
   enum Tab: String, Hashable, CaseIterable {
     case orbit
@@ -11,9 +10,17 @@ struct HaloTabBar: View {
 
     var label: String {
       switch self {
-      case .orbit:   return "Orbita"
-      case .pulse:   return "Pulse"
+      case .orbit: return "Orbita"
+      case .pulse: return "Pulse"
       case .profile: return "Tu"
+      }
+    }
+
+    var icon: String {
+      switch self {
+      case .orbit: return "circle.grid.cross"
+      case .pulse: return "waveform.path.ecg"
+      case .profile: return "person.crop.circle"
       }
     }
   }
@@ -24,51 +31,60 @@ struct HaloTabBar: View {
   var onCompose: () -> Void = {}
 
   var body: some View {
-    VStack(spacing: 14) {
-      Rectangle()
-        .fill(HaloInk.creamLine)
-        .frame(height: 0.5)
-
-      HStack(alignment: .center, spacing: 0) {
-        tabSlot(.orbit)
-        tabSlot(.pulse)
-        composeSlot
-        tabSlot(.profile)
-      }
+    HStack(spacing: 8) {
+      tabSlot(.orbit)
+      tabSlot(.pulse)
+      composeSlot
+      tabSlot(.profile)
     }
-    .padding(.horizontal, 22)
-    .padding(.top, 2)
-    .padding(.bottom, 4)
+    .padding(.horizontal, 12)
+    .padding(.vertical, 8)
     .background(
-      LinearGradient(
-        colors: [.clear, HaloInk.nightSurface.opacity(0.72), HaloInk.nightSurface.opacity(0.92)],
-        startPoint: .top,
-        endPoint: .bottom
-      )
-      .ignoresSafeArea(edges: .bottom)
+      RoundedRectangle(cornerRadius: 24, style: .continuous)
+        .fill(.ultraThinMaterial)
+        .overlay(
+          RoundedRectangle(cornerRadius: 24, style: .continuous)
+            .fill(
+              LinearGradient(
+                colors: [Color.white.opacity(0.04), .clear, Color.black.opacity(0.12)],
+                startPoint: .top,
+                endPoint: .bottom
+              )
+            )
+        )
     )
+    .overlay(
+      RoundedRectangle(cornerRadius: 24, style: .continuous)
+        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    )
+    .shadow(color: .black.opacity(0.42), radius: 22, y: 12)
+    .padding(.horizontal, 18)
   }
-
-  // MARK: - tab slot
 
   private func tabSlot(_ tab: Tab) -> some View {
     let isActive = tab == active
     return Button {
       onSelect(tab)
     } label: {
-      HStack(spacing: 4) {
-        if isActive {
-          Text("·")
-            .foregroundStyle(HaloInk.bronze)
-        }
+      VStack(spacing: 4) {
+        Image(systemName: tab.icon)
+          .font(.system(size: 15, weight: .medium))
         Text(tab.label)
+          .font(HaloType.mono(8.5, weight: .medium))
+          .kerning(0.8)
+          .textCase(.uppercase)
       }
-      .font(HaloType.mono(9.5, weight: .medium))
-      .kerning(2.0)
-      .textCase(.uppercase)
       .foregroundStyle(isActive ? HaloInk.cream : HaloInk.creamMute)
       .frame(maxWidth: .infinity)
-      .frame(height: 30)
+      .frame(height: 44)
+      .background(
+        Capsule()
+          .fill(isActive ? HaloInk.creamWhisper : .clear)
+      )
+      .overlay(
+        Capsule()
+          .strokeBorder(isActive ? HaloInk.creamLine : .clear, lineWidth: 0.5)
+      )
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
@@ -76,23 +92,18 @@ struct HaloTabBar: View {
     .accessibilityAddTraits(isActive ? .isSelected : [])
   }
 
-  // MARK: - centered compose ("halo crest" button)
-
   private var composeSlot: some View {
     Button(action: onCompose) {
-      HStack(spacing: 5) {
+      ZStack {
         Circle()
-          .strokeBorder(HaloInk.cream, lineWidth: 1.0)
-          .frame(width: 12, height: 12)
-        Text("manda")
+          .fill(MoodPalette.auraColor(selfMood, l: 0.70))
+          .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.45), radius: 10)
+        Image(systemName: "plus")
+          .font(.system(size: 18, weight: .bold))
+          .foregroundStyle(.white)
       }
-      .font(HaloType.mono(9.5, weight: .medium))
-      .kerning(2.0)
-      .textCase(.uppercase)
-      .foregroundStyle(HaloInk.cream)
-      .frame(maxWidth: .infinity)
-      .frame(height: 30)
-      .contentShape(Rectangle())
+      .frame(width: 46, height: 46)
+      .contentShape(Circle())
     }
     .buttonStyle(.plain)
     .accessibilityLabel("Pubblica")

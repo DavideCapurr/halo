@@ -19,6 +19,8 @@ struct OrbitalFieldView: View {
   @State private var zoomLevel: ZoomLevel = .full
   @State private var pinchInProgress: Bool = false
   @State private var zoomDragStart: ZoomLevel? = nil
+  @State private var showZoomSlider: Bool = false
+  @State private var zoomSliderHideTask: Task<Void, Never>? = nil
 
   /// Espone il livello corrente al parent (per uno slider esterno o per AsteroidBeltView).
   var onZoomChange: (ZoomLevel) -> Void = { _ in }
@@ -163,16 +165,25 @@ struct OrbitalFieldView: View {
       .overlay(alignment: .trailing) {
         ZoomSlider(level: zoomLevelBinding)
           .padding(.trailing, 14)
+          .opacity(showZoomSlider ? 1 : 0)
+          .allowsHitTesting(showZoomSlider)
+          .animation(.easeInOut(duration: 0.18), value: showZoomSlider)
       }
       .onChange(of: zoomLevel) { _, newValue in onZoomChange(newValue) }
     }
     .coordinateSpace(name: fieldSpace)
+    .onDisappear {
+      zoomSliderHideTask?.cancel()
+    }
   }
 
   private var zoomLevelBinding: Binding<ZoomLevel> {
     Binding(
       get: { zoomLevel },
-      set: { zoomLevel = $0 }
+      set: {
+        revealZoomSlider()
+        zoomLevel = $0
+      }
     )
   }
 
@@ -240,10 +251,12 @@ struct OrbitalFieldView: View {
         if scale > 1.25 {
           pinchInProgress = true
           UIImpactFeedbackGenerator(style: .light).impactOccurred()
+          revealZoomSlider()
           zoomLevel = zoomLevel.zoomedIn()
         } else if scale < 0.78 {
           pinchInProgress = true
           UIImpactFeedbackGenerator(style: .light).impactOccurred()
+          revealZoomSlider()
           zoomLevel = zoomLevel.zoomedOut()
         }
       }
@@ -284,6 +297,7 @@ struct OrbitalFieldView: View {
         )
         guard let next = ZoomLevel(rawValue: raw), next != zoomLevel else { return }
         UISelectionFeedbackGenerator().selectionChanged()
+        revealZoomSlider()
         zoomLevel = next
       }
       .onEnded { _ in
@@ -368,5 +382,18 @@ struct OrbitalFieldView: View {
       if diff < bestDiff { bestDiff = diff; best = t }
     }
     return best
+  }
+
+  private func revealZoomSlider() {
+    zoomSliderHideTask?.cancel()
+    withAnimation(.easeInOut(duration: 0.18)) {
+      showZoomSlider = true
+    }
+    zoomSliderHideTask = Task { @MainActor in
+      try? await Task.sleep(nanoseconds: 1_500_000_000)
+      withAnimation(.easeInOut(duration: 0.24)) {
+        showZoomSlider = false
+      }
+    }
   }
 }

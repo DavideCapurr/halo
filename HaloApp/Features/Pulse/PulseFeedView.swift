@@ -31,9 +31,9 @@ struct PulseFeedView: View {
             .padding(.horizontal, 22)
             .padding(.top, 12)
 
-          insightStrip
+          pulseStats
             .padding(.horizontal, 22)
-            .padding(.top, 18)
+            .padding(.top, 16)
             .padding(.bottom, 6)
 
           // Adesso section — only if anyone is actively posting.
@@ -110,13 +110,12 @@ struct PulseFeedView: View {
     }
   }
 
-  // MARK: - insight strip (counts + mood + temperature)
+  // MARK: - stats strip
 
-  private var insightStrip: some View {
+  private var pulseStats: some View {
     let activeCount = vm.people.filter(\.hasActiveVibe).count
     let nowCount = vm.adessoItems.count
     let dominant = vm.dominantMood()
-    let energy = energyLabel()
 
     return HStack(alignment: .center, spacing: 0) {
       insightCell(label: "presenze", value: String(format: "%02d", activeCount))
@@ -124,10 +123,8 @@ struct PulseFeedView: View {
       insightCell(label: "adesso", value: String(format: "%02d", nowCount), accent: nowCount > 0)
       separator
       moodCell(dominant)
-      separator
-      insightCell(label: "energia", value: energy)
     }
-    .padding(.vertical, 14)
+    .padding(.vertical, 12)
     .padding(.horizontal, 16)
     .background(
       RoundedRectangle(cornerRadius: 18)
@@ -172,19 +169,6 @@ struct PulseFeedView: View {
         .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 2.4)
     }
     .frame(maxWidth: .infinity)
-  }
-
-  /// Crude energy proxy: ratio of "adesso" + active people.
-  private func energyLabel() -> String {
-    let activeRatio = Double(vm.people.filter(\.hasActiveVibe).count) / max(Double(vm.people.count), 1)
-    let nowBoost = Double(vm.adessoItems.count) * 0.05
-    let score = activeRatio + nowBoost
-    switch score {
-    case 0..<0.25:  return "bassa"
-    case 0.25..<0.55: return "calma"
-    case 0.55..<0.8: return "viva"
-    default:        return "alta"
-    }
   }
 
   // MARK: - section header
@@ -261,25 +245,19 @@ private struct ChatPostRow: View {
     Button(action: onTap) {
       HStack(alignment: .top, spacing: 14) {
         avatar
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 7) {
           headerLine
-          if let ctx = contextLine {
-            Text(ctx)
-              .font(HaloType.ui(11.5, weight: .medium))
-              .foregroundStyle(HaloInk.creamMute)
-          }
           if !person.note.isEmpty && person.hasActiveVibe {
             quoteLine
           }
           if let p = preview {
             postBubble(p)
           }
-          quickActions
         }
         .frame(maxWidth: .infinity, alignment: .leading)
       }
       .padding(.horizontal, 18)
-      .padding(.vertical, 14)
+      .padding(.vertical, 13)
       .background(rowBackground)
       .overlay(rowBorder)
     }
@@ -332,9 +310,12 @@ private struct ChatPostRow: View {
         .font(HaloType.serif(20))
         .foregroundStyle(HaloInk.cream)
         .kerning(-0.3)
-      Text("@\(person.handle)")
+      Circle()
+        .fill(MoodPalette.auraColor(person.mood, l: 0.78))
+        .frame(width: 5, height: 5)
+      Text(person.mood.rawValue)
         .font(HaloType.mono(8.5, weight: .medium))
-        .kerning(1.6)
+        .kerning(1.2)
         .textCase(.uppercase)
         .foregroundStyle(HaloInk.creamMute)
       Spacer(minLength: 0)
@@ -378,7 +359,7 @@ private struct ChatPostRow: View {
           ],
           startPoint: .topLeading, endPoint: .bottomTrailing
         )
-        .frame(height: 110)
+        .frame(height: 88)
         // diagonal hatch — adds subtle texture, "old photo" feel
         Canvas { ctx, size in
           ctx.opacity = 0.10
@@ -392,7 +373,7 @@ private struct ChatPostRow: View {
           }
           ctx.stroke(path, with: .color(.white), lineWidth: 0.5)
         }
-        .frame(height: 110)
+        .frame(height: 88)
         if !p.body.isEmpty {
           Text("\u{201C}\(p.body)\u{201D}")
             .font(HaloType.serif(14))
@@ -401,6 +382,7 @@ private struct ChatPostRow: View {
             .lineLimit(2)
         }
       }
+      .frame(height: 88)
       .clipShape(RoundedRectangle(cornerRadius: 14))
       .overlay(
         RoundedRectangle(cornerRadius: 14)
@@ -414,7 +396,7 @@ private struct ChatPostRow: View {
         .foregroundStyle(HaloInk.cream)
         .kerning(-0.05)
         .lineSpacing(3)
-        .lineLimit(4)
+        .lineLimit(3)
         .padding(.horizontal, 14).padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(

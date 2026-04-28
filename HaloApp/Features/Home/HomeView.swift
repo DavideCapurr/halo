@@ -1,19 +1,22 @@
 import SwiftUI
 import HaloShared
 
-/// Schermata principale: background Deep Space + (Orbital · Pulse · Profilo) +
-/// custom glass tab bar che vive in fondo al frame.
-///
-/// Il `TabView` nativo è sostituito da `HaloTabBar`: stato attivo gestito a
-/// mano, niente chrome iOS. Le sheet (peek / vibe / tier) restano qui.
+/// Schermata principale con `TabView` di sistema: Orbita · Pulse · Tu.
+/// Le sheet (peek / vibe / tier / compose) restano coordinate qui.
 struct HomeView: View {
+  private enum HomeTab: Hashable {
+    case orbit
+    case pulse
+    case profile
+  }
+
   @State private var me: DemoPerson = SeedPeople.me
   @State private var people: [DemoPerson] = SeedPeople.all + SeedPeople.asteroids
   @State private var peek: DemoPerson? = nil
   @State private var showVibeSetter: Bool = false
   @State private var pendingProposal: TierConfirmationSheet.Proposal? = nil
   @State private var fieldZoom: ZoomLevel = .full
-  @State private var selectedTab: HaloTabBar.Tab = .orbit
+  @State private var selectedTab: HomeTab = .orbit
   @State private var showCompose: Bool = false
 
   /// Conteggio dei tier delle proprie cerchie per il `VibeFirstComposeView`.
@@ -36,23 +39,28 @@ struct HomeView: View {
   var body: some View {
     ZStack {
       DeepSpaceBackground()
+      TabView(selection: $selectedTab) {
+        orbitTab
+          .tag(HomeTab.orbit)
+          .tabItem {
+            Label("Orbita", systemImage: "circle.grid.cross")
+          }
 
-      currentTab
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.bottom, 76) // tab-bar clearance
+        PulseFeedView(onPersonTap: { peek = $0 })
+          .tag(HomeTab.pulse)
+          .tabItem {
+            Label("Pulse", systemImage: "waveform.path.ecg")
+          }
 
-      VStack(spacing: 0) {
-        Spacer(minLength: 0)
-        HaloTabBar(
-          active: selectedTab,
-          selfMood: me.mood,
-          onSelect: { tab in
-            withAnimation(.easeInOut(duration: 0.22)) { selectedTab = tab }
-          },
-          onCompose: { showCompose = true }
-        )
-        .padding(.bottom, 12)
+        ProfilePlaceholder(me: me, onVibeTap: { showVibeSetter = true })
+          .tag(HomeTab.profile)
+          .tabItem {
+            Label("Tu", systemImage: "person.crop.circle")
+          }
       }
+      .tint(HaloInk.bronze)
+      .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+      .toolbarBackground(.visible, for: .tabBar)
     }
     .preferredColorScheme(.dark)
     .sheet(item: $peek) { person in
@@ -98,17 +106,6 @@ struct HomeView: View {
         },
         onDecline: { pendingProposal = nil }
       )
-    }
-  }
-
-  // MARK: - tab routing
-
-  @ViewBuilder
-  private var currentTab: some View {
-    switch selectedTab {
-    case .orbit:   orbitTab
-    case .pulse:   PulseFeedView(onPersonTap: { peek = $0 })
-    case .profile: ProfilePlaceholder(me: me, onVibeTap: { showVibeSetter = true })
     }
   }
 
