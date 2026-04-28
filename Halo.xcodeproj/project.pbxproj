@@ -21,7 +21,9 @@
 		3AEC73BA411EC4C6901B5004 /* VibeSetterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2707E165F0796642C584AC /* VibeSetterView.swift */; };
 		43346F6F5A02D58F5359C560 /* ZoomLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A3BA733F12EEB5C02DDA4B /* ZoomLevel.swift */; };
 		449AECC6AE7241581AF051D5 /* BubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4FF9D6216DECE8641DCD8B /* BubbleView.swift */; };
+		48B4DD8B1B4C4AA6876F2F5A /* HaloTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E3C2D1B44AF4C7F9C0D13D4 /* HaloTabBar.swift */; };
 		491756FBB658CFA7C9CB8A02 /* OrbitalFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52FD0A39B22AD1565CE6BC3 /* OrbitalFieldView.swift */; };
+		4B6322AC9F824D35A654C663 /* DiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F9F011938A04B0197B92A7D /* DiscoveryView.swift */; };
 		4F6EF4398FBA48CE6039E387 /* ProfilesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44AA5A1450AC8C2E86EA3B08 /* ProfilesService.swift */; };
 		514C2C927D2A738C63040A0B /* PulseFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B860FE03BFC3B1CA85907432 /* PulseFeedView.swift */; };
 		5614C6B175278AA769AA4265 /* SeedPeople.swift in Sources */ = {isa = PBXBuildFile; fileRef = A88175A9373E560D3D27F8DD /* SeedPeople.swift */; };
@@ -31,6 +33,7 @@
 		6F1B103C5BF3318935A17057 /* PortraitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCC51CDA4582BC1CA19C823 /* PortraitView.swift */; };
 		751920CE7511BF6559DABD3E /* HaloApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86EB7CBFAB97B2F6455ACAE8 /* HaloApp.swift */; };
 		77E86FE9BCF7AFD97D227452 /* ReactionBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 971B8FCC8D69F506B559440D /* ReactionBarView.swift */; };
+		7C8B07C526DF4EF3B712A1E2 /* TimeOfDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A64D3653A44288924B64E7 /* TimeOfDay.swift */; };
 		8410A859D05FA2D347B673ED /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 22C5F11DE43A60B63C9E5E6B /* Supabase */; };
 		876C025F38DF4A57F0B87B38 /* HaloTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3836A2723C6326F6DDE66E9 /* HaloTheme.swift */; };
 		89A6203B06472FB1E7FA9EF0 /* BottomBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F19C3296B85B41B832FB82C /* BottomBarView.swift */; };
@@ -39,6 +42,7 @@
 		94E9853DD3DB7FA08405500F /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2450327C5E5402BAB6624FDF /* HomeViewModel.swift */; };
 		999FE1CA7388965CEA2C0B88 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15103A534DF957D2C32AC2E9 /* HomeView.swift */; };
 		9AA4F6FE6516D2B6950EAF96 /* HapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FB6BEB670DD6A407B8C50FD /* HapticEngine.swift */; };
+		9C68B1E83E064CBDA58186C8 /* HaloTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95DA4E1CEB64301BF54632F /* HaloTypography.swift */; };
 		9BAF454D1051EC9503BDCC74 /* PostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D4C86936B3191CB2C9976B9 /* PostCardView.swift */; };
 		9E38DCB4C37FD90E24729012 /* PresenceBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED18BDE8F8D9CC37375A67DD /* PresenceBar.swift */; };
 		A33D0BED191793462F62B414 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 785C55BF44CAC9DA0467CE7F /* SwiftUI.framework */; };
@@ -109,6 +113,7 @@
 		3A4FF9D6216DECE8641DCD8B /* BubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleView.swift; sourceTree = "<group>"; };
 		3D4C86936B3191CB2C9976B9 /* PostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCardView.swift; sourceTree = "<group>"; };
 		3E64EB5E71F17BBFD3A0E09F /* AsteroidBeltView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsteroidBeltView.swift; sourceTree = "<group>"; };
+		3F9F011938A04B0197B92A7D /* DiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryView.swift; sourceTree = "<group>"; };
 		44AA5A1450AC8C2E86EA3B08 /* ProfilesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilesService.swift; sourceTree = "<group>"; };
 		4D3A359887F8BB79CE25DEA0 /* DeepSpaceBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSpaceBackground.swift; sourceTree = "<group>"; };
 		4EB8348F738AE79D20C3D950 /* OrbitalLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrbitalLayout.swift; sourceTree = "<group>"; };
@@ -124,12 +129,14 @@
 		6FC3B403558A70E666D77B80 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		734CF80BBABF3434D5653FED /* VibeFirstComposeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibeFirstComposeView.swift; sourceTree = "<group>"; };
 		785C55BF44CAC9DA0467CE7F /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		7E3C2D1B44AF4C7F9C0D13D4 /* HaloTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloTabBar.swift; sourceTree = "<group>"; };
 		7C314BE365257988CA85B8CA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		7F3997A5EBC014A4275BDF87 /* HaloWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HaloWidget.entitlements; sourceTree = "<group>"; };
 		8024E8C710BB6866369C0380 /* PlusUpsellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusUpsellView.swift; sourceTree = "<group>"; };
 		86EB7CBFAB97B2F6455ACAE8 /* HaloApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloApp.swift; sourceTree = "<group>"; };
 		8BCF3F03EBD9061D1D280A88 /* HaloSpacePeekSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloSpacePeekSheet.swift; sourceTree = "<group>"; };
 		8C068CF3C029287339064B62 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		92A64D3653A44288924B64E7 /* TimeOfDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeOfDay.swift; sourceTree = "<group>"; };
 		971B8FCC8D69F506B559440D /* ReactionBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionBarView.swift; sourceTree = "<group>"; };
 		9972198D8FA366FB3992106A /* MoodPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodPalette.swift; sourceTree = "<group>"; };
 		A4AD8F2BD6CB52B37E10D1DA /* WidgetSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshotStore.swift; sourceTree = "<group>"; };
@@ -147,6 +154,7 @@
 		C9A3BA733F12EEB5C02DDA4B /* ZoomLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomLevel.swift; sourceTree = "<group>"; };
 		CBBF159C391B639968EDDA4A /* StandByWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByWidget.swift; sourceTree = "<group>"; };
 		D1E0037CC1D6F101CD46C34F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D95DA4E1CEB64301BF54632F /* HaloTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloTypography.swift; sourceTree = "<group>"; };
 		D609014AE9A3E198F060B9EB /* Provider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Provider.swift; sourceTree = "<group>"; };
 		E3836A2723C6326F6DDE66E9 /* HaloTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloTheme.swift; sourceTree = "<group>"; };
 		E887676D8C7B05F13C856329 /* ZoomSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomSlider.swift; sourceTree = "<group>"; };
@@ -221,6 +229,7 @@
 			children = (
 				3A4FF9D6216DECE8641DCD8B /* BubbleView.swift */,
 				4D3A359887F8BB79CE25DEA0 /* DeepSpaceBackground.swift */,
+				7E3C2D1B44AF4C7F9C0D13D4 /* HaloTabBar.swift */,
 				641057E7FD0193A8E8DECE7A /* OrbitalRing.swift */,
 				BFCC51CDA4582BC1CA19C823 /* PortraitView.swift */,
 				50CE53415D6F4D5E44F2DC02 /* ReactionGlyph.swift */,
@@ -288,11 +297,20 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		7B27E05CB9644E7DA042C86E /* Discovery */ = {
+			isa = PBXGroup;
+			children = (
+				3F9F011938A04B0197B92A7D /* DiscoveryView.swift */,
+			);
+			path = Discovery;
+			sourceTree = "<group>";
+		};
 		8C8AE30161E85373230BD5A6 /* Features */ = {
 			isa = PBXGroup;
 			children = (
 				ED34E38A916626F54C696D95 /* Auth */,
 				F207F54C8F3A3C4131737E70 /* Compose */,
+				7B27E05CB9644E7DA042C86E /* Discovery */,
 				11D09173145F6033F8B84E0B /* HaloSpace */,
 				104C192E7D18575F9EC46782 /* Home */,
 				D259969BF6006F57056C3EAA /* Plus */,
@@ -307,8 +325,10 @@
 			children = (
 				18B9BD110A8508D7F56D943C /* Components */,
 				E3836A2723C6326F6DDE66E9 /* HaloTheme.swift */,
+				D95DA4E1CEB64301BF54632F /* HaloTypography.swift */,
 				4FB6BEB670DD6A407B8C50FD /* HapticEngine.swift */,
 				9972198D8FA366FB3992106A /* MoodPalette.swift */,
+				92A64D3653A44288924B64E7 /* TimeOfDay.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -528,6 +548,7 @@
 				449AECC6AE7241581AF051D5 /* BubbleView.swift in Sources */,
 				E9562EF3214C2BE76676404B /* ComposePostView.swift in Sources */,
 				C6A80CF60E65CD265C9EF769 /* DeepSpaceBackground.swift in Sources */,
+				4B6322AC9F824D35A654C663 /* DiscoveryView.swift in Sources */,
 				3A6D34BFB06B699EDB8DC903 /* FeedRealtime.swift in Sources */,
 				1B35EC9631A3C5AA18AFE71D /* FollowsService.swift in Sources */,
 				8ED46C073CEDA7C95ED3CBF6 /* FeedViewModel.swift in Sources */,
@@ -535,6 +556,8 @@
 				EF19FCAA5683BB141527B606 /* HaloSpacePeekSheet.swift in Sources */,
 				B7C566F8A16F0BFD746AF3D5 /* HaloSpaceView.swift in Sources */,
 				876C025F38DF4A57F0B87B38 /* HaloTheme.swift in Sources */,
+				48B4DD8B1B4C4AA6876F2F5A /* HaloTabBar.swift in Sources */,
+				9C68B1E83E064CBDA58186C8 /* HaloTypography.swift in Sources */,
 				9AA4F6FE6516D2B6950EAF96 /* HapticEngine.swift in Sources */,
 				999FE1CA7388965CEA2C0B88 /* HomeView.swift in Sources */,
 				94E9853DD3DB7FA08405500F /* HomeViewModel.swift in Sources */,
@@ -564,6 +587,7 @@
 				D3D59A02D7AA0B0A1AD8CBB9 /* StoreKitManager.swift in Sources */,
 				FC4101DA1CC6B71912D153AD /* SupabaseClient.swift in Sources */,
 				08E28CFCD62A02268496E315 /* TierConfirmationSheet.swift in Sources */,
+				7C8B07C526DF4EF3B712A1E2 /* TimeOfDay.swift in Sources */,
 				FB921940FA01ABAA4C0B92DF /* TopBarView.swift in Sources */,
 				FD9F235A1DBA40EBA85A7EB7 /* VibeFirstComposeView.swift in Sources */,
 				3AEC73BA411EC4C6901B5004 /* VibeSetterView.swift in Sources */,
