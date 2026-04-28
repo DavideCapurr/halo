@@ -302,10 +302,10 @@ struct VibeFirstComposeView: View {
 
   private func audienceLabel(for t: FriendshipTier, count: Int) -> String {
     switch t {
-    case .inner:  return "i tuoi \(count) Inner"
-    case .close:  return "Inner + i tuoi \(count) Close"
-    case .orbit:  return "Inner + Close + i tuoi \(count) Orbit"
-    case .nebula: return "tutti quelli che ti seguono (\(count) in Nebula)"
+    case .inner:  return "i tuoi \(count) del cerchio"
+    case .close:  return "cerchio + i tuoi \(count) vicini"
+    case .orbit:  return "cerchio + vicini + i tuoi \(count) in orbita"
+    case .nebula: return "tutti quelli che ti seguono (\(count) in nebula)"
     }
   }
 

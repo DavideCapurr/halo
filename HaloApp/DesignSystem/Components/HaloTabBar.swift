@@ -33,14 +33,12 @@ struct HaloTabBar: View {
   var onCompose: () -> Void = {}
 
   var body: some View {
+    // Bar layout: orbita · pulse · ◯ compose · tu
     HStack(spacing: 0) {
       tabSlot(.orbit)
       tabSlot(.pulse)
       composeSlot
       tabSlot(.profile)
-      // We don't need a 5th slot — the compose lives in the third position
-      // so the bar reads: orbit · pulse · ◯ · tu (three labels + crest).
-      Color.clear.frame(width: 0)
     }
     .padding(.horizontal, 14)
     .padding(.vertical, 10)
