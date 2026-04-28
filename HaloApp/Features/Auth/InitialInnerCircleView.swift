@@ -42,7 +42,7 @@ struct InitialInnerCircleView: View {
 
   private var eyebrow: some View {
     VStack(alignment: .leading, spacing: 6) {
-      Text("INNER · I PRIMI 5")
+      Text("CERCHIO · I PRIMI 5")
         .font(.system(size: 11, weight: .semibold))
         .kerning(1.4)
         .foregroundStyle(HaloTheme.textCaption)
@@ -165,7 +165,7 @@ struct InitialInnerCircleView: View {
       .buttonStyle(.plain)
       Spacer()
       Button { Task { await confirm() } } label: {
-        Text(picked.isEmpty ? "Continua" : "Aggiungi i miei \(picked.count) Inner")
+        Text(picked.isEmpty ? "Continua" : "Aggiungi al mio cerchio (\(picked.count))")
           .font(.system(size: 15, weight: .semibold))
           .foregroundStyle(.white)
           .padding(.horizontal, 18).padding(.vertical, 12)
