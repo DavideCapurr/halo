@@ -44,6 +44,7 @@ struct PulseFeedView: View {
             ForEach(vm.adessoItems) { p in
               ChatPostRow(person: p, accent: true, onTap: { onPersonTap(p) })
                 .padding(.horizontal, 14)
+                .padding(.vertical, 5)
             }
           }
 
@@ -54,6 +55,7 @@ struct PulseFeedView: View {
             ForEach(items) { p in
               ChatPostRow(person: p, onTap: { onPersonTap(p) })
                 .padding(.horizontal, 14)
+                .padding(.vertical, 5)
             }
           }
 
@@ -243,21 +245,27 @@ private struct ChatPostRow: View {
 
   var body: some View {
     Button(action: onTap) {
-      HStack(alignment: .top, spacing: 14) {
-        avatar
-        VStack(alignment: .leading, spacing: 7) {
-          headerLine
-          if !person.note.isEmpty && person.hasActiveVibe {
-            quoteLine
+      VStack(alignment: .leading, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
+          avatar
+          VStack(alignment: .leading, spacing: 4) {
+            headerLine
+            presenceLine
           }
-          if let p = preview {
-            postBubble(p)
-          }
+          .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+
+        if !person.note.isEmpty && person.hasActiveVibe {
+          messageBubble
+        }
+
+        if let p = preview {
+          postAttachment(p)
+        }
+
+        pulseFooter
       }
-      .padding(.horizontal, 18)
-      .padding(.vertical, 13)
+      .padding(14)
       .background(rowBackground)
       .overlay(rowBorder)
     }
@@ -327,25 +335,81 @@ private struct ChatPostRow: View {
     }
   }
 
-  // MARK: vibe quote (chat-style bubble, but italic editorial)
-
-  private var quoteLine: some View {
-    HStack(alignment: .top, spacing: 8) {
-      Rectangle()
-        .fill(MoodPalette.auraColor(person.mood, l: 0.65))
-        .frame(width: 1.5)
-        .frame(maxHeight: .infinity, alignment: .top)
-      Text("\u{201C}\(person.note)\u{201D}")
-        .font(HaloType.serif(15))
-        .foregroundStyle(HaloInk.creamLow)
-        .lineSpacing(2)
-        .lineLimit(3)
+  private var presenceLine: some View {
+    HStack(spacing: 7) {
+      Text("@\(person.handle)")
+      Text("·")
+      Text(person.tier.label.lowercased())
+      if let ctx = contextLine {
+        Text("·")
+        Text(ctx)
+      }
     }
-    .padding(.vertical, 4)
+    .font(HaloType.ui(11.5, weight: .medium))
+    .foregroundStyle(HaloInk.creamMute)
+    .lineLimit(1)
+  }
+
+  // MARK: message bubble
+
+  private var messageBubble: some View {
+    HStack(alignment: .bottom, spacing: 10) {
+      Text("\u{201C}\(person.note)\u{201D}")
+        .font(HaloType.serif(16))
+        .foregroundStyle(HaloInk.cream)
+        .lineSpacing(2)
+        .lineLimit(4)
+      Spacer(minLength: 0)
+      Text("vibe")
+        .haloEyebrow(HaloInk.creamMute, size: 7.5, tracking: 1.5)
+    }
+    .padding(.horizontal, 14)
+    .padding(.vertical, 12)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(
+      RoundedRectangle(cornerRadius: 16, style: .continuous)
+        .fill(HaloInk.creamWhisper)
+    )
+    .overlay(alignment: .leading) {
+      RoundedRectangle(cornerRadius: 1)
+        .fill(MoodPalette.auraColor(person.mood, l: 0.68))
+        .frame(width: 2)
+        .padding(.vertical, 10)
+    }
+    .overlay(
+      RoundedRectangle(cornerRadius: 16, style: .continuous)
+        .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
+    )
     .fixedSize(horizontal: false, vertical: true)
   }
 
-  // MARK: post preview (chat bubble cousin)
+  // MARK: post attachment
+
+  private func postAttachment(_ p: Preview) -> some View {
+    VStack(alignment: .leading, spacing: 8) {
+      HStack(spacing: 8) {
+        Image(systemName: attachmentIcon(p.kind))
+          .font(.system(size: 10, weight: .semibold))
+        Text(attachmentLabel(p.kind))
+          .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 1.8)
+        Rectangle()
+          .fill(HaloInk.creamLine)
+          .frame(height: 0.5)
+      }
+      .foregroundStyle(HaloInk.creamMute)
+
+      postBubble(p)
+    }
+    .padding(10)
+    .background(
+      RoundedRectangle(cornerRadius: 18, style: .continuous)
+        .fill(.ultraThinMaterial)
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: 18, style: .continuous)
+        .strokeBorder(accent ? HaloInk.bronzeSoft : HaloInk.creamHair, lineWidth: accent ? 0.8 : 0.5)
+    )
+  }
 
   @ViewBuilder
   private func postBubble(_ p: Preview) -> some View {
@@ -386,7 +450,7 @@ private struct ChatPostRow: View {
       .clipShape(RoundedRectangle(cornerRadius: 14))
       .overlay(
         RoundedRectangle(cornerRadius: 14)
-          .strokeBorder(HaloInk.creamHair, lineWidth: 0.5)
+          .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
       )
 
     case .text:
@@ -401,11 +465,11 @@ private struct ChatPostRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
           RoundedRectangle(cornerRadius: 14)
-            .fill(.ultraThinMaterial)
+            .fill(HaloInk.nightSurface.opacity(0.36))
         )
         .overlay(
           RoundedRectangle(cornerRadius: 14)
-            .strokeBorder(HaloInk.creamHair, lineWidth: 0.5)
+            .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
         )
 
     case .audio:
@@ -438,7 +502,7 @@ private struct ChatPostRow: View {
       .padding(.horizontal, 12).padding(.vertical, 10)
       .background(
         RoundedRectangle(cornerRadius: 14)
-          .fill(.ultraThinMaterial)
+          .fill(HaloInk.nightSurface.opacity(0.36))
       )
       .overlay(
         RoundedRectangle(cornerRadius: 14)
@@ -449,19 +513,18 @@ private struct ChatPostRow: View {
 
   // MARK: quick actions (chat-style)
 
-  private var quickActions: some View {
-    HStack(spacing: 6) {
-      actionChip(icon: "arrow.turn.up.left", label: "sussurra")
-      actionChip(icon: "wave.3.right", label: "amplifica")
+  private var pulseFooter: some View {
+    HStack(spacing: 8) {
+      footerChip(icon: "bubble.left", label: "rispondi")
+      footerChip(icon: "wave.3.right", label: "eco")
       Spacer()
-      Image(systemName: "chevron.right")
-        .font(.system(size: 11, weight: .medium))
-        .foregroundStyle(HaloInk.creamMute)
+      Text(ago == "adesso" ? "live" : "apri")
+        .haloEyebrow(ago == "adesso" ? HaloInk.bronze : HaloInk.creamMute, size: 8, tracking: 1.5)
     }
-    .padding(.top, 4)
+    .padding(.top, 1)
   }
 
-  private func actionChip(icon: String, label: String) -> some View {
+  private func footerChip(icon: String, label: String) -> some View {
     HStack(spacing: 5) {
       Image(systemName: icon)
         .font(.system(size: 10, weight: .medium))
@@ -471,11 +534,28 @@ private struct ChatPostRow: View {
         .textCase(.uppercase)
     }
     .foregroundStyle(HaloInk.creamLow)
-    .padding(.horizontal, 9).padding(.vertical, 5)
+    .padding(.horizontal, 9)
+    .padding(.vertical, 5)
     .background(
       Capsule().fill(HaloInk.creamWhisper)
     )
     .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+  }
+
+  private func attachmentIcon(_ kind: Preview.Kind) -> String {
+    switch kind {
+    case .photo: return "photo"
+    case .text: return "text.alignleft"
+    case .audio: return "waveform"
+    }
+  }
+
+  private func attachmentLabel(_ kind: Preview.Kind) -> String {
+    switch kind {
+    case .photo: return "post foto"
+    case .text: return "post testo"
+    case .audio: return "nota audio"
+    }
   }
 
   // MARK: row bg / border
