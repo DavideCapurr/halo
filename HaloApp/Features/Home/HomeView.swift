@@ -1,22 +1,19 @@
 import SwiftUI
 import HaloShared
 
-/// Schermata principale: background Deep Space + TopBar + (OrbitalField | PulseFeed) + BottomBar
-/// + sheets (peek / vibe setter / tier confirm).
-/// Switch tra le due viste tramite swipe orizzontale o pulsanti dedicati nella BottomBar.
+/// Schermata principale: background Deep Space + (Orbital · Pulse · Profilo) +
+/// custom glass tab bar che vive in fondo al frame.
+///
+/// Il `TabView` nativo è sostituito da `HaloTabBar`: stato attivo gestito a
+/// mano, niente chrome iOS. Le sheet (peek / vibe / tier) restano qui.
 struct HomeView: View {
-  enum Tab: Hashable {
-    case orbit
-    case pulse
-  }
-
   @State private var me: DemoPerson = SeedPeople.me
   @State private var people: [DemoPerson] = SeedPeople.all + SeedPeople.asteroids
   @State private var peek: DemoPerson? = nil
   @State private var showVibeSetter: Bool = false
   @State private var pendingProposal: TierConfirmationSheet.Proposal? = nil
   @State private var fieldZoom: ZoomLevel = .full
-  @State private var selectedTab: Tab = .orbit
+  @State private var selectedTab: HaloTabBar.Tab = .orbit
   @State private var showCompose: Bool = false
 
   /// Conteggio dei tier delle proprie cerchie per il `VibeFirstComposeView`.
@@ -26,31 +23,44 @@ struct HomeView: View {
 
   private var asteroids: [DemoPerson] { people.filter { !$0.isMutual } }
 
+  /// Lista mutuali ordinata per tier-rank, usata come "peers" nelle pagine
+  /// HaloSpace così che lo swipe orizzontale resti consistente con l'orbita.
+  private var sortedMutuals: [DemoPerson] {
+    people.filter(\.isMutual)
+      .sorted { (a, b) in
+        if a.tier.rank != b.tier.rank { return a.tier.rank > b.tier.rank }
+        return a.name < b.name
+      }
+  }
+
   var body: some View {
     ZStack {
       DeepSpaceBackground()
 
-      TabView(selection: $selectedTab) {
-        orbitTab
-          .tag(Tab.orbit)
-          .tabItem {
-            Label("Orbita", systemImage: "circle.dotted")
-          }
+      currentTab
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.bottom, 92) // tab-bar clearance
 
-        PulseFeedView(onPersonTap: { peek = $0 })
-          .tag(Tab.pulse)
-          .tabItem {
-            Label("Pulse", systemImage: "list.dash")
-          }
+      VStack(spacing: 0) {
+        Spacer(minLength: 0)
+        HaloTabBar(
+          active: selectedTab,
+          selfMood: me.mood,
+          onSelect: { tab in
+            withAnimation(.easeInOut(duration: 0.22)) { selectedTab = tab }
+          },
+          onCompose: { showCompose = true }
+        )
+        .padding(.bottom, 12)
       }
-      .tint(.white)
-      .animation(.easeInOut(duration: 0.30), value: fieldZoom)
-
-      composeButton
     }
     .preferredColorScheme(.dark)
     .sheet(item: $peek) { person in
-      HaloSpacePeekSheet(person: person)
+      HaloSpaceView(
+        person: person,
+        peers: sortedMutuals.isEmpty ? [person] : sortedMutuals,
+        onClose: { peek = nil }
+      )
     }
     .sheet(isPresented: $showVibeSetter) {
       VibeSetterView(
@@ -91,7 +101,16 @@ struct HomeView: View {
     }
   }
 
-  // MARK: - tabs
+  // MARK: - tab routing
+
+  @ViewBuilder
+  private var currentTab: some View {
+    switch selectedTab {
+    case .orbit:   orbitTab
+    case .pulse:   PulseFeedView(onPersonTap: { peek = $0 })
+    case .profile: ProfilePlaceholder(me: me, onVibeTap: { showVibeSetter = true })
+    }
+  }
 
   private var orbitTab: some View {
     VStack(spacing: 0) {
@@ -141,29 +160,7 @@ struct HomeView: View {
         .transition(.opacity.combined(with: .move(edge: .bottom)))
       }
     }
-  }
-
-  private var composeButton: some View {
-    VStack {
-      Spacer()
-      HStack {
-        Spacer()
-        Button {
-          showCompose = true
-        } label: {
-          Image(systemName: "plus")
-            .font(.system(size: 20, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(width: 54, height: 54)
-            .haloGlass(in: Circle(), tint: MoodPalette.auraColor(me.mood, l: 0.58), interactive: true)
-            .shadow(color: MoodPalette.auraRing(me.mood, alpha: 0.24), radius: 10, y: 4)
-        }
-        .buttonStyle(.plain)
-        .padding(.trailing, 18)
-        .padding(.bottom, 74)
-      }
-    }
-    .allowsHitTesting(true)
+    .animation(.easeInOut(duration: 0.30), value: fieldZoom)
   }
 
   private func requiresTierConfirmation(from: FriendshipTier, to: FriendshipTier) -> Bool {
@@ -173,6 +170,65 @@ struct HomeView: View {
 
 extension TierConfirmationSheet.Proposal: Identifiable {
   var id: String { "\(person.id)-\(from.rawValue)-\(to.rawValue)" }
+}
+
+// MARK: - Profile placeholder
+
+/// Quick profile destination — keeps the tab usable while the full profile
+/// flow (`ProfileView`) is still TODO. Reuses the v2 editorial vocabulary.
+private struct ProfilePlaceholder: View {
+  let me: DemoPerson
+  var onVibeTap: () -> Void = {}
+
+  var body: some View {
+    ScrollView {
+      VStack(alignment: .leading, spacing: 18) {
+        Text(me.name.lowercased())
+          .font(HaloType.serif(40, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+          .padding(.top, 80)
+
+        HStack(spacing: 8) {
+          Circle()
+            .fill(MoodPalette.auraColor(me.mood, l: 0.78))
+            .frame(width: 7, height: 7)
+            .shadow(color: MoodPalette.auraRing(me.mood, alpha: 0.55), radius: 3)
+          Text(me.mood.rawValue)
+            .haloEyebrow(HaloInk.creamLow, size: 9.5, tracking: 2.4)
+          Text("·")
+            .haloEyebrow(HaloInk.creamMute)
+          Text("@\(me.handle)")
+            .haloEyebrow(HaloInk.creamMute)
+        }
+
+        Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
+
+        Button(action: onVibeTap) {
+          HStack {
+            Text("modifica la tua vibe")
+              .font(HaloType.ui(14, weight: .medium))
+              .foregroundStyle(HaloInk.cream)
+            Spacer()
+            Image(systemName: "arrow.up.right")
+              .font(.system(size: 12, weight: .medium))
+              .foregroundStyle(HaloInk.creamLow)
+          }
+          .padding(.vertical, 14)
+        }
+        .buttonStyle(.plain)
+
+        Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
+
+        Text("più funzioni in arrivo.")
+          .font(HaloType.serif(16))
+          .foregroundStyle(HaloInk.creamMute)
+          .padding(.top, 12)
+      }
+      .padding(.horizontal, 26)
+      .padding(.bottom, 80)
+      .frame(maxWidth: .infinity, alignment: .leading)
+    }
+  }
 }
 
 #Preview {

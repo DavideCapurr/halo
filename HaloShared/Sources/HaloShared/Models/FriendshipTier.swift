@@ -21,13 +21,26 @@ public enum FriendshipTier: String, Codable, CaseIterable, Comparable, Sendable 
     }
   }
 
-  /// Italian label as used in copy.
+  /// Italian label as used in copy. Avoid surfacing the technical
+  /// codes (`inner`, `close`) directly in the UI: those names are reserved
+  /// for the data model. Display copy maps to evocative italian terms.
   public var label: String {
     switch self {
-    case .inner:  return "Inner"
-    case .close:  return "Close"
-    case .orbit:  return "Orbit"
+    case .inner:  return "Cerchio"
+    case .close:  return "Vicini"
+    case .orbit:  return "Orbita"
     case .nebula: return "Nebula"
+    }
+  }
+
+  /// Compact ordinal used in micro-typography (e.g. "n° 01" for inner).
+  /// Stable, doesn't change with copy.
+  public var ordinal: Int {
+    switch self {
+    case .inner:  return 1
+    case .close:  return 2
+    case .orbit:  return 3
+    case .nebula: return 4
     }
   }
 

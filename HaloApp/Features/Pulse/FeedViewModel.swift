@@ -21,8 +21,8 @@ final class FeedViewModel {
 
     var title: String {
       switch self {
-      case .innerClose: return "Inner & Close"
-      case .orbit:      return "Orbit"
+      case .innerClose: return "Cerchio"
+      case .orbit:      return "Orbita"
       case .nebula:     return "Nebula"
       }
     }
