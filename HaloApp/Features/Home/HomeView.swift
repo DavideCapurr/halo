@@ -26,6 +26,14 @@ struct HomeView: View {
 
   private var asteroids: [DemoPerson] { people.filter { !$0.isMutual } }
 
+  private var mutuals: [DemoPerson] {
+    people.filter(\.isMutual)
+  }
+
+  private var activeMutuals: [DemoPerson] {
+    mutuals.filter(\.hasActiveVibe)
+  }
+
   /// Lista mutuali ordinata per tier-rank, usata come "peers" nelle pagine
   /// HaloSpace così che lo swipe orizzontale resti consistente con l'orbita.
   private var sortedMutuals: [DemoPerson] {
@@ -111,22 +119,117 @@ struct HomeView: View {
 
   private var orbitTab: some View {
     VStack(spacing: 0) {
-      TopBarView(
-        mood: me.mood,
-        onVibeTap: { showVibeSetter = true },
-        onSearchTap: {}
-      )
-      .padding(.top, 10)
+      orbitHeader
+        .padding(.horizontal, 22)
+        .padding(.top, 12)
 
-      Text("chi è sveglio.")
-        .font(HaloType.serif(14))
-        .foregroundStyle(HaloInk.creamLow)
-        .padding(.top, 10)
+      orbitStats
+        .padding(.horizontal, 22)
+        .padding(.top, 14)
+        .padding(.bottom, 8)
 
       fieldArea
         .frame(maxHeight: .infinity)
     }
     .padding(.top, 4)
+  }
+
+  private var orbitHeader: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack(spacing: 8) {
+        Text("orbite")
+          .haloEyebrow(HaloInk.creamMute, size: 9.5, tracking: 2.6)
+        Rectangle()
+          .fill(HaloInk.creamLine)
+          .frame(height: 0.5)
+        Text(Self.dateString)
+          .font(HaloType.mono(9, weight: .medium))
+          .kerning(1.5)
+          .textCase(.uppercase)
+          .foregroundStyle(HaloInk.creamMute)
+      }
+
+      HStack(alignment: .bottom, spacing: 14) {
+        VStack(alignment: .leading, spacing: 5) {
+          Text("chi è sveglio.")
+            .font(HaloType.serif(36, weight: .regular))
+            .foregroundStyle(HaloInk.cream)
+            .kerning(-0.5)
+            .lineLimit(1)
+            .minimumScaleFactor(0.72)
+
+          Text("cerchio, vicini, orbita")
+            .font(HaloType.serif(15))
+            .foregroundStyle(HaloInk.creamLow)
+        }
+
+        Spacer(minLength: 10)
+
+        VStack(alignment: .trailing, spacing: 8) {
+          Button(action: { showVibeSetter = true }) {
+            HStack(spacing: 7) {
+              Circle()
+                .fill(MoodPalette.auraColor(me.mood, l: 0.80))
+                .frame(width: 8, height: 8)
+                .shadow(color: MoodPalette.auraRing(me.mood, alpha: 0.50), radius: 5)
+              Text(me.mood.rawValue)
+                .font(HaloType.ui(12, weight: .medium))
+                .foregroundStyle(HaloInk.cream)
+                .lineLimit(1)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(Capsule().fill(.ultraThinMaterial))
+            .overlay(Capsule().strokeBorder(HaloInk.creamHair, lineWidth: 0.6))
+          }
+          .buttonStyle(.plain)
+
+          Button(action: {}) {
+            Image(systemName: "magnifyingglass")
+              .font(.system(size: 14, weight: .regular))
+              .foregroundStyle(HaloInk.creamLow)
+              .frame(width: 34, height: 34)
+              .background(Circle().fill(.ultraThinMaterial))
+              .overlay(Circle().strokeBorder(HaloInk.creamHair, lineWidth: 0.6))
+          }
+          .buttonStyle(.plain)
+        }
+      }
+    }
+  }
+
+  private var orbitStats: some View {
+    HStack(alignment: .center, spacing: 0) {
+      orbitStatCell("cerchio", value: String(format: "%02d", tierCounts[.inner] ?? 0), accent: fieldZoom == .innerOnly)
+      orbitStatSeparator
+      orbitStatCell("live", value: String(format: "%02d", activeMutuals.count), accent: !activeMutuals.isEmpty)
+      orbitStatSeparator
+      orbitStatCell("zoom", value: fieldZoom.shortLabel, accent: fieldZoom != .full)
+    }
+    .padding(.vertical, 12)
+    .padding(.horizontal, 16)
+    .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(.ultraThinMaterial))
+    .overlay(
+      RoundedRectangle(cornerRadius: 18, style: .continuous)
+        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    )
+  }
+
+  private var orbitStatSeparator: some View {
+    Rectangle()
+      .fill(HaloInk.creamLine)
+      .frame(width: 0.5, height: 28)
+  }
+
+  private func orbitStatCell(_ label: String, value: String, accent: Bool = false) -> some View {
+    VStack(spacing: 4) {
+      Text(value)
+        .font(HaloType.mono(18, weight: .semibold))
+        .foregroundStyle(accent ? HaloInk.bronze : HaloInk.cream)
+      Text(label)
+        .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 2.4)
+    }
+    .frame(maxWidth: .infinity)
   }
 
   // MARK: - field area (orbital + asteroids)
@@ -167,6 +270,24 @@ struct HomeView: View {
 
   private func requiresTierConfirmation(from: FriendshipTier, to: FriendshipTier) -> Bool {
     from == .nebula && to != .nebula
+  }
+
+  private static var dateString: String {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "it_IT")
+    formatter.setLocalizedDateFormatFromTemplate("EEE d")
+    return formatter.string(from: .now).replacingOccurrences(of: ".", with: "")
+  }
+}
+
+private extension ZoomLevel {
+  var shortLabel: String {
+    switch self {
+    case .innerOnly: return "CER"
+    case .innerClose: return "VIC"
+    case .full: return "ORB"
+    case .asteroids: return "OUT"
+    }
   }
 }
 

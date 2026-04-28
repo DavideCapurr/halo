@@ -21,14 +21,15 @@ struct ZoomSlider: View {
 
       ZStack(alignment: .top) {
         Capsule()
-          .frame(width: 18, height: geo.size.height)
-          .haloGlass(in: Capsule(), interactive: true)
+          .fill(.ultraThinMaterial)
+          .frame(width: 22, height: geo.size.height)
+          .overlay(Capsule().strokeBorder(HaloInk.creamHair, lineWidth: 0.6))
           .position(x: geo.size.width / 2, y: geo.size.height / 2)
 
         Capsule()
           .fill(
             LinearGradient(
-              colors: [Color.white.opacity(0.18), Color.white.opacity(0.05)],
+              colors: [HaloInk.bronze.opacity(0.60), HaloInk.creamWhisper],
               startPoint: .top,
               endPoint: .bottom
             )
@@ -38,21 +39,23 @@ struct ZoomSlider: View {
 
         ForEach(levels, id: \.self) { lvl in
           Circle()
-            .fill(lvl == level ? Color.white.opacity(0.95) : Color.white.opacity(0.34))
+            .fill(lvl == level ? HaloInk.cream : HaloInk.creamMute)
             .frame(width: lvl == level ? tickSize + 2 : tickSize,
                    height: lvl == level ? tickSize + 2 : tickSize)
             .position(x: geo.size.width / 2, y: yPosition(for: lvl, height: geo.size.height))
         }
 
-        Circle()
-          .fill(Color.white)
+        ZStack {
+          Circle()
+            .fill(HaloInk.cream)
+          Circle()
+            .fill(HaloInk.bronze.opacity(0.18))
+            .frame(width: handleSize - 8, height: handleSize - 8)
+        }
           .frame(width: handleSize, height: handleSize)
-          .shadow(color: .white.opacity(0.50), radius: 8)
+          .shadow(color: HaloInk.bronzeGlow, radius: 9)
           .shadow(color: .black.opacity(0.35), radius: 10, y: 4)
-          .overlay(
-            Circle()
-              .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
-          )
+          .overlay(Circle().stroke(Color.black.opacity(0.25), lineWidth: 0.5))
           .position(x: geo.size.width / 2, y: y)
           .animation(.spring(response: 0.28, dampingFraction: 0.8), value: level)
       }

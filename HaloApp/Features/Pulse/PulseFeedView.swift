@@ -1,69 +1,66 @@
 import SwiftUI
 import HaloShared
 
-/// Pulse feed v2 — editorial / chat-post hybrid.
-///
-/// La sezione "stanotte" che esisteva prima è ora una **headline dinamica**
-/// (vedi `HaloMoment.current()`) che cambia in base all'ora reale: di notte
-/// è "Stanotte.", di mattina "Stamattina.", di pomeriggio "Oggi.", ecc.
-///
-/// Ogni riga ibrida chat e post:
-///   - tile monogramma (lettera serif italic) + portrait pulsante
-///   - nome serif italic + mood dot + ago in mono
-///   - quote vibe in italic serif (la "voce" della persona)
-///   - se ha un post recente: mini-anteprima inline (foto/testo/audio)
-///   - barra azioni rapide chat-style (sussurra, amplifica, eco)
+/// Pulse: feed di drop spontanei.
+/// Il default resta il Cerchio, ma "Tutti" apre il flusso delle proprie orbite
+/// senza trasformare la schermata in una chat di gruppo.
 struct PulseFeedView: View {
   @State private var vm = FeedViewModel()
-  /// Tap su una card → apri HaloSpace della persona.
-  var onPersonTap: (DemoPerson) -> Void = { _ in }
-
-  /// Dynamic moment — recalcolato quando il view appare.
   @State private var moment: HaloMoment = .current()
+  @State private var scope: PulseScope = .cerchio
+  @State private var draft: String = ""
+  @State private var isDraftOpen: Bool = false
+
+  var onPersonTap: (DemoPerson) -> Void = { _ in }
 
   var body: some View {
     ZStack {
       backgroundLayer
 
       ScrollView {
-        VStack(spacing: 0) {
+        LazyVStack(spacing: 0) {
           headerSection
             .padding(.horizontal, 22)
             .padding(.top, 12)
 
-          pulseStats
+          PulseScopePicker(selection: $scope)
             .padding(.horizontal, 22)
             .padding(.top, 16)
-            .padding(.bottom, 6)
 
-          // Adesso section — only if anyone is actively posting.
-          if !vm.adessoItems.isEmpty {
-            sectionHeader("Adesso", count: vm.adessoItems.count, accent: true)
+          pulseStats
+            .padding(.horizontal, 22)
+            .padding(.top, 14)
+            .padding(.bottom, 12)
+
+          ForEach(vm.pulseEventGroups(in: scope)) { group in
+            momentSeparator(group)
               .padding(.horizontal, 22)
-              .padding(.top, 22)
-            ForEach(vm.adessoItems) { p in
-              ChatPostRow(person: p, accent: true, onTap: { onPersonTap(p) })
+              .padding(.top, group.moment == .adesso ? 8 : 22)
+              .padding(.bottom, 10)
+
+            ForEach(group.events) { event in
+              PulseDropCard(event: event, onPersonTap: { onPersonTap(event.person) })
                 .padding(.horizontal, 14)
                 .padding(.vertical, 5)
             }
           }
 
-          ForEach(vm.sections, id: \.0) { (section, items) in
-            sectionHeader(section.title, count: items.count)
-              .padding(.horizontal, 22)
-              .padding(.top, 26)
-            ForEach(items) { p in
-              ChatPostRow(person: p, onTap: { onPersonTap(p) })
-                .padding(.horizontal, 14)
-                .padding(.vertical, 5)
-            }
-          }
-
-          Spacer().frame(height: 40)
+          Spacer().frame(height: 32)
         }
-        .padding(.bottom, 80)
+        .padding(.bottom, 118)
       }
       .scrollIndicators(.hidden)
+    }
+    .safeAreaInset(edge: .bottom) {
+      PulseDropDock(
+        scope: scope,
+        text: $draft,
+        isDraftOpen: $isDraftOpen,
+        onPublish: publishDraft,
+        onQuickDrop: addQuickDrop
+      )
+      .padding(.horizontal, 14)
+      .padding(.bottom, 8)
     }
     .task {
       moment = .current()
@@ -71,24 +68,20 @@ struct PulseFeedView: View {
     }
   }
 
-  // MARK: - background
-
   private var backgroundLayer: some View {
     ZStack {
       DeepSpaceBackground()
-      // Single warm spot — late-night lamp; tinted dal mood dominante.
-      let dominant = vm.dominantMood() ?? .warm
+      let dominant = vm.dominantMood(in: scope) ?? .warm
       RadialGradient(
-        colors: [MoodPalette.auraRing(dominant, alpha: 0.18), .clear],
-        center: UnitPoint(x: 0.15, y: 0.92),
-        startRadius: 0, endRadius: 460
+        colors: [MoodPalette.auraRing(dominant, alpha: 0.14), .clear],
+        center: UnitPoint(x: 0.14, y: 0.88),
+        startRadius: 0,
+        endRadius: 470
       )
       .ignoresSafeArea()
       .animation(.easeInOut(duration: 0.6), value: dominant)
     }
   }
-
-  // MARK: - header (editorial dynamic)
 
   private var headerSection: some View {
     VStack(alignment: .leading, spacing: 8) {
@@ -97,43 +90,39 @@ struct PulseFeedView: View {
           .haloEyebrow(HaloInk.creamMute, size: 9.5, tracking: 2.6)
         Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
       }
-      .padding(.bottom, 4)
+      .padding(.bottom, 2)
 
       Text(moment.headline + ".")
-        .font(HaloType.serif(40, weight: .regular))
+        .font(HaloType.serif(36, weight: .regular))
         .foregroundStyle(HaloInk.cream)
-        .kerning(-0.6)
+        .kerning(-0.5)
         .lineLimit(1)
-        .minimumScaleFactor(0.7)
+        .minimumScaleFactor(0.72)
 
-      Text(moment.subtitle)
+      Text(scope == .cerchio ? "drop spontanei dal tuo cerchio" : "tutti i segnali dalle tue orbite")
         .font(HaloType.serif(15))
         .foregroundStyle(HaloInk.creamLow)
+        .animation(.easeInOut(duration: 0.18), value: scope)
     }
   }
 
-  // MARK: - stats strip
-
   private var pulseStats: some View {
-    let activeCount = vm.people.filter(\.hasActiveVibe).count
-    let nowCount = vm.adessoItems.count
-    let dominant = vm.dominantMood()
+    let activeCount = vm.pulsePeople(in: scope).filter(\.hasActiveVibe).count
+    let eventCount = vm.pulseEvents(in: scope).count
+    let liveCount = vm.liveEventCount(in: scope)
 
     return HStack(alignment: .center, spacing: 0) {
-      insightCell(label: "presenze", value: String(format: "%02d", activeCount))
+      statCell(scope.title.lowercased(), value: String(format: "%02d", vm.pulsePeople(in: scope).count))
       separator
-      insightCell(label: "adesso", value: String(format: "%02d", nowCount), accent: nowCount > 0)
+      statCell("live", value: String(format: "%02d", liveCount), accent: liveCount > 0)
       separator
-      moodCell(dominant)
+      statCell("drop", value: String(format: "%02d", eventCount), accent: activeCount > 0)
     }
     .padding(.vertical, 12)
     .padding(.horizontal, 16)
-    .background(
-      RoundedRectangle(cornerRadius: 18)
-        .fill(.ultraThinMaterial)
-    )
+    .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(.ultraThinMaterial))
     .overlay(
-      RoundedRectangle(cornerRadius: 18)
+      RoundedRectangle(cornerRadius: 18, style: .continuous)
         .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
     )
   }
@@ -144,443 +133,507 @@ struct PulseFeedView: View {
       .frame(width: 0.5, height: 28)
   }
 
-  private func insightCell(label: String, value: String, accent: Bool = false) -> some View {
+  private func statCell(_ label: String, value: String, accent: Bool = false) -> some View {
     VStack(spacing: 4) {
       Text(value)
         .font(HaloType.mono(18, weight: .semibold))
         .foregroundStyle(accent ? HaloInk.bronze : HaloInk.cream)
-        .kerning(-0.2)
       Text(label)
         .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 2.4)
     }
     .frame(maxWidth: .infinity)
   }
 
-  private func moodCell(_ mood: Mood?) -> some View {
-    VStack(spacing: 4) {
-      HStack(spacing: 5) {
-        Circle()
-          .fill(mood.map { MoodPalette.auraColor($0, l: 0.78) } ?? HaloInk.creamHair)
-          .frame(width: 8, height: 8)
-          .shadow(color: mood.map { MoodPalette.auraRing($0, alpha: 0.55) } ?? .clear, radius: 4)
-        Text(mood?.rawValue ?? "—")
-          .font(HaloType.serif(15))
-          .foregroundStyle(HaloInk.cream)
-      }
-      Text("vibe diffusa")
-        .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 2.4)
-    }
-    .frame(maxWidth: .infinity)
-  }
-
-  // MARK: - section header
-
-  private func sectionHeader(_ title: String, count: Int, accent: Bool = false) -> some View {
+  private func momentSeparator(_ group: PulseEventGroup) -> some View {
     HStack(spacing: 10) {
-      Text(title)
-        .haloEyebrow(accent ? HaloInk.bronze : HaloInk.creamMute, size: 9.5, tracking: 3.0)
+      Text(group.moment.title)
+        .haloEyebrow(group.moment == .adesso ? HaloInk.bronze : HaloInk.creamMute, size: 9.5, tracking: 3.0)
       Rectangle()
-        .fill(accent ? HaloInk.bronzeSoft : HaloInk.creamLine)
+        .fill(group.moment == .adesso ? HaloInk.bronzeSoft : HaloInk.creamLine)
         .frame(height: 0.5)
-      Text(String(format: "%02d", count))
+      Text(String(format: "%02d", group.events.count))
         .font(HaloType.mono(9, weight: .medium))
         .kerning(2.0)
-        .foregroundStyle(accent ? HaloInk.bronze : HaloInk.creamMute)
+        .foregroundStyle(group.moment == .adesso ? HaloInk.bronze : HaloInk.creamMute)
     }
-    .padding(.bottom, 6)
+  }
+
+  private func publishDraft() {
+    let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !text.isEmpty else { return }
+    vm.addLocalMessage(text, audience: scope)
+    draft = ""
+    withAnimation(.easeInOut(duration: 0.18)) {
+      isDraftOpen = false
+    }
+  }
+
+  private func addQuickDrop(_ type: PulseDropDock.DropType) {
+    switch type {
+    case .note:
+      withAnimation(.easeInOut(duration: 0.18)) {
+        isDraftOpen = true
+      }
+    case .photo:
+      vm.addLocalPlaceholder(.photoPost("appena successo"), audience: scope)
+    case .audio:
+      vm.addLocalPlaceholder(.audioPost("voice note · 0:14"), audience: scope)
+    case .vibe:
+      vm.addLocalPlaceholder(.vibe(draft.isEmpty ? "sono qui" : draft), audience: scope)
+      draft = ""
+      isDraftOpen = false
+    }
   }
 }
 
-// MARK: - ChatPostRow (the hybrid chat + post unit)
-
-private struct ChatPostRow: View {
-  let person: DemoPerson
-  var accent: Bool = false
-  var onTap: () -> Void = {}
-
-  private var ago: String {
-    guard let t = person.lastPostAt else {
-      return person.hasActiveVibe ? "vibe" : "—"
-    }
-    let s = Date.now.timeIntervalSince(t)
-    if s < 30 * 60 { return "adesso" }
-    if s < 3600 { return "\(Int(s / 60))m" }
-    if s < 24 * 3600 { return "\(Int(s / 3600))h" }
-    return "\(Int(s / (24 * 3600)))g"
-  }
-
-  /// Dove era la persona — pseudo-state derivato dal mood. Demo only.
-  private var contextLine: String? {
-    guard person.hasActiveVibe else { return nil }
-    switch person.mood {
-    case .warm:     return "casa · luce calda"
-    case .focused:  return "biblio · cuffie"
-    case .wild:     return "in giro · dopocena"
-    case .chill:    return "divano · tisana"
-    case .electric: return "alza il volume"
-    case .blue:     return "fuori, da solo"
-    case .soft:     return "in pigiama"
-    case .lost:     return "non risponde"
-    }
-  }
-
-  /// Posts a deterministic preview type so demo content varies.
-  private struct Preview {
-    enum Kind { case photo, text, audio }
-    let kind: Kind
-    let body: String
-  }
-
-  private var preview: Preview? {
-    guard person.lastPostAt != nil else { return nil }
-    var h: UInt32 = 5381
-    for u in person.id.unicodeScalars { h = h &* 33 &+ u.value }
-    let bucket = h % 100
-    let kind: Preview.Kind = (bucket < 35) ? .photo : (bucket < 85) ? .text : .audio
-    let body = person.note.isEmpty
-      ? (kind == .text ? "qualcosa di non detto" : "")
-      : person.note
-    return Preview(kind: kind, body: body)
-  }
+private struct PulseScopePicker: View {
+  @Binding var selection: PulseScope
 
   var body: some View {
-    Button(action: onTap) {
-      VStack(alignment: .leading, spacing: 12) {
-        HStack(alignment: .center, spacing: 12) {
-          avatar
-          VStack(alignment: .leading, spacing: 4) {
-            headerLine
-            presenceLine
-          }
-          .frame(maxWidth: .infinity, alignment: .leading)
-        }
-
-        if !person.note.isEmpty && person.hasActiveVibe {
-          messageBubble
-        }
-
-        if let p = preview {
-          postAttachment(p)
-        }
-
-        pulseFooter
+    Picker("Feed", selection: $selection) {
+      ForEach(PulseScope.allCases) { scope in
+        Text(scope.title).tag(scope)
       }
-      .padding(14)
-      .background(rowBackground)
-      .overlay(rowBorder)
     }
-    .buttonStyle(.plain)
+    .pickerStyle(.segmented)
+    .tint(HaloInk.bronze)
+  }
+}
+
+private struct PulseDropCard: View {
+  let event: PulseEvent
+  var onPersonTap: () -> Void = {}
+
+  var body: some View {
+    switch event.kind {
+    case .moodChange:
+      systemEvent
+    default:
+      Button(action: onPersonTap) {
+        VStack(alignment: .leading, spacing: 12) {
+          header
+          content
+          actionRow
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(cardBackground)
+        .overlay(cardBorder)
+      }
+      .buttonStyle(.plain)
+    }
   }
 
-  // MARK: avatar
+  private var header: some View {
+    HStack(alignment: .center, spacing: 11) {
+      avatar
+
+      VStack(alignment: .leading, spacing: 3) {
+        HStack(spacing: 7) {
+          Text(event.isMine ? "tu" : event.person.name.lowercased())
+            .font(HaloType.serif(18))
+            .foregroundStyle(HaloInk.cream)
+          Circle()
+            .fill(MoodPalette.auraColor(event.person.mood, l: 0.78))
+            .frame(width: 5, height: 5)
+          Text(event.person.mood.rawValue)
+            .haloEyebrow(HaloInk.creamMute, size: 7.5, tracking: 1.5)
+        }
+        Text("@\(event.person.handle) · \(event.person.tier.label.lowercased())")
+          .font(HaloType.ui(11, weight: .medium))
+          .foregroundStyle(HaloInk.creamMute)
+          .lineLimit(1)
+      }
+
+      Spacer(minLength: 10)
+
+      VStack(alignment: .trailing, spacing: 5) {
+        Text(timeLabel(event.createdAt))
+          .font(HaloType.mono(9, weight: .medium))
+          .kerning(0.7)
+          .textCase(.uppercase)
+          .foregroundStyle(event.isLive ? HaloInk.bronze : HaloInk.creamMute)
+        audienceBadge
+      }
+    }
+  }
 
   private var avatar: some View {
     ZStack {
-      // Pulse aura — only if vibe attiva.
-      TimelineView(.animation(minimumInterval: 1.0 / 18, paused: !person.hasActiveVibe)) { ctx in
-        let t = ctx.date.timeIntervalSinceReferenceDate
-        let phase = sin((t / 3.4) * .pi * 2)
-        let opacity = person.hasActiveVibe ? (0.50 + 0.18 * phase) : 0.18
-        Circle()
-          .fill(
-            RadialGradient(
-              colors: [MoodPalette.auraRing(person.mood, alpha: 0.55), .clear],
-              center: .center, startRadius: 0, endRadius: 38
-            )
-          )
-          .frame(width: 64, height: 64)
-          .opacity(opacity)
-      }
-      .allowsHitTesting(false)
-
       Circle()
-        .fill(person.hasActiveVibe ? MoodPalette.auraColor(person.mood, l: 0.72) : HaloInk.creamHair)
-        .frame(width: 50, height: 50)
-
-      PortraitView(personId: person.id, size: 44)
+        .fill(MoodPalette.auraColor(event.person.mood, l: 0.72))
+        .frame(width: 42, height: 42)
+        .shadow(color: MoodPalette.auraRing(event.person.mood, alpha: 0.38), radius: 7)
+      PortraitView(personId: event.person.id, size: 36)
         .background(HaloTheme.portraitBacking, in: Circle())
-
-      // mood dot — top right
-      Circle()
-        .fill(MoodPalette.auraColor(person.mood, l: 0.78))
-        .frame(width: 9, height: 9)
-        .overlay(Circle().stroke(HaloInk.nightSurface, lineWidth: 1.5))
-        .offset(x: 18, y: -18)
     }
-    .frame(width: 50, height: 50)
+    .frame(width: 46, height: 46)
   }
 
-  // MARK: header
+  private var audienceBadge: some View {
+    Text(event.audience.title.lowercased())
+      .haloEyebrow(event.audience == .cerchio ? HaloInk.bronze : HaloInk.creamMute, size: 7.4, tracking: 1.5)
+      .padding(.horizontal, 7)
+      .padding(.vertical, 4)
+      .background(Capsule().fill(HaloInk.creamWhisper))
+      .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+  }
 
-  private var headerLine: some View {
-    HStack(alignment: .firstTextBaseline, spacing: 8) {
-      Text(person.name.lowercased())
-        .font(HaloType.serif(20))
+  @ViewBuilder
+  private var content: some View {
+    switch event.kind {
+    case .message(let text):
+      noteDrop(text, label: "nota")
+    case .vibe(let text):
+      noteDrop(text, label: "vibe", accent: true)
+    case .photoPost(let caption):
+      photoDrop(caption)
+    case .textPost(let body):
+      longNoteDrop(body)
+    case .audioPost(let caption):
+      audioDrop(caption)
+    case .moodChange:
+      EmptyView()
+    }
+  }
+
+  private func noteDrop(_ text: String, label: String, accent: Bool = false) -> some View {
+    VStack(alignment: .leading, spacing: 9) {
+      Text(label)
+        .haloEyebrow(accent ? HaloInk.bronze : HaloInk.creamMute, size: 7.8, tracking: 1.7)
+      Text(text)
+        .font(HaloType.serif(19))
         .foregroundStyle(HaloInk.cream)
-        .kerning(-0.3)
-      Circle()
-        .fill(MoodPalette.auraColor(person.mood, l: 0.78))
-        .frame(width: 5, height: 5)
-      Text(person.mood.rawValue)
-        .font(HaloType.mono(8.5, weight: .medium))
-        .kerning(1.2)
-        .textCase(.uppercase)
-        .foregroundStyle(HaloInk.creamMute)
-      Spacer(minLength: 0)
-      Text(ago)
-        .font(HaloType.mono(9, weight: .medium))
-        .kerning(0.6)
-        .textCase(.uppercase)
-        .foregroundStyle(accent || ago == "adesso" ? HaloInk.bronze : HaloInk.creamMute)
+        .lineSpacing(3)
+        .lineLimit(6)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
-  }
-
-  private var presenceLine: some View {
-    HStack(spacing: 7) {
-      Text("@\(person.handle)")
-      Text("·")
-      Text(person.tier.label.lowercased())
-      if let ctx = contextLine {
-        Text("·")
-        Text(ctx)
-      }
-    }
-    .font(HaloType.ui(11.5, weight: .medium))
-    .foregroundStyle(HaloInk.creamMute)
-    .lineLimit(1)
-  }
-
-  // MARK: message bubble
-
-  private var messageBubble: some View {
-    HStack(alignment: .bottom, spacing: 10) {
-      Text("\u{201C}\(person.note)\u{201D}")
-        .font(HaloType.serif(16))
-        .foregroundStyle(HaloInk.cream)
-        .lineSpacing(2)
-        .lineLimit(4)
-      Spacer(minLength: 0)
-      Text("vibe")
-        .haloEyebrow(HaloInk.creamMute, size: 7.5, tracking: 1.5)
-    }
-    .padding(.horizontal, 14)
-    .padding(.vertical, 12)
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .background(
-      RoundedRectangle(cornerRadius: 16, style: .continuous)
-        .fill(HaloInk.creamWhisper)
-    )
+    .padding(.leading, 12)
     .overlay(alignment: .leading) {
       RoundedRectangle(cornerRadius: 1)
-        .fill(MoodPalette.auraColor(person.mood, l: 0.68))
+        .fill(accent ? MoodPalette.auraColor(event.person.mood, l: 0.68) : HaloInk.creamLine)
         .frame(width: 2)
-        .padding(.vertical, 10)
     }
+  }
+
+  private func photoDrop(_ caption: String) -> some View {
+    ZStack(alignment: .bottomLeading) {
+      LinearGradient(
+        colors: [
+          MoodPalette.auraColor(event.person.mood, l: 0.42),
+          MoodPalette.auraColor(event.person.mood, l: 0.18),
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+      )
+      Canvas { ctx, size in
+        ctx.opacity = 0.10
+        var path = Path()
+        let step: CGFloat = 7
+        var x: CGFloat = -size.height
+        while x < size.width {
+          path.move(to: CGPoint(x: x, y: size.height))
+          path.addLine(to: CGPoint(x: x + size.height, y: 0))
+          x += step
+        }
+        ctx.stroke(path, with: .color(.white), lineWidth: 0.5)
+      }
+      VStack(alignment: .leading, spacing: 6) {
+        Text("scatto")
+          .haloEyebrow(Color.white.opacity(0.70), size: 7.8, tracking: 1.8)
+        if !caption.isEmpty {
+          Text(caption)
+            .font(HaloType.serif(15))
+            .foregroundStyle(Color.white.opacity(0.95))
+            .lineLimit(2)
+        }
+      }
+      .padding(14)
+    }
+    .frame(height: 158)
+    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     .overlay(
       RoundedRectangle(cornerRadius: 16, style: .continuous)
         .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
     )
-    .fixedSize(horizontal: false, vertical: true)
   }
 
-  // MARK: post attachment
-
-  private func postAttachment(_ p: Preview) -> some View {
+  private func longNoteDrop(_ body: String) -> some View {
     VStack(alignment: .leading, spacing: 8) {
-      HStack(spacing: 8) {
-        Image(systemName: attachmentIcon(p.kind))
-          .font(.system(size: 10, weight: .semibold))
-        Text(attachmentLabel(p.kind))
-          .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 1.8)
-        Rectangle()
-          .fill(HaloInk.creamLine)
-          .frame(height: 0.5)
-      }
-      .foregroundStyle(HaloInk.creamMute)
-
-      postBubble(p)
+      Text("nota lunga")
+        .haloEyebrow(HaloInk.creamMute, size: 7.8, tracking: 1.7)
+      Text(body)
+        .font(HaloType.ui(14, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
+        .lineSpacing(3)
+        .lineLimit(6)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
-    .padding(10)
+    .padding(13)
     .background(
-      RoundedRectangle(cornerRadius: 18, style: .continuous)
-        .fill(.ultraThinMaterial)
+      RoundedRectangle(cornerRadius: 15, style: .continuous)
+        .fill(HaloInk.nightSurface.opacity(0.34))
     )
     .overlay(
-      RoundedRectangle(cornerRadius: 18, style: .continuous)
-        .strokeBorder(accent ? HaloInk.bronzeSoft : HaloInk.creamHair, lineWidth: accent ? 0.8 : 0.5)
+      RoundedRectangle(cornerRadius: 15, style: .continuous)
+        .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
     )
   }
 
-  @ViewBuilder
-  private func postBubble(_ p: Preview) -> some View {
-    switch p.kind {
-    case .photo:
-      ZStack(alignment: .bottomLeading) {
-        LinearGradient(
-          colors: [
-            MoodPalette.auraColor(person.mood, l: 0.42),
-            MoodPalette.auraColor(person.mood, l: 0.20),
-          ],
-          startPoint: .topLeading, endPoint: .bottomTrailing
-        )
-        .frame(height: 88)
-        // diagonal hatch — adds subtle texture, "old photo" feel
-        Canvas { ctx, size in
-          ctx.opacity = 0.10
-          var path = Path()
-          let step: CGFloat = 7
-          var x: CGFloat = -size.height
-          while x < size.width {
-            path.move(to: CGPoint(x: x, y: size.height))
-            path.addLine(to: CGPoint(x: x + size.height, y: 0))
-            x += step
-          }
-          ctx.stroke(path, with: .color(.white), lineWidth: 0.5)
-        }
-        .frame(height: 88)
-        if !p.body.isEmpty {
-          Text("\u{201C}\(p.body)\u{201D}")
-            .font(HaloType.serif(14))
-            .foregroundStyle(Color.white.opacity(0.95))
-            .padding(.horizontal, 12).padding(.bottom, 10)
-            .lineLimit(2)
-        }
+  private func audioDrop(_ caption: String) -> some View {
+    HStack(spacing: 12) {
+      ZStack {
+        Circle()
+          .fill(MoodPalette.auraColor(event.person.mood, l: 0.70))
+        Image(systemName: "play.fill")
+          .font(.system(size: 11, weight: .bold))
+          .foregroundStyle(.white)
+          .offset(x: 1)
       }
-      .frame(height: 88)
-      .clipShape(RoundedRectangle(cornerRadius: 14))
-      .overlay(
-        RoundedRectangle(cornerRadius: 14)
-          .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
-      )
+      .frame(width: 34, height: 34)
 
-    case .text:
-      // Looks like a chat bubble, reads like an editorial quote.
-      Text(p.body)
-        .font(HaloType.ui(13.5, weight: .regular))
-        .foregroundStyle(HaloInk.cream)
-        .kerning(-0.05)
-        .lineSpacing(3)
-        .lineLimit(3)
-        .padding(.horizontal, 14).padding(.vertical, 12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-          RoundedRectangle(cornerRadius: 14)
-            .fill(HaloInk.nightSurface.opacity(0.36))
-        )
-        .overlay(
-          RoundedRectangle(cornerRadius: 14)
-            .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
-        )
-
-    case .audio:
-      HStack(spacing: 10) {
-        ZStack {
-          Circle()
-            .fill(MoodPalette.auraColor(person.mood, l: 0.7))
-          Image(systemName: "play.fill")
-            .font(.system(size: 10, weight: .bold))
-            .foregroundStyle(.white)
-            .offset(x: 1)
-        }
-        .frame(width: 30, height: 30)
-
+      VStack(alignment: .leading, spacing: 7) {
+        Text("audio")
+          .haloEyebrow(HaloInk.creamMute, size: 7.8, tracking: 1.7)
         HStack(spacing: 2) {
-          ForEach(0..<22, id: \.self) { i in
+          ForEach(0..<30, id: \.self) { i in
             Capsule()
-              .fill(Color.white.opacity(i < 10 ? 0.78 : 0.22))
-              .frame(width: 2, height: CGFloat(5 + abs(sin(Double(i) * 1.3)) * 14))
+              .fill(Color.white.opacity(i < 13 ? 0.78 : 0.22))
+              .frame(width: 2, height: CGFloat(5 + abs(sin(Double(i) * 1.3)) * 16))
           }
         }
-        .frame(height: 22)
-
-        Spacer()
-        Text("0:14")
-          .font(HaloType.mono(9, weight: .medium))
-          .kerning(0.4)
-          .foregroundStyle(HaloInk.creamMute)
+        .frame(height: 24)
       }
-      .padding(.horizontal, 12).padding(.vertical, 10)
-      .background(
-        RoundedRectangle(cornerRadius: 14)
-          .fill(HaloInk.nightSurface.opacity(0.36))
-      )
-      .overlay(
-        RoundedRectangle(cornerRadius: 14)
-          .strokeBorder(HaloInk.creamHair, lineWidth: 0.5)
-      )
-    }
-  }
 
-  // MARK: quick actions (chat-style)
-
-  private var pulseFooter: some View {
-    HStack(spacing: 8) {
-      footerChip(icon: "bubble.left", label: "rispondi")
-      footerChip(icon: "wave.3.right", label: "eco")
       Spacer()
-      Text(ago == "adesso" ? "live" : "apri")
-        .haloEyebrow(ago == "adesso" ? HaloInk.bronze : HaloInk.creamMute, size: 8, tracking: 1.5)
+      Text(caption.contains("0:") ? caption : "0:14")
+        .font(HaloType.mono(9, weight: .medium))
+        .kerning(0.4)
+        .foregroundStyle(HaloInk.creamMute)
     }
-    .padding(.top, 1)
+    .padding(13)
+    .background(
+      RoundedRectangle(cornerRadius: 15, style: .continuous)
+        .fill(HaloInk.nightSurface.opacity(0.34))
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: 15, style: .continuous)
+        .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
+    )
   }
 
-  private func footerChip(icon: String, label: String) -> some View {
+  private var actionRow: some View {
+    HStack(spacing: 8) {
+      actionChip("whisper", icon: "paperplane")
+      actionChip("eco", icon: "wave.3.right")
+      Spacer()
+      if event.isLive {
+        Text("live")
+          .haloEyebrow(HaloInk.bronze, size: 7.8, tracking: 1.7)
+      }
+    }
+  }
+
+  private func actionChip(_ label: String, icon: String) -> some View {
     HStack(spacing: 5) {
       Image(systemName: icon)
-        .font(.system(size: 10, weight: .medium))
+        .font(.system(size: 9, weight: .medium))
       Text(label)
-        .font(HaloType.mono(9, weight: .medium))
-        .kerning(0.6)
+        .font(HaloType.mono(8.5, weight: .medium))
+        .kerning(0.5)
         .textCase(.uppercase)
     }
     .foregroundStyle(HaloInk.creamLow)
-    .padding(.horizontal, 9)
-    .padding(.vertical, 5)
-    .background(
-      Capsule().fill(HaloInk.creamWhisper)
-    )
+    .padding(.horizontal, 8)
+    .padding(.vertical, 4)
+    .background(Capsule().fill(HaloInk.creamWhisper))
     .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
   }
 
-  private func attachmentIcon(_ kind: Preview.Kind) -> String {
-    switch kind {
-    case .photo: return "photo"
-    case .text: return "text.alignleft"
-    case .audio: return "waveform"
+  private var systemEvent: some View {
+    HStack(spacing: 8) {
+      Rectangle()
+        .fill(HaloInk.creamLine)
+        .frame(height: 0.5)
+      Circle()
+        .fill(MoodPalette.auraColor(event.person.mood, l: 0.75))
+        .frame(width: 6, height: 6)
+      Text("\(event.person.name.lowercased()) ha cambiato vibe")
+        .haloEyebrow(HaloInk.creamMute, size: 8.5, tracking: 1.8)
+      Rectangle()
+        .fill(HaloInk.creamLine)
+        .frame(height: 0.5)
     }
+    .padding(.vertical, 8)
+    .padding(.horizontal, 8)
   }
 
-  private func attachmentLabel(_ kind: Preview.Kind) -> String {
-    switch kind {
-    case .photo: return "post foto"
-    case .text: return "post testo"
-    case .audio: return "nota audio"
-    }
-  }
-
-  // MARK: row bg / border
-
-  private var rowBackground: some View {
-    RoundedRectangle(cornerRadius: 22)
+  private var cardBackground: some View {
+    RoundedRectangle(cornerRadius: 22, style: .continuous)
       .fill(.ultraThinMaterial)
       .overlay(
-        RoundedRectangle(cornerRadius: 22)
+        RoundedRectangle(cornerRadius: 22, style: .continuous)
           .fill(
             LinearGradient(
               colors: [
-                Color.white.opacity(0.04),
+                Color.white.opacity(0.035),
                 Color.clear,
-                Color.black.opacity(0.10),
+                Color.black.opacity(0.12),
               ],
-              startPoint: .top, endPoint: .bottom
+              startPoint: .top,
+              endPoint: .bottom
             )
           )
       )
   }
 
-  private var rowBorder: some View {
-    RoundedRectangle(cornerRadius: 22)
-      .strokeBorder(accent ? HaloInk.bronzeSoft : HaloInk.creamHair, lineWidth: accent ? 0.8 : 0.5)
+  private var cardBorder: some View {
+    RoundedRectangle(cornerRadius: 22, style: .continuous)
+      .strokeBorder(event.isLive ? HaloInk.bronzeSoft : HaloInk.creamHair, lineWidth: event.isLive ? 0.8 : 0.5)
+  }
+
+  private func timeLabel(_ date: Date) -> String {
+    let age = Date.now.timeIntervalSince(date)
+    if age < 30 * 60 { return "ora" }
+    if age < 3600 { return "\(Int(age / 60))m" }
+    if age < 24 * 3600 { return "\(Int(age / 3600))h" }
+    return "\(Int(age / (24 * 3600)))g"
+  }
+}
+
+private struct PulseDropDock: View {
+  enum DropType {
+    case note
+    case photo
+    case audio
+    case vibe
+  }
+
+  let scope: PulseScope
+  @Binding var text: String
+  @Binding var isDraftOpen: Bool
+  var onPublish: () -> Void
+  var onQuickDrop: (DropType) -> Void
+
+  private var canPublish: Bool {
+    !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+  }
+
+  var body: some View {
+    VStack(spacing: 9) {
+      if isDraftOpen {
+        draftPanel
+          .transition(.opacity.combined(with: .move(edge: .bottom)))
+      }
+
+      HStack(spacing: 8) {
+        dockButton("nota", icon: "square.and.pencil", type: .note)
+        dockButton("scatto", icon: "camera", type: .photo)
+        dockButton("audio", icon: "mic.fill", type: .audio)
+        dockButton("vibe", icon: "sparkle", type: .vibe)
+      }
+      .padding(10)
+      .background(
+        RoundedRectangle(cornerRadius: 24, style: .continuous)
+          .fill(.ultraThinMaterial)
+      )
+      .overlay(
+        RoundedRectangle(cornerRadius: 24, style: .continuous)
+          .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+      )
+      .shadow(color: .black.opacity(0.45), radius: 18, y: 10)
+    }
+  }
+
+  private var draftPanel: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack(spacing: 8) {
+        Text("nuovo drop")
+          .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 1.8)
+        Rectangle()
+          .fill(HaloInk.creamLine)
+          .frame(height: 0.5)
+        Text(scope.title.lowercased())
+          .haloEyebrow(scope == .cerchio ? HaloInk.bronze : HaloInk.creamMute, size: 8, tracking: 1.8)
+      }
+
+      TextField("una cosa vera, adesso", text: $text, axis: .vertical)
+        .textFieldStyle(.plain)
+        .font(HaloType.serif(18))
+        .foregroundStyle(HaloInk.cream)
+        .lineLimit(2...5)
+        .padding(.vertical, 4)
+
+      HStack(spacing: 8) {
+        Button {
+          withAnimation(.easeInOut(duration: 0.18)) {
+            isDraftOpen = false
+          }
+        } label: {
+          Text("chiudi")
+            .font(HaloType.mono(9, weight: .medium))
+            .kerning(0.7)
+            .textCase(.uppercase)
+        }
+        .foregroundStyle(HaloInk.creamMute)
+        .buttonStyle(.plain)
+
+        Spacer()
+
+        Button(action: onPublish) {
+          Text("pubblica")
+            .font(HaloType.mono(9, weight: .semibold))
+            .kerning(0.8)
+            .textCase(.uppercase)
+            .foregroundStyle(canPublish ? Color.black : HaloInk.creamMute)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Capsule().fill(canPublish ? HaloInk.cream : HaloInk.creamWhisper))
+            .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
+        .disabled(!canPublish)
+      }
+    }
+    .padding(14)
+    .background(
+      RoundedRectangle(cornerRadius: 22, style: .continuous)
+        .fill(.ultraThinMaterial)
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: 22, style: .continuous)
+        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    )
+    .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
+  }
+
+  private func dockButton(_ label: String, icon: String, type: DropType) -> some View {
+    Button {
+      onQuickDrop(type)
+    } label: {
+      VStack(spacing: 5) {
+        Image(systemName: icon)
+          .font(.system(size: 14, weight: .semibold))
+        Text(label)
+          .font(HaloType.mono(8.5, weight: .medium))
+          .kerning(0.6)
+          .textCase(.uppercase)
+          .lineLimit(1)
+          .minimumScaleFactor(0.82)
+      }
+      .foregroundStyle(HaloInk.creamLow)
+      .frame(maxWidth: .infinity)
+      .frame(height: 46)
+      .background(
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+          .fill(HaloInk.creamWhisper)
+      )
+      .overlay(
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+          .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
+      )
+    }
+    .buttonStyle(.plain)
   }
 }
 

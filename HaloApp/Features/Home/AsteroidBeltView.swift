@@ -26,17 +26,24 @@ struct AsteroidBeltView: View {
             }
             if let title = group.title.isEmpty ? nil : group.title {
               Text(title)
-                .font(.system(size: 9, weight: .medium, design: .rounded))
-                .kerning(0.3)
-                .textCase(.uppercase)
-                .foregroundStyle(Color.white.opacity(0.40))
+                .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 1.8)
             }
           }
         }
       }
       .padding(.horizontal, 16)
+      .padding(.vertical, 8)
     }
-    .frame(height: bubbleSize + 24)
+    .frame(height: bubbleSize + 38)
+    .background(
+      RoundedRectangle(cornerRadius: 18, style: .continuous)
+        .fill(.ultraThinMaterial)
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: 18, style: .continuous)
+        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    )
+    .padding(.horizontal, 14)
     .accessibilityLabel("Asteroidi: account asimmetrici")
   }
 

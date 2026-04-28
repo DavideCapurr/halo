@@ -48,6 +48,15 @@ struct OrbitalFieldView: View {
       let placementByPerson = Dictionary(uniqueKeysWithValues: placements.map { ($0.personId, $0) })
 
       ZStack {
+        RadialGradient(
+          colors: [MoodPalette.auraRing(me.mood, alpha: 0.13), .clear],
+          center: .center,
+          startRadius: 0,
+          endRadius: maxR * 1.18
+        )
+        .position(x: cx, y: cy)
+        .allowsHitTesting(false)
+
         // 1. anelli (illuminati se ghostTier li attraversa). Nebula in dezoom
         // diventa una fascia diffusa, non un anello orbitale classico.
         ForEach(FriendshipTier.allCases.filter { $0.isVisible(at: zoomLevel) && !($0 == .nebula && zoomLevel == .asteroids) }, id: \.self) { tier in
@@ -134,16 +143,19 @@ struct OrbitalFieldView: View {
            let original = placementByPerson[d.personId],
            d.ghostTier != original.tier {
           HStack(spacing: 6) {
-            Text("→ sposta in")
-              .foregroundStyle(Color.white.opacity(0.8))
+            Text("sposta in")
+              .foregroundStyle(HaloInk.creamMute)
             Text(d.ghostTier.label)
               .fontWeight(.semibold)
-              .foregroundStyle(.white)
+              .foregroundStyle(HaloInk.cream)
           }
-          .font(.system(size: 13, weight: .medium))
-          .kerning(-0.1)
-          .padding(.horizontal, 16).padding(.vertical, 8)
-          .haloGlass(in: Capsule(), interactive: false)
+          .font(HaloType.mono(10, weight: .medium))
+          .kerning(1.0)
+          .textCase(.uppercase)
+          .padding(.horizontal, 14)
+          .padding(.vertical, 8)
+          .background(Capsule().fill(.ultraThinMaterial))
+          .overlay(Capsule().strokeBorder(HaloInk.bronzeSoft, lineWidth: 0.6))
           .position(x: cx, y: 32)
           .zIndex(60)
           .transition(.opacity.combined(with: .move(edge: .top)))
