@@ -341,17 +341,17 @@ struct MomentCard: View {
             ReactionGlyph(kind: kind, size: 14, color: Color.white.opacity(0.65))
             if canSeeActors {
               Text(actors.prefix(2).map { "@\($0)" }.joined(separator: " "))
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(Color.white.opacity(0.55))
+                .font(HaloType.ui(10, weight: .medium))
+                .foregroundStyle(HaloInk.creamMute)
               if count > 2 {
                 Text("+\(count - 2)")
-                  .font(HaloTheme.mono)
-                  .foregroundStyle(Color.white.opacity(0.45))
+                  .font(HaloType.mono(10, weight: .medium))
+                  .foregroundStyle(HaloInk.creamMute)
               }
             } else {
               Text("\(count)")
-                .font(HaloTheme.mono)
-                .foregroundStyle(Color.white.opacity(0.55))
+                .font(HaloType.mono(10, weight: .medium))
+                .foregroundStyle(HaloInk.creamMute)
             }
           }
           .padding(.horizontal, 6).padding(.vertical, 4)

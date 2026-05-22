@@ -67,12 +67,11 @@ struct HaloSpacePeekSheet: View {
 
       VStack(alignment: .leading, spacing: 1) {
         Text(person.name)
-          .font(.system(size: 19, weight: .semibold))
-          .kerning(-0.3)
-          .foregroundStyle(.white)
+          .font(HaloType.serif(22, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
         Text("@\(person.handle) · \(person.tier.label)")
-          .font(.system(size: 13))
-          .foregroundStyle(HaloTheme.textMuted)
+          .font(HaloType.ui(13, weight: .regular))
+          .foregroundStyle(HaloInk.creamLow)
       }
       Spacer(minLength: 0)
     }
@@ -86,13 +85,12 @@ struct HaloSpacePeekSheet: View {
         .frame(width: 10, height: 10)
         .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 4)
       Text(person.mood.rawValue)
-        .font(.system(size: 14, weight: .medium))
-        .foregroundStyle(.white)
+        .font(HaloType.ui(14, weight: .medium))
+        .foregroundStyle(HaloInk.cream)
       if !person.note.isEmpty {
         Text("“\(person.note)”")
-          .font(.system(size: 13))
-          .italic()
-          .foregroundStyle(Color.white.opacity(0.55))
+          .font(HaloType.serif(15, weight: .regular))
+          .foregroundStyle(HaloInk.creamLow)
           .lineLimit(1)
           .truncationMode(.tail)
       }
@@ -145,16 +143,16 @@ struct HaloSpacePeekSheet: View {
       .frame(height: 160)
 
       Text("foto · \(post.ago)")
-        .font(.system(.caption2, design: .monospaced))
-        .kerning(0.3)
-        .foregroundStyle(Color.white.opacity(0.6))
+        .font(HaloType.mono(10, weight: .medium))
+        .kerning(1.0)
+        .foregroundStyle(HaloInk.creamLow)
         .padding(.leading, 10).padding(.bottom, 8)
     }
     .overlay(alignment: .bottom) {
       if !post.caption.isEmpty {
         Text(post.caption)
-          .font(.system(size: 14)).italic()
-          .foregroundStyle(Color.white.opacity(0.82))
+          .font(HaloType.serif(15, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 16).padding(.vertical, 10)
           .background(Color.black.opacity(0.0))
@@ -166,14 +164,13 @@ struct HaloSpacePeekSheet: View {
   private func textBody(_ post: DemoPost) -> some View {
     VStack(alignment: .leading, spacing: 10) {
       Text(post.caption)
-        .font(.system(size: 15))
-        .kerning(-0.1)
+        .font(HaloType.serif(18, weight: .regular))
         .lineSpacing(4)
-        .foregroundStyle(.white)
+        .foregroundStyle(HaloInk.cream)
       Text("testo · \(post.ago)")
-        .font(.system(.caption2, design: .monospaced))
-        .kerning(0.3)
-        .foregroundStyle(HaloTheme.textCaption)
+        .font(HaloType.mono(10, weight: .medium))
+        .kerning(1.0)
+        .foregroundStyle(HaloInk.creamMute)
     }
     .padding(16)
     .frame(maxWidth: .infinity, alignment: .leading)
@@ -202,9 +199,9 @@ struct HaloSpacePeekSheet: View {
         .frame(height: 24)
 
         Text("\(post.caption) · \(post.ago)")
-          .font(.system(.caption2, design: .monospaced))
-          .kerning(0.3)
-          .foregroundStyle(HaloTheme.textCaption)
+          .font(HaloType.mono(10, weight: .medium))
+          .kerning(1.0)
+          .foregroundStyle(HaloInk.creamMute)
       }
     }
     .padding(16)

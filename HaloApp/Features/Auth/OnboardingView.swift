@@ -34,8 +34,8 @@ struct OnboardingView: View {
           nameField
           if let err = errorMessage {
             Text(err)
-              .font(.system(size: 12))
-              .foregroundStyle(MoodPalette.auraColor(.warm, l: 0.65))
+              .font(HaloType.ui(12, weight: .regular))
+              .foregroundStyle(SwarmHalo.warmMagenta)
           }
           Spacer().frame(height: 12)
           ctaButton
@@ -56,13 +56,12 @@ struct OnboardingView: View {
   private var eyebrow: some View {
     VStack(alignment: .leading, spacing: 6) {
       Text("BENVENUTO IN HALO")
-        .font(.system(size: 11, weight: .semibold))
-        .kerning(1.4)
-        .foregroundStyle(HaloTheme.textCaption)
-      Text("come ti chiami qui dentro?")
-        .font(.system(size: 26, weight: .semibold))
-        .kerning(-0.6)
-        .foregroundStyle(.white)
+        .font(HaloType.eyebrow(11))
+        .kerning(2.4)
+        .foregroundStyle(HaloInk.creamMute)
+      Text("come ti chiami qui dentro.")
+        .font(HaloType.serif(28, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }
@@ -103,15 +102,15 @@ struct OnboardingView: View {
   private var handleField: some View {
     VStack(alignment: .leading, spacing: 6) {
       Text("HANDLE")
-        .font(.system(size: 10, weight: .semibold))
-        .kerning(1)
-        .foregroundStyle(HaloTheme.textCaption)
+        .font(HaloType.eyebrow(10))
+        .kerning(2.0)
+        .foregroundStyle(HaloInk.creamMute)
       HStack(spacing: 4) {
-        Text("@").foregroundStyle(.white.opacity(0.55))
+        Text("@").foregroundStyle(HaloInk.creamMute)
         TextField("handle", text: $handle)
           .textInputAutocapitalization(.never)
           .autocorrectionDisabled()
-          .foregroundStyle(.white)
+          .foregroundStyle(HaloInk.cream)
           .onChange(of: handle) { _, v in
             let cleaned = v.lowercased().filter { $0.isLetter || $0.isNumber || $0 == "_" || $0 == "." }
             handle = String(cleaned.prefix(24))
@@ -125,11 +124,11 @@ struct OnboardingView: View {
   private var nameField: some View {
     VStack(alignment: .leading, spacing: 6) {
       Text("DISPLAY NAME")
-        .font(.system(size: 10, weight: .semibold))
-        .kerning(1)
-        .foregroundStyle(HaloTheme.textCaption)
+        .font(HaloType.eyebrow(10))
+        .kerning(2.0)
+        .foregroundStyle(HaloInk.creamMute)
       TextField("come vuoi essere chiamato", text: $displayName)
-        .foregroundStyle(.white)
+        .foregroundStyle(HaloInk.cream)
         .padding(.horizontal, 14).padding(.vertical, 12)
         .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
     }
@@ -140,9 +139,9 @@ struct OnboardingView: View {
     return Button {
       Task { await save() }
     } label: {
-      Text("Inizia")
-        .font(.system(size: 16, weight: .semibold))
-        .foregroundStyle(.white)
+      Text("inizia")
+        .font(HaloType.ui(15, weight: .semibold))
+        .foregroundStyle(HaloInk.cream)
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
         .background(

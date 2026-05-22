@@ -24,10 +24,10 @@ struct AudioRecorderView: View {
   var body: some View {
     VStack(spacing: 18) {
       Text(headerText)
-        .font(.system(size: 14, weight: .medium))
-        .kerning(0.6)
+        .font(HaloType.eyebrow(11))
+        .kerning(2.4)
         .textCase(.uppercase)
-        .foregroundStyle(Color.white.opacity(0.55))
+        .foregroundStyle(HaloInk.creamMute)
 
       waveform
         .frame(height: 70)
@@ -35,8 +35,8 @@ struct AudioRecorderView: View {
         .padding(.horizontal, 18)
 
       Text(timerText)
-        .font(.system(.title2, design: .monospaced))
-        .foregroundStyle(.white)
+        .font(HaloType.mono(28, weight: .medium))
+        .foregroundStyle(HaloInk.cream)
 
       controls
     }
@@ -50,10 +50,10 @@ struct AudioRecorderView: View {
 
   private var headerText: String {
     switch phase {
-    case .idle: return "Premi per registrare · max 60s"
-    case .recording: return "Registrando…"
-    case .recorded: return "Pronto"
-    case .playing: return "Playback"
+    case .idle: return "premi per registrare · max 60s"
+    case .recording: return "in registrazione"
+    case .recorded: return "pronto"
+    case .playing: return "playback"
     }
   }
 
@@ -92,9 +92,15 @@ struct AudioRecorderView: View {
       case .recording:
         circleButton(icon: "stop.fill", color: .white, bg: Color.red.opacity(0.85)) { stopRecording() }
       case .recorded:
-        Button("Ripeti") { reset() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.55))
+        Button("ripeti") { reset() }
+          .buttonStyle(.plain)
+          .font(HaloType.ui(14, weight: .medium))
+          .foregroundStyle(HaloInk.creamMute)
         circleButton(icon: "play.fill", color: .white, bg: Color.white.opacity(0.18)) { play() }
-        Button("Conferma") { confirm() }.buttonStyle(.plain).foregroundStyle(.white).fontWeight(.semibold)
+        Button("conferma") { confirm() }
+          .buttonStyle(.plain)
+          .font(HaloType.ui(14, weight: .semibold))
+          .foregroundStyle(HaloInk.cream)
       case .playing:
         circleButton(icon: "pause.fill", color: .white, bg: Color.white.opacity(0.18)) { stopPlayback() }
       }

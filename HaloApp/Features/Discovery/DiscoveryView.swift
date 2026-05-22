@@ -58,9 +58,9 @@ struct DiscoveryView: View {
       .buttonStyle(.plain)
       Spacer()
       Text("ESPLORA")
-        .font(.system(size: 11, weight: .semibold))
-        .kerning(1.4)
-        .foregroundStyle(HaloTheme.textCaption)
+        .font(HaloType.eyebrow(11))
+        .kerning(2.4)
+        .foregroundStyle(HaloInk.creamMute)
       Spacer()
       Color.clear.frame(width: 32, height: 32)
     }
@@ -70,11 +70,12 @@ struct DiscoveryView: View {
   private var searchField: some View {
     HStack(spacing: 10) {
       Image(systemName: "magnifyingglass")
-        .foregroundStyle(.white.opacity(0.55))
+        .foregroundStyle(HaloInk.creamMute)
       TextField("cerca artisti, brand, voci…", text: $query)
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
-        .foregroundStyle(.white)
+        .foregroundStyle(HaloInk.cream)
+        .font(HaloType.ui(14, weight: .regular))
     }
     .padding(.horizontal, 14).padding(.vertical, 12)
     .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
@@ -83,9 +84,9 @@ struct DiscoveryView: View {
 
   private func header(_ text: String) -> some View {
     Text(text)
-      .font(.system(size: 10, weight: .semibold))
-      .kerning(1.2)
-      .foregroundStyle(HaloTheme.textCaption)
+      .font(HaloType.eyebrow(10))
+      .kerning(2.0)
+      .foregroundStyle(HaloInk.creamMute)
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.top, 8)
       .padding(.bottom, 2)
@@ -101,23 +102,23 @@ struct DiscoveryView: View {
       VStack(alignment: .leading, spacing: 2) {
         HStack(spacing: 5) {
           Text(p.displayName)
-            .font(.system(size: 14, weight: .medium))
-            .foregroundStyle(.white)
+            .font(HaloType.serif(16, weight: .regular))
+            .foregroundStyle(HaloInk.cream)
           Image(systemName: "checkmark.seal.fill")
             .font(.system(size: 10))
             .foregroundStyle(MoodPalette.auraColor(.electric, l: 0.85))
         }
         Text("@\(p.handle)")
-          .font(.system(size: 11))
-          .foregroundStyle(Color.white.opacity(0.55))
+          .font(HaloType.ui(11, weight: .regular))
+          .foregroundStyle(HaloInk.creamMute)
       }
       Spacer()
       Button {
         Task { await toggleFollow(p) }
       } label: {
-        Text(on ? "Seguito" : "Segui")
-          .font(.system(size: 12, weight: .semibold))
-          .foregroundStyle(on ? Color.white.opacity(0.55) : .white)
+        Text(on ? "seguito" : "segui")
+          .font(HaloType.ui(12, weight: .semibold))
+          .foregroundStyle(on ? HaloInk.creamMute : HaloInk.cream)
           .padding(.horizontal, 12).padding(.vertical, 6)
           .haloGlass(in: Capsule(), tint: on ? nil : MoodPalette.auraColor(.electric, l: 0.55), interactive: true)
       }

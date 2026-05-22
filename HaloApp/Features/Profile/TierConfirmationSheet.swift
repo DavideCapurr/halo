@@ -34,22 +34,21 @@ struct TierConfirmationSheet: View {
   private var header: some View {
     VStack(spacing: 8) {
       Text("SPOSTA NEL TUO HALO")
-        .font(.system(size: 13, weight: .medium))
-        .kerning(1.5)
-        .foregroundStyle(HaloTheme.textCaption)
+        .font(HaloType.eyebrow(11))
+        .kerning(2.4)
+        .foregroundStyle(HaloInk.creamMute)
 
       VStack(spacing: 2) {
         HStack(spacing: 5) {
-          Text(proposal.closer ? "Porta" : "Sposta")
-            .foregroundStyle(.white)
+          Text(proposal.closer ? "porta" : "sposta")
+            .foregroundStyle(HaloInk.cream)
           Text(proposal.person.name)
             .foregroundStyle(MoodPalette.auraColor(proposal.person.mood, l: 0.85))
         }
-        Text(proposal.closer ? "più vicino?" : "più distante?")
-          .foregroundStyle(.white)
+        Text(proposal.closer ? "più vicino." : "più distante.")
+          .foregroundStyle(HaloInk.cream)
       }
-      .font(.system(size: 24, weight: .semibold))
-      .kerning(-0.5)
+      .font(HaloType.serif(28, weight: .regular))
       .multilineTextAlignment(.center)
     }
     .padding(.horizontal, 22).padding(.top, 22).padding(.bottom, 8)
@@ -83,32 +82,31 @@ struct TierConfirmationSheet: View {
             highlight ?? Color.white.opacity(0.3),
             style: .init(lineWidth: 1, dash: dimmed ? [3, 3] : [])
           )
-        Text(tier.label.uppercased())
-          .font(.system(size: 11, weight: .semibold))
-          .kerning(1)
-          .foregroundStyle(highlight ?? Color.white.opacity(0.7))
+        Text(tier.label)
+          .font(HaloType.eyebrow(10))
+          .kerning(1.8)
+          .textCase(.uppercase)
+          .foregroundStyle(highlight ?? HaloInk.creamLow)
       }
       .frame(width: 54, height: 54)
       .opacity(dimmed ? 0.55 : 1)
 
       Text("cap \(tier.softCap.map(String.init) ?? "∞")")
-        .font(.system(.caption2, design: .monospaced))
-        .kerning(0.3)
-        .foregroundStyle(Color.white.opacity(0.45))
+        .font(HaloType.mono(10, weight: .medium))
+        .kerning(1.0)
+        .foregroundStyle(HaloInk.creamMute)
     }
   }
 
   private var explanation: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text(visibilityText)
-        .font(.system(size: 14))
-        .kerning(-0.1)
+        .font(HaloType.ui(14, weight: .regular))
         .lineSpacing(3)
-        .foregroundStyle(Color.white.opacity(0.78))
-      Text("Richiede conferma anche da \(proposal.person.name).")
-        .font(.system(size: 12))
-        .italic()
-        .foregroundStyle(HaloTheme.textCaption)
+        .foregroundStyle(HaloInk.cream)
+      Text("richiede conferma anche da \(proposal.person.name).")
+        .font(HaloType.serif(13, weight: .regular))
+        .foregroundStyle(HaloInk.creamMute)
     }
     .padding(.horizontal, 16).padding(.vertical, 14)
     .frame(maxWidth: .infinity, alignment: .leading)
@@ -119,9 +117,9 @@ struct TierConfirmationSheet: View {
   private var actions: some View {
     HStack(spacing: 10) {
       Button(action: onDecline) {
-        Text("Annulla")
-          .font(.system(size: 15, weight: .medium))
-          .foregroundStyle(Color.white.opacity(0.75))
+        Text("annulla")
+          .font(HaloType.ui(15, weight: .medium))
+          .foregroundStyle(HaloInk.creamLow)
           .frame(maxWidth: .infinity)
           .padding(.vertical, 14)
           .haloGlass(in: RoundedRectangle(cornerRadius: 16), interactive: true)
@@ -129,9 +127,9 @@ struct TierConfirmationSheet: View {
       .buttonStyle(.plain)
 
       Button(action: onAccept) {
-        Text("Invia richiesta")
-          .font(.system(size: 15, weight: .semibold))
-          .foregroundStyle(.white)
+        Text("invia richiesta")
+          .font(HaloType.ui(15, weight: .semibold))
+          .foregroundStyle(HaloInk.cream)
           .frame(maxWidth: .infinity)
           .padding(.vertical, 14)
           .background(

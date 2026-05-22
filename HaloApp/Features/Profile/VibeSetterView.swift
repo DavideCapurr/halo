@@ -25,15 +25,13 @@ struct VibeSetterView: View {
     ScrollView {
       VStack(spacing: 0) {
         VStack(alignment: .leading, spacing: 6) {
-          Text("La tua vibe")
-            .font(.system(size: 13, weight: .medium))
-            .kerning(1.5)
-            .textCase(.uppercase)
-            .foregroundStyle(HaloTheme.textCaption)
-          Text("Cosa stai sentendo?")
-            .font(.system(size: 26, weight: .semibold))
-            .kerning(-0.6)
-            .foregroundStyle(.white)
+          Text("LA TUA VIBE")
+            .font(HaloType.eyebrow(11))
+            .kerning(2.4)
+            .foregroundStyle(HaloInk.creamMute)
+          Text("cosa stai sentendo.")
+            .font(HaloType.serif(28, weight: .regular))
+            .foregroundStyle(HaloInk.cream)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 22).padding(.top, 18)
@@ -51,10 +49,11 @@ struct VibeSetterView: View {
         .frame(width: 200, height: 200)
         .padding(.top, 12)
         .overlay(alignment: .bottom) {
-          Text(mood.rawValue.uppercased())
-            .font(.system(size: 11, weight: .semibold))
-            .kerning(1.2)
-            .foregroundStyle(.white.opacity(0.75))
+          Text(mood.rawValue)
+            .font(HaloType.eyebrow(11))
+            .kerning(2.4)
+            .textCase(.uppercase)
+            .foregroundStyle(HaloInk.creamLow)
             .offset(y: -4)
         }
         .padding(.bottom, 18)
@@ -74,17 +73,16 @@ struct VibeSetterView: View {
         VStack(alignment: .leading, spacing: 6) {
           TextField("una nota breve (opzionale)", text: $note)
             .textFieldStyle(.plain)
-            .font(.system(size: 15))
-            .kerning(-0.1)
-            .foregroundStyle(.white)
+            .font(HaloType.serif(17, weight: .regular))
+            .foregroundStyle(HaloInk.cream)
             .submitLabel(.done)
             .onChange(of: note) { _, newValue in
               if newValue.count > 60 { note = String(newValue.prefix(60)) }
             }
           Text("\(note.count)/60 · scade tra 24h")
-            .font(.system(.caption2, design: .monospaced))
-            .kerning(0.2)
-            .foregroundStyle(Color.white.opacity(0.35))
+            .font(HaloType.mono(10, weight: .medium))
+            .kerning(1.0)
+            .foregroundStyle(HaloInk.creamMute)
         }
         .padding(.horizontal, 14).padding(.vertical, 12)
         .haloContentGlass(in: RoundedRectangle(cornerRadius: 14))
@@ -94,10 +92,9 @@ struct VibeSetterView: View {
         Button {
           onSave(mood, note)
         } label: {
-          Text("Manda la vibe")
-            .font(.system(size: 16, weight: .semibold))
-            .kerning(-0.2)
-            .foregroundStyle(.white)
+          Text("manda la vibe")
+            .font(HaloType.ui(15, weight: .semibold))
+            .foregroundStyle(HaloInk.cream)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(
@@ -151,9 +148,8 @@ struct VibeSetterView: View {
           .frame(width: 7, height: 7)
           .shadow(color: MoodPalette.auraRing(m, alpha: 0.6), radius: 3)
         Text(m.rawValue)
-          .font(.system(size: 14, weight: on ? .semibold : .medium))
-          .kerning(-0.1)
-          .foregroundStyle(on ? .white : Color.white.opacity(0.75))
+          .font(HaloType.ui(14, weight: on ? .semibold : .medium))
+          .foregroundStyle(on ? HaloInk.cream : HaloInk.creamLow)
       }
       .padding(.horizontal, 16).padding(.vertical, 9)
       .haloGlass(in: Capsule(), tint: on ? MoodPalette.auraColor(m, l: 0.55) : nil, interactive: true)
