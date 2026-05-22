@@ -47,9 +47,12 @@ final class AuthService {
     )
 
     // Crea il profilo se è il primo login; in caso contrario lo carica.
-    if let existing = try? await ProfilesService.shared.currentProfile() {
-      return existing
+    do {
+      return try await ProfilesService.shared.currentProfile()
+    } catch ProfilesService.ProfilesError.notFound {
+      // First login may not have a profile row yet.
     }
+
     let userId = try requireUserId()
     let suggestedHandle = bootstrapHandle(from: credential)
     let suggestedName = bootstrapDisplayName(from: credential)
@@ -91,9 +94,12 @@ final class AuthService {
   }
 
   private func currentOrBootstrapProfile() async throws -> Profile {
-    if let existing = try? await ProfilesService.shared.currentProfile() {
-      return existing
+    do {
+      return try await ProfilesService.shared.currentProfile()
+    } catch ProfilesService.ProfilesError.notFound {
+      // First login may not have a profile row yet.
     }
+
     let userId = try requireUserId()
     let new = Profile(id: userId, handle: randomBootstrapHandle(), displayName: "Halo")
     try await ProfilesService.shared.update(new)

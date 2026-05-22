@@ -37,17 +37,18 @@ final class ProfilesService {
   }
 
   func profile(id: UUID) async throws -> Profile {
-    do {
-      return try await client
-        .from("profiles")
-        .select()
-        .eq("id", value: id)
-        .single()
-        .execute()
-        .value
-    } catch {
+    let matches: [Profile] = try await client
+      .from("profiles")
+      .select()
+      .eq("id", value: id)
+      .limit(1)
+      .execute()
+      .value
+
+    guard let profile = matches.first else {
       throw ProfilesError.notFound
     }
+    return profile
   }
 
   /// Upsert sul profilo corrente. La policy RLS richiede `id = auth.uid()`.

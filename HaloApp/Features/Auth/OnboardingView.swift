@@ -190,8 +190,10 @@ struct OnboardingView: View {
       try await ProfilesService.shared.update(profile)
       onDone(profile)
     } catch {
-      let description = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
-      errorMessage = description.isEmpty ? "Non riesco a salvare il profilo. Riprova." : description
+      errorMessage = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a salvare il profilo. Riprova."
+      )
     }
   }
 }

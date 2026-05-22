@@ -27,3 +27,37 @@ enum SupabaseClientProvider {
     supabaseKey: SupabaseEnv.anonKey
   )
 }
+
+enum SupabaseErrorMessage {
+  static let connectivity = "Non riesco a raggiungere Halo. Controlla la connessione e riprova."
+
+  static func describe(_ error: Error, fallback: String) -> String {
+    if isConnectivityError(error as NSError) {
+      return connectivity
+    }
+
+    let description = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+    return description.isEmpty ? fallback : description
+  }
+
+  private static func isConnectivityError(_ error: NSError) -> Bool {
+    if error.domain == NSURLErrorDomain {
+      switch error.code {
+      case NSURLErrorCannotFindHost,
+           NSURLErrorCannotConnectToHost,
+           NSURLErrorDNSLookupFailed,
+           NSURLErrorNetworkConnectionLost,
+           NSURLErrorNotConnectedToInternet,
+           NSURLErrorTimedOut:
+        return true
+      default:
+        break
+      }
+    }
+
+    guard let underlying = error.userInfo[NSUnderlyingErrorKey] as? NSError else {
+      return false
+    }
+    return isConnectivityError(underlying)
+  }
+}

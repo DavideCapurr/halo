@@ -22,6 +22,7 @@ final class AppState {
   var phase: Phase = .launching
   var currentProfile: Profile?
   var route: Route = .home
+  var launchErrorMessage: String?
 
   var isAuthenticated: Bool { currentProfile != nil }
 
@@ -33,13 +34,20 @@ final class AppState {
   ///     - se profilo manca → `.onboarding` (Apple ha creato l'account ma non il profile)
   /// - assente → `.signedOut`
   func restore() async {
+    launchErrorMessage = nil
     if AuthService.shared.currentUserId() != nil {
       do {
         let p = try await ProfilesService.shared.currentProfile()
         currentProfile = p
         phase = .ready
-      } catch {
+      } catch ProfilesService.ProfilesError.notFound {
         phase = .onboarding
+      } catch {
+        launchErrorMessage = SupabaseErrorMessage.describe(
+          error,
+          fallback: "Non riesco a caricare il profilo. Riprova."
+        )
+        phase = .launching
       }
     } else {
       phase = .signedOut
@@ -49,6 +57,7 @@ final class AppState {
   // MARK: - Mutations
 
   func didSignIn(_ profile: Profile) {
+    launchErrorMessage = nil
     currentProfile = profile
     // Se manca handle/displayName "veri" siamo ancora in onboarding.
     if profile.handle.hasPrefix("halo_") || profile.displayName == "Halo" {
@@ -64,6 +73,7 @@ final class AppState {
   var initialCircleNeeded: Bool { false }
 
   func didFinishOnboarding(_ profile: Profile) {
+    launchErrorMessage = nil
     currentProfile = profile
     phase = initialCircleNeeded ? .initialCircle : .ready
   }
@@ -73,6 +83,7 @@ final class AppState {
   }
 
   func didSignOut() {
+    launchErrorMessage = nil
     currentProfile = nil
     phase = .signedOut
     route = .home

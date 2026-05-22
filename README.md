@@ -1,17 +1,58 @@
-# Halo — MVP v1
+# Halo - iOS MVP
 
-Social network basato su presenza umana a cerchi concentrici. iOS 17+, SwiftUI, Supabase.
+Private social map basata su presenza umana e distanza relazionale.
+Il beachhead e Bocconi, ma il modello resta globale: `Inner`, `Close`,
+`Orbit` e `Nebula` governano quanto lontano viaggiano vibe e momenti.
+
+Stack attuale: iOS 17+, SwiftUI, Supabase, WidgetKit e pacchetto locale
+`HaloShared`.
 
 ## Stato attuale
 
-Bootstrap scaffolding (step 1–2 del piano):
-- Progetto Xcode standard (`Halo.xcodeproj`) con target app + widget extension + pacchetto locale `HaloShared`.
-- Migrations Postgres (`supabase/migrations/0001_init.sql`, `0002_rls.sql`, `0003_tier_triggers.sql`).
-- `seed.sql` con 8 profili tier mix.
-- Edge function `purge-expired`.
-- Placeholder Swift per i file chiave descritti nel piano.
+Il repo ha superato il bootstrap iniziale:
 
-Step 3+ (design system, auth, home orbital field, widget, IAP…) da implementare nei prossimi commit.
+- Progetto Xcode con target app, widget extension e package condiviso
+  `HaloShared`.
+- Backend Supabase con schema, RLS, seed, trigger tier, profili pubblici,
+  indice mutualita e funzione `purge-expired`.
+- Service layer Swift per auth, profili, follow, vibe, post, reazioni,
+  storage, realtime feed e snapshot widget.
+- Design system Halo/SWARM con token, font, mood palette, haptic e
+  componenti orbitali.
+- Flussi iOS gia presenti per sign in, onboarding, Initial Inner Circle,
+  Orbit Home, Pulse, compose vibe-first, HaloSpace e widget.
+
+### Stato da non confondere con "finito"
+
+La UI principale e ancora in transizione da prototipo a prodotto live:
+
+- `HomeView` e `Pulse` usano ancora `SeedPeople`/eventi demo in vari punti.
+- `FeedViewModel` ha il ramo `.live`, ma oggi ricarica ancora seed data.
+- `HomeViewModel` compone gia `MomentItem` reali da Supabase, ma non e
+  ancora la sorgente della home visibile.
+- `ProfileView`, il vecchio `ComposePostView` e Halo Plus/StoreKit hanno
+  ancora placeholder o TODO.
+- Dal brief strategico PDF mancano ancora pezzi MVP importanti:
+  verification/invite code, invite flow, Event Halo con QR/invite token,
+  report/block e analytics di attivazione.
+
+`PLAN.md` traccia il lavoro implementativo gia fatto e le scelte prese,
+ma va letto insieme al codice quando una checkbox riguarda wiring live o
+surface ancora demo.
+
+## Prossimo slice consigliato
+
+Chiudere prima il loop reale personale:
+
+1. Portare Orbit Home e Pulse da `SeedPeople` a `HomeViewModel.feedItems`
+   / dati Supabase reali.
+2. Collegare `VibeFirstComposeView` a `VibesService.setCurrent()` e
+   `PostsService.post()` per inviare davvero vibe e momenti.
+3. Sostituire il placeholder profilo con il flusso reale di profilo e
+   HaloSpace.
+
+Dopo quel loop il prossimo blocco del brief strategico e il cold start:
+verification, Inner Invite ed Event Halo join/create via QR o token.
 
 ## Setup dev
 
@@ -67,4 +108,10 @@ HaloShared/        — Swift package condiviso (models + supabase lite client)
 supabase/          — migrations, functions, seed
 ```
 
-Dettagli nel piano interno.
+## Riferimenti
+
+- `Halo_Strategy_App_Technical_Plan.pdf`: strategia prodotto, MVP criteria
+  e roadmap.
+- `PLAN.md`: piano implementativo locale.
+- `docs/design-system/swarm-halo-v1.md`: design system canonico.
+- `docs/research/`: vocabolario, audit competitivo e direzioni estetiche.

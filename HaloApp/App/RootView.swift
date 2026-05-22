@@ -51,7 +51,26 @@ struct RootView: View {
         Text("Halo")
           .font(.system(size: 40, weight: .semibold, design: .rounded))
           .foregroundStyle(.white)
-        ProgressView().tint(.white.opacity(0.8))
+        if let errorMessage = state.launchErrorMessage {
+          Text(errorMessage)
+            .font(HaloType.ui(13, weight: .regular))
+            .foregroundStyle(HaloInk.creamMute)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 32)
+          Button {
+            Task { await state.restore() }
+          } label: {
+            Text("riprova")
+              .font(HaloType.ui(14, weight: .semibold))
+              .foregroundStyle(HaloInk.cream)
+              .padding(.horizontal, 18)
+              .padding(.vertical, 10)
+              .haloGlass(in: RoundedRectangle(cornerRadius: 12), interactive: true)
+          }
+          .buttonStyle(.plain)
+        } else {
+          ProgressView().tint(.white.opacity(0.8))
+        }
       }
     }
   }
