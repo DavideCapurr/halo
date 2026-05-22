@@ -33,10 +33,9 @@ struct TierConfirmationSheet: View {
 
   private var header: some View {
     VStack(spacing: 8) {
-      Text("Cambio cerchio")
+      Text("SPOSTA NEL TUO HALO")
         .font(.system(size: 13, weight: .medium))
         .kerning(1.5)
-        .textCase(.uppercase)
         .foregroundStyle(HaloTheme.textCaption)
 
       VStack(spacing: 2) {

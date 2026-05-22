@@ -188,10 +188,10 @@ private struct HaloSpacePage: View {
           .strokeBorder(MoodPalette.auraColor(person.mood, l: 0.55).opacity(0.5), style: .init(lineWidth: 1, dash: [3, 4]))
           .frame(width: 64, height: 64)
       }
-      Text("HaloSpace vuoto")
+      Text("halospace silenzioso.")
         .font(.system(size: 17, weight: .semibold))
         .foregroundStyle(.white)
-      Text("nessun momento attivo nelle ultime 72h")
+      Text("nessun momento attivo nelle ultime 72h.")
         .font(.system(size: 13))
         .foregroundStyle(Color.white.opacity(0.55))
     }

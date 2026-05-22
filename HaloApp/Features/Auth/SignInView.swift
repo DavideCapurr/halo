@@ -23,7 +23,7 @@ struct SignInView: View {
         Text("Halo")
           .font(.system(size: 44, weight: .semibold, design: .rounded))
           .foregroundStyle(.white)
-        Text("presenza, non performance")
+        Text("le tue persone. non un pubblico.")
           .font(.callout)
           .foregroundStyle(HaloTheme.textMuted)
         Spacer()

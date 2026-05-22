@@ -3,28 +3,28 @@ import Observation
 import HaloShared
 
 enum PulseScope: String, CaseIterable, Hashable, Identifiable {
-  case cerchio
+  case inner
   case tutti
 
   var id: String { rawValue }
 
   var title: String {
     switch self {
-    case .cerchio: return "Cerchio"
+    case .inner: return "Inner"
     case .tutti: return "Tutti"
     }
   }
 
   var subtitle: String {
     switch self {
-    case .cerchio: return "solo persone vicinissime"
+    case .inner: return "solo Inner"
     case .tutti: return "tutte le tue orbite"
     }
   }
 
   var visibleTiers: Set<FriendshipTier> {
     switch self {
-    case .cerchio: return [.inner]
+    case .inner: return [.inner]
     case .tutti: return [.inner, .close, .orbit]
     }
   }
@@ -45,7 +45,7 @@ struct PulseEvent: Identifiable, Hashable {
   var kind: Kind
   var createdAt: Date
   var isMine: Bool = false
-  var audience: PulseScope = .cerchio
+  var audience: PulseScope = .inner
 
   var isLive: Bool {
     Date.now.timeIntervalSince(createdAt) <= 30 * 60
@@ -92,7 +92,7 @@ final class FeedViewModel {
 
     var title: String {
       switch self {
-      case .innerClose: return "Cerchio"
+      case .innerClose: return "Inner · Close"
       case .orbit:      return "Orbita"
       case .nebula:     return "Nebula"
       }
@@ -163,9 +163,9 @@ final class FeedViewModel {
 
   // MARK: - derivate
 
-  /// Default legacy: Pulse parte dal Cerchio.
+  /// Default legacy: Pulse parte da Inner.
   var pulsePeople: [DemoPerson] {
-    pulsePeople(in: .cerchio)
+    pulsePeople(in: .inner)
   }
 
   func pulsePeople(in scope: PulseScope) -> [DemoPerson] {
@@ -221,7 +221,7 @@ final class FeedViewModel {
   /// Mood dominante delle prime card visibili (per la tinta del background).
   /// nil se nessuna persona ha una vibe attiva tra le prime N.
   func dominantMood(visibleLimit: Int = 6) -> Mood? {
-    dominantMood(in: .cerchio, visibleLimit: visibleLimit)
+    dominantMood(in: .inner, visibleLimit: visibleLimit)
   }
 
   func dominantMood(in scope: PulseScope, visibleLimit: Int = 6) -> Mood? {
@@ -232,19 +232,19 @@ final class FeedViewModel {
   }
 
   var pulseEvents: [PulseEvent] {
-    pulseEvents(in: .cerchio)
+    pulseEvents(in: .inner)
   }
 
   func pulseEvents(in scope: PulseScope) -> [PulseEvent] {
     let visibleLocalEvents = localEvents.filter { event in
-      scope == .tutti || event.audience == .cerchio
+      scope == .tutti || event.audience == .inner
     }
     return (visibleLocalEvents + demoEvents(in: scope))
       .sorted { lhs, rhs in lhs.createdAt > rhs.createdAt }
   }
 
   var pulseEventGroups: [PulseEventGroup] {
-    pulseEventGroups(in: .cerchio)
+    pulseEventGroups(in: .inner)
   }
 
   func pulseEventGroups(in scope: PulseScope) -> [PulseEventGroup] {
@@ -256,14 +256,14 @@ final class FeedViewModel {
   }
 
   var liveEventCount: Int {
-    liveEventCount(in: .cerchio)
+    liveEventCount(in: .inner)
   }
 
   func liveEventCount(in scope: PulseScope) -> Int {
     pulseEvents(in: scope).filter(\.isLive).count
   }
 
-  func addLocalMessage(_ text: String, audience: PulseScope = .cerchio, mood: Mood = SeedPeople.me.mood) {
+  func addLocalMessage(_ text: String, audience: PulseScope = .inner, mood: Mood = SeedPeople.me.mood) {
     let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return }
     var me = SeedPeople.me
@@ -284,7 +284,7 @@ final class FeedViewModel {
     )
   }
 
-  func addLocalPlaceholder(_ kind: PulseEvent.Kind, audience: PulseScope = .cerchio) {
+  func addLocalPlaceholder(_ kind: PulseEvent.Kind, audience: PulseScope = .inner) {
     var me = SeedPeople.me
     me.lastPostAt = .now
     me.hasActiveVibe = true
@@ -317,7 +317,7 @@ final class FeedViewModel {
             person: person,
             kind: kind,
             createdAt: activity ?? Date.now.addingTimeInterval(-3600),
-            audience: person.tier == .inner ? .cerchio : .tutti
+            audience: person.tier == .inner ? .inner : .tutti
           )
         )
       }
@@ -336,7 +336,7 @@ final class FeedViewModel {
             person: person,
             kind: postKind,
             createdAt: lastPostAt,
-            audience: person.tier == .inner ? .cerchio : .tutti
+            audience: person.tier == .inner ? .inner : .tutti
           )
         )
 
@@ -347,7 +347,7 @@ final class FeedViewModel {
               person: person,
               kind: .moodChange(from: nil, to: person.mood),
               createdAt: lastPostAt.addingTimeInterval(-18 * 60),
-              audience: person.tier == .inner ? .cerchio : .tutti
+              audience: person.tier == .inner ? .inner : .tutti
             )
           )
         }

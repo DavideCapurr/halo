@@ -1,75 +1,123 @@
 import SwiftUI
 
-/// Halo v2 type system: editorial / Saint-Laurent / late-night nonchalant.
+/// Halo type system, swarm-halo v1.
 ///
-/// Three voices:
-///  - **serif** (italic display) — for names, vibe quotes, big headlines.
-///  - **ui** (rounded grotesk) — for body, controls, navigation labels.
-///  - **mono** (monospaced) — for timestamps, counts, small-cap labels.
+/// Four families, mirror of the SWARM brand-book:
+///  - **serif** (Cormorant Garamond italic) — names, vibe quotes, manifesto
+///  - **serifUpright** (Cormorant Garamond regular) — rare, crests/numerals
+///  - **ui** (Inter) — body, controls, navigation labels
+///  - **mono** (IBM Plex Mono) — timestamps, counts, telemetry strips
+///  - **eyebrow** (Space Grotesk) — small-cap section headers
 ///
-/// We keep system fonts so there's nothing to bundle; the *design* (italic
-/// serif + tight tracking + small caps) is what carries the editorial feel.
+/// All four are bundled in `HaloApp/Resources/Fonts/` and registered in
+/// `Info.plist` under `UIAppFonts`. `.custom` falls back to system fonts
+/// silently if the file isn't loaded, so dev mode without the bundle
+/// still renders sensibly.
 enum HaloType {
 
-  // MARK: - serif (display / italic, used for names + quotes)
+  // MARK: - serif (Cormorant Garamond italic — display)
 
-  /// Italic serif at the given size. Falls back to the system "new york"
-  /// face which carries the editorial italics close to *Instrument Serif*.
+  /// Editorial italic serif. The brand voice — used for names, manifesto,
+  /// vibe notes.
   static func serif(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    .system(size: size, weight: weight, design: .serif).italic()
+    .custom(serifName(weight: weight, italic: true),
+            size: size,
+            relativeTo: .title)
   }
 
-  /// Non-italic serif (rare — used for crests/numerals).
+  /// Non-italic serif (rare — used for crests, ordinal markers).
   static func serifUpright(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    .system(size: size, weight: weight, design: .serif)
+    .custom(serifName(weight: weight, italic: false),
+            size: size,
+            relativeTo: .title)
   }
 
-  // MARK: - ui (rounded grotesk, replaces Geist)
+  // MARK: - ui (Inter — body & controls)
 
-  /// UI grotesk. Rounded keeps it friendly without becoming playful.
   static func ui(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    .system(size: size, weight: weight, design: .rounded)
+    .custom(uiName(weight: weight),
+            size: size,
+            relativeTo: .body)
   }
 
-  // MARK: - mono (timestamps, small-cap labels)
+  // MARK: - mono (IBM Plex Mono — telemetry)
 
-  /// Monospaced. Use for timestamps, counts, "n° 01" style markers.
   static func mono(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
-    .system(size: size, weight: weight, design: .monospaced)
+    .custom(monoName(weight: weight),
+            size: size,
+            relativeTo: .caption)
+  }
+
+  // MARK: - eyebrow (Space Grotesk — small-cap section headers)
+
+  /// Use with `.kerning(2.4-2.6)`, `.textCase(.uppercase)`. The
+  /// `haloEyebrow` modifier already applies those.
+  static func eyebrow(_ size: CGFloat) -> Font {
+    .custom(SwarmHaloFont.SpaceGrotesk.medium,
+            size: size,
+            relativeTo: .caption2)
+  }
+
+  // MARK: - private resolution
+
+  private static func serifName(weight: Font.Weight, italic: Bool) -> String {
+    let isMedium = (weight == .medium || weight == .semibold || weight == .bold)
+    switch (italic, isMedium) {
+    case (true, true):   return SwarmHaloFont.Cormorant.mediumItalic
+    case (true, false):  return SwarmHaloFont.Cormorant.italic
+    case (false, true):  return SwarmHaloFont.Cormorant.medium
+    case (false, false): return SwarmHaloFont.Cormorant.regular
+    }
+  }
+
+  private static func uiName(weight: Font.Weight) -> String {
+    switch weight {
+    case .bold, .semibold: return SwarmHaloFont.Inter.semibold
+    case .medium:          return SwarmHaloFont.Inter.medium
+    default:                return SwarmHaloFont.Inter.regular
+    }
+  }
+
+  private static func monoName(weight: Font.Weight) -> String {
+    switch weight {
+    case .medium, .semibold, .bold: return SwarmHaloFont.Plex.medium
+    default:                          return SwarmHaloFont.Plex.regular
+    }
   }
 }
 
-/// Halo v2 colour ink: cream/bronze on warm-black, layered with glass.
+/// Halo ink — semantic color tokens, backwards-compatible facade.
+/// All values now resolve to `SwarmHalo.*`. See `Tokens.swift`.
 enum HaloInk {
-  /// Soft paper cream. Primary text on dark surfaces.
-  static let cream         = Color(red: 0.894, green: 0.867, blue: 0.812)
-  static let creamLow      = Color(red: 0.894, green: 0.867, blue: 0.812).opacity(0.62)
-  static let creamMute     = Color(red: 0.894, green: 0.867, blue: 0.812).opacity(0.42)
-  static let creamHair     = Color(red: 0.894, green: 0.867, blue: 0.812).opacity(0.18)
-  static let creamLine     = Color(red: 0.894, green: 0.867, blue: 0.812).opacity(0.10)
-  static let creamWhisper  = Color(red: 0.894, green: 0.867, blue: 0.812).opacity(0.06)
+  static let cream         = SwarmHalo.paperCream
+  static let creamLow      = SwarmHalo.creamLow
+  static let creamMute     = SwarmHalo.creamMute
+  static let creamHair     = SwarmHalo.creamHair
+  static let creamLine     = SwarmHalo.creamLine
+  static let creamWhisper  = SwarmHalo.creamWhisper
 
-  /// Warm bronze accent — single-use per surface (active state, key signal).
-  static let bronze        = Color(red: 0.659, green: 0.510, blue: 0.353)
-  static let bronzeSoft    = Color(red: 0.659, green: 0.510, blue: 0.353).opacity(0.55)
-  static let bronzeGlow    = Color(red: 0.659, green: 0.510, blue: 0.353).opacity(0.35)
+  static let bronze        = SwarmHalo.bronze
+  static let bronzeSoft    = SwarmHalo.bronzeSoft
+  static let bronzeGlow    = SwarmHalo.bronzeGlow
 
-  /// Warm-tinted near-black — anchor for sheets and tab-bar fills.
-  static let nightSurface  = Color(red: 0.060, green: 0.058, blue: 0.060)
-  static let nightSurface2 = Color(red: 0.085, green: 0.080, blue: 0.080)
-  static let nightEdge     = Color(red: 0.027, green: 0.027, blue: 0.030)
+  static let nightSurface  = SwarmHalo.nightSurface
+  static let nightSurface2 = SwarmHalo.nightSurface2
+  static let nightEdge     = SwarmHalo.nightEdge
+
+  /// Attention state — errors, downgrades, reports only. Sparingly.
+  static let warmMagenta   = SwarmHalo.warmMagenta
 }
 
 extension View {
-  /// Editorial small-caps tab/section header style — uppercase, tight track,
-  /// JetBrains-Mono-ish vibe. Applies font, kerning, casing, and color.
+  /// Editorial small-cap eyebrow style — uppercase, tight tracking, Space
+  /// Grotesk. Applies font, kerning, casing, and color.
   func haloEyebrow(
     _ color: Color = HaloInk.creamMute,
     size: CGFloat = 9.5,
     tracking: CGFloat = 2.6
   ) -> some View {
     self
-      .font(HaloType.mono(size, weight: .medium))
+      .font(HaloType.eyebrow(size))
       .kerning(tracking)
       .textCase(.uppercase)
       .foregroundStyle(color)

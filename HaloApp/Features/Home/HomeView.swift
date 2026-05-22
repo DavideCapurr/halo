@@ -158,7 +158,7 @@ struct HomeView: View {
             .lineLimit(1)
             .minimumScaleFactor(0.72)
 
-          Text("cerchio, vicini, orbita")
+          Text("inner · close · orbita")
             .font(HaloType.serif(15))
             .foregroundStyle(HaloInk.creamLow)
         }
@@ -200,7 +200,7 @@ struct HomeView: View {
 
   private var orbitStats: some View {
     HStack(alignment: .center, spacing: 0) {
-      orbitStatCell("cerchio", value: String(format: "%02d", tierCounts[.inner] ?? 0), accent: fieldZoom == .innerOnly)
+      orbitStatCell("inner", value: String(format: "%02d", tierCounts[.inner] ?? 0), accent: fieldZoom == .innerOnly)
       orbitStatSeparator
       orbitStatCell("live", value: String(format: "%02d", activeMutuals.count), accent: !activeMutuals.isEmpty)
       orbitStatSeparator
@@ -283,8 +283,8 @@ struct HomeView: View {
 private extension ZoomLevel {
   var shortLabel: String {
     switch self {
-    case .innerOnly: return "CER"
-    case .innerClose: return "VIC"
+    case .innerOnly: return "INN"
+    case .innerClose: return "CLO"
     case .full: return "ORB"
     case .asteroids: return "OUT"
     }

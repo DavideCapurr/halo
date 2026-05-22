@@ -21,13 +21,12 @@ public enum FriendshipTier: String, Codable, CaseIterable, Comparable, Sendable 
     }
   }
 
-  /// Italian label as used in copy. Avoid surfacing the technical
-  /// codes (`inner`, `close`) directly in the UI: those names are reserved
-  /// for the data model. Display copy maps to evocative italian terms.
+  /// Display label for UI copy. Inner / Close stay English as brand-specific
+  /// product terms; Orbita / Nebula translate. See `docs/research/vocabulary.md`.
   public var label: String {
     switch self {
-    case .inner:  return "Cerchio"
-    case .close:  return "Vicini"
+    case .inner:  return "Inner"
+    case .close:  return "Close"
     case .orbit:  return "Orbita"
     case .nebula: return "Nebula"
     }

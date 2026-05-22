@@ -130,30 +130,57 @@ apparire come parola comune ma non come label di feature.
 
 ---
 
-## 5 · Ring / Cerchia / Evento
+## 5 · Halo (sostituisce "Ring")
 
-Il PDF usa **Ring** trasversalmente: Event Ring, Club Ring, Founder Ring,
-Course Ring.
+> **Decisione presa**: la parola **Ring** sparisce da tutta la UI utente.
+> Halo diventa il sostantivo user-facing per "cerchio di persone attorno
+> a qualcuno o qualcosa".
 
-Italiano:
+Il PDF strategy usa **Ring** come primitiva trasversale (Event Ring, Club
+Ring, Founder Ring, Course Ring). Spostiamo tutto su **Halo**:
 
-- **Ring** — EN, suona come anello / pugilato. Forzato.
-- **Cerchia** — corretto ma rischio collisione con "Inner / Close / cerchia
-  intima".
-- **Stanza** — femminile, suggerisce intimità ma è statico, non temporale.
-- **Evento / Club** — il sostantivo concreto, non il container.
+| PDF | Halo (UI utente) | Internal (codice) |
+|---|---|---|
+| your ring of people | il tuo halo | `user.halo` (insieme tier) |
+| inner ring | inner (tier) | `tier = inner` |
+| Event Ring | Evento / Event Halo | `rings.type = event` |
+| Club Ring | Club / Club Halo | `rings.type = club` |
+| Founder Ring | Founder Halo | `rings.type = founder` |
+| Course Ring | Corso / Course Halo | `rings.type = course` |
 
-**Raccomandazione**:
+### Conseguenze semantiche
 
-- **Founder Ring** → resta inglese (è il nome di un'iniziativa di lancio)
-- **Event Ring** → in UI diventa solo **"Evento"** (`Event Ring di BIEF
-  Welcome` → `BIEF Welcome`). La parola "ring" appare come sottotitolo
-  tecnico solo in admin/info: "questo evento è una ring temporanea".
-- **Club Ring** → in UI diventa **"Club"**. Stessa logica.
-- **Course Ring** → **"Corso"**.
+- **Halo = brand + sostantivo del prodotto.** Come "snap" per Snapchat,
+  "tweet" per Twitter. È la cosa che possiedi. Forte.
+- **Il tuo halo** = la tua mappa di persone (Inner + Close + Orbit + Nebula
+  tutti insieme, senza differenziare in pubblico).
+- **Nell'halo di Davide** = sei stato ammesso. Tier non rivelato.
+  Rispetta il principio PDF "never reveal downgrades — never humiliate by
+  exposing tier".
+- **Event Halo** = il cerchio temporaneo attorno a un evento. In UI compare
+  come "Evento" (sostantivo concreto). "Halo" appare solo se serve
+  disambiguare in copy lungo.
+- **Glow bronze nel design** = letteralmente il halo della persona. La
+  metafora visiva ora porta peso semantico, non è solo decoro.
 
-Internamente al codice (modello dati, API) i nomi restano in inglese:
-`rings`, `ring_members`, `ring_type`. L'utente non vede mai "ring".
+### Regole d'uso
+
+- Mai dire "ring" nella UI. Mai.
+- "Halo" da solo è ambiguo (potrebbe essere brand o sostantivo). Usa
+  **possessivo o specificatore**: `il tuo halo`, `l'halo di Davide`,
+  `Event Halo`, `nel mio halo`.
+- Quando un Event Halo / Club Halo è in lista, mostralo col nome
+  concreto ("BIEF Welcome", "Aperitivo Bligny"), non con la parola Halo
+  ripetuta.
+
+### Codice
+
+Internamente, il modello dati può tenere `rings`, `ring_members`,
+`ring_type` (sono nomi tecnici, non li vede l'utente). Se vuoi
+allineamento più stretto si rinomina a `halos`, `halo_members`,
+`halo_type` quando arriva il momento della migrazione DB (Fase B). Per
+ora propongo di **tenere il nome DB `rings`** e fare il rename solo se
+emerge un motivo reale (es. confusione interna nel team).
 
 ---
 
@@ -183,28 +210,56 @@ massimo 5 · li puoi spostare quando vuoi
 
 ---
 
-## 7 · Inner Invite — "Davide put you in his Inner"
+## 7 · Invite copy — generica e Inner-specifica
 
-Questo è il loop virale più importante. Deve essere forte ma non transazionale,
-emotivo ma non creepy.
+Due loop virali, due livelli di calore. La generica protegge da
+humiliation; la Inner-specifica conserva lo status signal sacro.
 
-Candidati push notification e schermata di accettazione:
+### A. Generica — "Davide added you in his halo"
 
-- **A.** Davide ti ha messo nel suo Inner.
-- **B.** Davide ti ha incluso nel suo cerchio.
-- **C.** Sei nell'Inner di Davide.
-- **D.** Davide ha scelto te. Inner.
-- **E.** Davide ti chiede vicino.
+Per qualunque add che non sia Inner (Close / Orbit). Tier non
+rivelato in copy esterna.
+
+Candidati:
+
+- **A1.** Davide ti ha aggiunto al suo halo.
+- **A2.** Sei nell'halo di Davide.
+- **A3.** Davide ti ha incluso.
+- **A4.** Davide ti vede.
 
 **Raccomandazione**:
 
-- Push notification: **C** ("Sei nell'Inner di Davide.") — passiva,
-  inequivocabile, sentence case, periodo.
-- Accept screen headline: **A** ("Davide ti ha messo nel suo Inner.")
+- Push notification: **A2** ("Sei nell'halo di Davide.") — passiva,
+  inequivocabile, niente verbo che possa sembrare azione gerarchica.
+- Accept screen headline: **A1** ("Davide ti ha aggiunto al suo halo.")
+- Sottotitolo: "Vedrai la sua presenza. Aggiungi Davide al tuo halo
+  quando vuoi."
+
+### B. Inner Invite — "Davide put you in his Inner"
+
+Solo quando il tier assegnato è `inner`. Questo è il loop virale
+sacro del PDF, status signal massimo. La parola **Inner** appare
+esplicita perché è il punto.
+
+Candidati:
+
+- **B1.** Sei nell'Inner di Davide.
+- **B2.** Davide ti ha messo nel suo Inner.
+- **B3.** Davide. Inner.
+- **B4.** Inner: Davide ti ha scelto.
+
+**Raccomandazione**:
+
+- Push notification: **B1** ("Sei nell'Inner di Davide.") — sentence case,
+  periodo, mai esclamativo.
+- Accept screen headline: **B2** ("Davide ti ha messo nel suo Inner.")
 - Sottotitolo: "Inner è limitato a 5 persone. È un segnale."
 
-Mai usare punti esclamativi. Mai "congratulazioni". Mai "felicitazioni".
-Mai "wow". Tono SWARM: piatto, fermo, premium.
+### Regola di sistema
+
+Mai esclamativi. Mai "congratulazioni". Mai "felicitazioni". Mai "wow".
+Mai "🎉". Tono SWARM: piatto, fermo, premium. La gravità della cosa la
+porta il fatto che è successo, non il punto esclamativo.
 
 ---
 
@@ -288,15 +343,22 @@ non in questo round di ricerca.
 
 ---
 
-## Sintesi: 5 decisioni che servono adesso
+## Sintesi: 6 decisioni — confermate
 
 1. **Inner / Close** restano in inglese in tutta la UI. Orbita / Nebula in
-   italiano. Il `FriendshipTier.label` cambia.
+   italiano. Il `FriendshipTier.label` cambia. *(confermato)*
 2. **Manifesto headline** italiana = "Le tue persone. Non un pubblico."
 3. **Moment** in inglese come termine di feature. **Frammento** per Memory.
-4. **Ring** non appare mai in UI utente. Diventa **Evento / Club / Corso**.
+4. **Ring → Halo** in tutta la UI utente. Halo è sostantivo del prodotto
+   ("il tuo halo", "nell'halo di Davide", "Event Halo"). Internalmente il
+   DB può tenere `rings` finché non c'è una ragione operativa per
+   rinominare. *(confermato 22 mag)*
 5. **Voice rules SWARM** si applicano in italiano: sentence case, periodi,
    mai esclamativi, mai "tu/voi/noi/Lei", numerali in cifre.
+6. **Invite copy bipolare**: generica `Sei nell'halo di Davide` per add a
+   qualunque tier diverso da Inner (no tier reveal); specifica `Sei
+   nell'Inner di Davide` solo quando il tier è Inner (status signal
+   sacro). *(confermato 22 mag)*
 
-Se confermi questi cinque punti, il code-sweep di lessico è ~1 ora di lavoro
-e va in commit separato prima della Fase A design.
+Il code-sweep di lessico (~1 ora) va in commit separato prima della Fase A
+design.

@@ -73,6 +73,17 @@
 		FB921940FA01ABAA4C0B92DF /* TopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA7A83E8E8A9C4F0A0F3684C /* TopBarView.swift */; };
 		FC4101DA1CC6B71912D153AD /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5680FDE7DFDD17D18996C5C /* SupabaseClient.swift */; };
 		FD9F235A1DBA40EBA85A7EB7 /* VibeFirstComposeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 734CF80BBABF3434D5653FED /* VibeFirstComposeView.swift */; };
+		A8DDB071ED171CB2216DBEC5 /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E43619CFEC6A0D562321E1 /* Tokens.swift */; };
+		D31380E009E32E0E09BCD1AB /* CormorantGaramond-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9B4AF1DC24C0571D2447620F /* CormorantGaramond-Regular.ttf */; };
+		7BC89C729ABEC22156A41077 /* CormorantGaramond-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B07DE792B27C15E141500A4B /* CormorantGaramond-Italic.ttf */; };
+		4F08F9E26B6356A6C137C5D6 /* CormorantGaramond-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1CE138E785277A222219516A /* CormorantGaramond-Medium.ttf */; };
+		4D776C0F489CF9E20615BA91 /* CormorantGaramond-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4932DEC9F6499A076AEB33B5 /* CormorantGaramond-MediumItalic.ttf */; };
+		A32572123D9A9C6780725125 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2FCB894DAD0A33F860CE9449 /* Inter-Regular.ttf */; };
+		20D9B89CB8367C2FC6D9E499 /* Inter-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7B660F5E9651FC79820BEB93 /* Inter-Medium.ttf */; };
+		96BDE1D1AD5136F30BC63C0A /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3C50074BEAEC90452442499A /* Inter-SemiBold.ttf */; };
+		2A3CEB13F86210AA131376CE /* IBMPlexMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2E11D0DC479F61908C097F8B /* IBMPlexMono-Regular.ttf */; };
+		4B6776C68DA8D4E3872F0CF7 /* IBMPlexMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 84389C8F19957084DCE492E8 /* IBMPlexMono-Medium.ttf */; };
+		4A3FFAD0D35E36DFDCA216FE /* SpaceGrotesk-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1308E63C9C33D9EB31912768 /* SpaceGrotesk-Medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -169,6 +180,17 @@
 		F7E1AFD0E68265E42F3C76A1 /* WidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetEntryView.swift; sourceTree = "<group>"; };
 		FC2707E165F0796642C584AC /* VibeSetterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibeSetterView.swift; sourceTree = "<group>"; };
 		FFF1A7931906877753153456 /* HaloSpaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloSpaceView.swift; sourceTree = "<group>"; };
+		52E43619CFEC6A0D562321E1 /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
+		9B4AF1DC24C0571D2447620F /* CormorantGaramond-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = CormorantGaramond-Regular.ttf; sourceTree = "<group>"; };
+		B07DE792B27C15E141500A4B /* CormorantGaramond-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = CormorantGaramond-Italic.ttf; sourceTree = "<group>"; };
+		1CE138E785277A222219516A /* CormorantGaramond-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = CormorantGaramond-Medium.ttf; sourceTree = "<group>"; };
+		4932DEC9F6499A076AEB33B5 /* CormorantGaramond-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = CormorantGaramond-MediumItalic.ttf; sourceTree = "<group>"; };
+		2FCB894DAD0A33F860CE9449 /* Inter-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Inter-Regular.ttf; sourceTree = "<group>"; };
+		7B660F5E9651FC79820BEB93 /* Inter-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Inter-Medium.ttf; sourceTree = "<group>"; };
+		3C50074BEAEC90452442499A /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Inter-SemiBold.ttf; sourceTree = "<group>"; };
+		2E11D0DC479F61908C097F8B /* IBMPlexMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = IBMPlexMono-Regular.ttf; sourceTree = "<group>"; };
+		84389C8F19957084DCE492E8 /* IBMPlexMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = IBMPlexMono-Medium.ttf; sourceTree = "<group>"; };
+		1308E63C9C33D9EB31912768 /* SpaceGrotesk-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = SpaceGrotesk-Medium.ttf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +214,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3310E5F521E4DC2EDB42F96C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D31380E009E32E0E09BCD1AB /* CormorantGaramond-Regular.ttf in Resources */,
+				7BC89C729ABEC22156A41077 /* CormorantGaramond-Italic.ttf in Resources */,
+				4F08F9E26B6356A6C137C5D6 /* CormorantGaramond-Medium.ttf in Resources */,
+				4D776C0F489CF9E20615BA91 /* CormorantGaramond-MediumItalic.ttf in Resources */,
+				A32572123D9A9C6780725125 /* Inter-Regular.ttf in Resources */,
+				20D9B89CB8367C2FC6D9E499 /* Inter-Medium.ttf in Resources */,
+				96BDE1D1AD5136F30BC63C0A /* Inter-SemiBold.ttf in Resources */,
+				2A3CEB13F86210AA131376CE /* IBMPlexMono-Regular.ttf in Resources */,
+				4B6776C68DA8D4E3872F0CF7 /* IBMPlexMono-Medium.ttf in Resources */,
+				4A3FFAD0D35E36DFDCA216FE /* SpaceGrotesk-Medium.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXGroup section */
 		104C192E7D18575F9EC46782 /* Home */ = {
@@ -260,6 +302,7 @@
 				A6D926F56CE9BE8C169E7ABB /* App */,
 				D5222AF6FD24F8C5A5802915 /* Core */,
 				9F05ED2571051BC4B2A0C101 /* DesignSystem */,
+				AF1E8B661B1389A55B6A8543 /* Fonts */,
 				8C8AE30161E85373230BD5A6 /* Features */,
 				E90724064121075716CB5C3B /* HaloApp.entitlements */,
 				86EB7CBFAB97B2F6455ACAE8 /* HaloApp.swift */,
@@ -324,6 +367,7 @@
 			isa = PBXGroup;
 			children = (
 				18B9BD110A8508D7F56D943C /* Components */,
+				52E43619CFEC6A0D562321E1 /* Tokens.swift */,
 				E3836A2723C6326F6DDE66E9 /* HaloTheme.swift */,
 				D95DA4E1CEB64301BF54632F /* HaloTypography.swift */,
 				4FB6BEB670DD6A407B8C50FD /* HapticEngine.swift */,
@@ -331,6 +375,23 @@
 				92A64D3653A44288924B64E7 /* TimeOfDay.swift */,
 			);
 			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		AF1E8B661B1389A55B6A8543 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				9B4AF1DC24C0571D2447620F /* CormorantGaramond-Regular.ttf */,
+				B07DE792B27C15E141500A4B /* CormorantGaramond-Italic.ttf */,
+				1CE138E785277A222219516A /* CormorantGaramond-Medium.ttf */,
+				4932DEC9F6499A076AEB33B5 /* CormorantGaramond-MediumItalic.ttf */,
+				2FCB894DAD0A33F860CE9449 /* Inter-Regular.ttf */,
+				7B660F5E9651FC79820BEB93 /* Inter-Medium.ttf */,
+				3C50074BEAEC90452442499A /* Inter-SemiBold.ttf */,
+				2E11D0DC479F61908C097F8B /* IBMPlexMono-Regular.ttf */,
+				84389C8F19957084DCE492E8 /* IBMPlexMono-Medium.ttf */,
+				1308E63C9C33D9EB31912768 /* SpaceGrotesk-Medium.ttf */,
+			);
+			path = Resources/Fonts;
 			sourceTree = "<group>";
 		};
 		A6D926F56CE9BE8C169E7ABB /* App */ = {
@@ -446,6 +507,7 @@
 			buildPhases = (
 				3814962F8DFF6AD74B984BDA /* Sources */,
 				8C42B28495FECCC27E7031B2 /* Frameworks */,
+				3310E5F521E4DC2EDB42F96C /* Resources */,
 				8DD3456AD5D6F3FF2B2A8E1F /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -560,6 +622,7 @@
 				9C68B1E83E064CBDA58186C8 /* HaloTypography.swift in Sources */,
 				9AA4F6FE6516D2B6950EAF96 /* HapticEngine.swift in Sources */,
 				999FE1CA7388965CEA2C0B88 /* HomeView.swift in Sources */,
+				A8DDB071ED171CB2216DBEC5 /* Tokens.swift in Sources */,
 				94E9853DD3DB7FA08405500F /* HomeViewModel.swift in Sources */,
 				C14CC64A435506D6A1090CE2 /* InitialInnerCircleView.swift in Sources */,
 				EF347D20906247AA4DDF1FD1 /* MomentCard.swift in Sources */,

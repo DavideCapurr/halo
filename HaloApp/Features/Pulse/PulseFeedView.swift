@@ -2,12 +2,12 @@ import SwiftUI
 import HaloShared
 
 /// Pulse: feed di drop spontanei.
-/// Il default resta il Cerchio, ma "Tutti" apre il flusso delle proprie orbite
+/// Il default resta Inner, ma "Tutti" apre il flusso delle proprie orbite
 /// senza trasformare la schermata in una chat di gruppo.
 struct PulseFeedView: View {
   @State private var vm = FeedViewModel()
   @State private var moment: HaloMoment = .current()
-  @State private var scope: PulseScope = .cerchio
+  @State private var scope: PulseScope = .inner
   @State private var draft: String = ""
   @State private var isDraftOpen: Bool = false
 
@@ -99,7 +99,7 @@ struct PulseFeedView: View {
         .lineLimit(1)
         .minimumScaleFactor(0.72)
 
-      Text(scope == .cerchio ? "drop spontanei dal tuo cerchio" : "tutti i segnali dalle tue orbite")
+      Text(scope == .inner ? "drop spontanei dal tuo Inner" : "tutti i segnali dalle tue orbite")
         .font(HaloType.serif(15))
         .foregroundStyle(HaloInk.creamLow)
         .animation(.easeInOut(duration: 0.18), value: scope)
@@ -272,7 +272,7 @@ private struct PulseDropCard: View {
 
   private var audienceBadge: some View {
     Text(event.audience.title.lowercased())
-      .haloEyebrow(event.audience == .cerchio ? HaloInk.bronze : HaloInk.creamMute, size: 7.4, tracking: 1.5)
+      .haloEyebrow(event.audience == .inner ? HaloInk.bronze : HaloInk.creamMute, size: 7.4, tracking: 1.5)
       .padding(.horizontal, 7)
       .padding(.vertical, 4)
       .background(Capsule().fill(HaloInk.creamWhisper))
@@ -554,7 +554,7 @@ private struct PulseDropDock: View {
           .fill(HaloInk.creamLine)
           .frame(height: 0.5)
         Text(scope.title.lowercased())
-          .haloEyebrow(scope == .cerchio ? HaloInk.bronze : HaloInk.creamMute, size: 8, tracking: 1.8)
+          .haloEyebrow(scope == .inner ? HaloInk.bronze : HaloInk.creamMute, size: 8, tracking: 1.8)
       }
 
       TextField("una cosa vera, adesso", text: $text, axis: .vertical)
