@@ -17,10 +17,22 @@ Il repo ha superato il bootstrap iniziale:
   indice mutualita e funzione `purge-expired`.
 - Service layer Swift per auth, profili, follow, vibe, post, reazioni,
   storage, realtime feed e snapshot widget.
-- Design system Halo/SWARM con token, font, mood palette, haptic e
-  componenti orbitali.
+- Design system e componenti orbitali gia presenti, ma ancora da
+  riallineare al brief SWARM canonico di Fase A.
 - Flussi iOS gia presenti per sign in, onboarding, Initial Inner Circle,
   Orbit Home, Pulse, compose vibe-first, HaloSpace e widget.
+
+### Stato rispetto alla roadmap A-E
+
+La fase attiva e **Fase A - Adozione SWARM design**:
+
+- `docs/design-system/swarm-v1.md` e il brief SWARM canonico.
+- Swarm Halo resta una variante consumer e piu sociale, ma la parentela
+  SWARM deve leggersi subito.
+- Il codice corrente pende ancora troppo verso cream/bronze, type mapping
+  non ancora SWARM completo e alcuni hex da riportare a token.
+- I gap prodotto HALO PDF (Rings, invite, Bocconi verify, reports,
+  Memory, Events/Clubs) entrano in Fase B.
 
 ### Stato da non confondere con "finito"
 
@@ -42,17 +54,16 @@ surface ancora demo.
 
 ## Prossimo slice consigliato
 
-Chiudere prima il loop reale personale:
+Partire da Fase A:
 
-1. Portare Orbit Home e Pulse da `SeedPeople` a `HomeViewModel.feedItems`
-   / dati Supabase reali.
-2. Collegare `VibeFirstComposeView` a `VibesService.setCurrent()` e
-   `PostsService.post()` per inviare davvero vibe e momenti.
-3. Sostituire il placeholder profilo con il flusso reale di profilo e
-   HaloSpace.
+1. Portare `Tokens.swift` alla palette mono+activation, spacing, radii e
+   motion SWARM.
+2. Riallineare `HaloTypography.swift` ai 4 font e alla type scale SWARM.
+3. Definire il mapping stati Halo/SWARM e rifare i componenti chiave
+   dell'orbita e del Pulse sopra quei token.
 
-Dopo quel loop il prossimo blocco del brief strategico e il cold start:
-verification, Inner Invite ed Event Halo join/create via QR o token.
+Il wiring live di Orbit/Pulse e i gap prodotto del PDF restano visibili,
+ma il piano corrente li affronta dopo il riallineamento design.
 
 ## Setup dev
 
@@ -113,5 +124,6 @@ supabase/          — migrations, functions, seed
 - `Halo_Strategy_App_Technical_Plan.pdf`: strategia prodotto, MVP criteria
   e roadmap.
 - `PLAN.md`: piano implementativo locale.
-- `docs/design-system/swarm-halo-v1.md`: design system canonico.
+- `docs/design-system/swarm-v1.md`: brief SWARM canonico per Fase A.
+- `docs/design-system/swarm-halo-v1.md`: note consumer di Swarm Halo.
 - `docs/research/`: vocabolario, audit competitivo e direzioni estetiche.

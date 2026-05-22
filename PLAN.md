@@ -1,10 +1,107 @@
 # Halo — Piano di sviluppo
 
-Documento di riferimento per l'implementazione. Aggiornare stato task man mano.
+Roadmap canonica: Fase A-E qui sotto. Aggiornare stato task man mano.
 
 **Stato**: `[ ]` da fare · `[x]` fatto · `[~]` in corso · `[!]` bloccato
 
 ---
+
+## Stato corrente
+
+**Fase attiva: Fase A - Adozione SWARM design.**
+
+Il repo ha gia parecchie superfici iOS e servizi backend, ma la direzione
+visuale attuale pende ancora troppo verso la variante warm Halo
+(`cream/bronze`). Prima di aprire i gap prodotto del PDF, Fase A deve
+riallineare token, typography, stati e componenti chiave al brief SWARM
+canonico in `docs/design-system/swarm-v1.md`.
+
+Il target non e una copia letterale della superficie operator SWARM:
+**Swarm Halo e la via di mezzo consumer, ma deve capirsi subito che e
+SWARM**.
+
+## Gap vs HALO PDF + SWARM design system
+
+### Design - SWARM da adottare
+
+- [~] Palette mono 14-step (`absolute-black` -> `platinum`) + activation
+      (`orbital-blue` lime, `signal-green` purple, `launch-amber` magenta).
+      Il codice corrente usa ancora warm surfaces, cream e bronze.
+- [~] Type system Cormorant Garamond / Satoshi / IBM Plex Mono /
+      Space Grotesk. Il repo ha gia alcuni font bundle, ma Satoshi e il
+      mapping SWARM completo non sono ancora la fonte unica.
+- [~] Type scale 144 / 64 / 40 / 28 / 17 / 15 / 13 / 11, radii
+      6 / 4 / 2 / 999 e motion
+      `cubic-bezier(0.2, 0.7, 0.1, 1)` da rendere canonici nei token.
+- [ ] Mapping stati Halo <-> SWARM da portare in API e componenti:
+      Inner = orbital-blue lime, Close = signal-green purple,
+      Orbit = platinum hairline, Nebula = absolute-black,
+      Vibe attention = launch-amber magenta.
+
+### Prodotto - HALO PDF da costruire sopra
+
+- [ ] Rings: Event / Club / Course / Founder in DB e UI.
+- [ ] Inner Invite formale con deep link e copy
+      "Davide ti ha messo nel suo Inner".
+- [ ] Memory archive Halo+.
+- [ ] Verifica Bocconi `@studbocconi.it` + invite code path.
+- [ ] Report/block UI e tabella `reports`.
+- [ ] Halo Events / Halo Clubs con billing Stripe oltre StoreKit.
+- [ ] Welcome / Manifesto + Choose-your-5 onboarding.
+
+## Roadmap operativa A-E
+
+### Fase A - Adozione SWARM design (1-2 settimane)
+
+- [x] `docs/design-system/swarm-v1.md` - brief canonico versionato nel repo.
+- [ ] `HaloApp/DesignSystem/Tokens.swift` - palette mono+activation,
+      spacing 4/8, radii, easing motion.
+- [ ] Sostituire `HaloTypography.swift` con i 4 font SWARM
+      (bundle `.otf`, fallback system) e aggiornare la type scale.
+- [ ] Definire mapping stati:
+      Inner = orbital-blue lime, Close = signal-green purple,
+      Orbit = platinum hairline, Nebula = absolute-black,
+      Vibe attention = launch-amber magenta.
+- [ ] Refactor componenti chiave:
+      `SelfCenterView`, `BubbleView`, `OrbitalRing`, `MomentCard`,
+      `PresenceBar`, `HaloTabBar`.
+- [ ] Sweep voce: sentence case, periodi come armi,
+      copy "Your people, not your audience" sulla welcome.
+- [ ] Lint hex letterali -> token.
+
+### Fase B - Gap prodotto HALO (3-4 settimane)
+
+- [ ] Migrations: `campuses`, `rings`, `ring_members`, `invites`,
+      `event_checkins`, `reports`, `subscriptions`, `club_billing` + RLS.
+- [ ] Servizi: `RingsService`, `InvitesService`, `ReportsService`.
+- [ ] Schermate: `WelcomeManifestoView`, `BocconiVerifyView`,
+      `ChooseYourFiveView`, `EventRingView` (QR scan + join token),
+      `ClubRingView`, `MemoryArchiveView`.
+- [ ] Deep link `halo://invite/{token}` + push notifications:
+      Inner invite, nuovo Moment, ring in scadenza.
+
+### Fase C - Cold-start Bocconi (parallela a B)
+
+- [ ] Landing web statica + waitlist.
+- [ ] Reclutare offline 20 Founder Circles.
+- [ ] Verifica `@studbocconi.it` + `founder_invite` code path.
+- [ ] QR Event Ring per orientation week.
+
+### Fase D - Monetizzazione (mese 2)
+
+- [ ] Halo+ student EUR 2.99/m via StoreKit subscription products.
+- [ ] Halo Events checkout Stripe (4.99 / 29 / 79-99).
+- [ ] Halo Clubs dashboard (49-149/m).
+
+### Fase E - Misurazione
+
+- [ ] Analytics events: `signup`, `invite_sent`, `invite_accepted`,
+      `vibe_set`, `moment_created`, `ring_joined`, `move_closer`.
+- [ ] Funnel attivazione fino al target 50% verified -> activated.
+
+---
+
+## Inventario implementativo precedente
 
 ## Visione prodotto (decisioni prese)
 

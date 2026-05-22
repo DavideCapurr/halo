@@ -1,4 +1,9 @@
-# Swarm Halo — Design System v1
+# Swarm Halo — Consumer Variant Notes
+
+> Roadmap note: this document records Halo consumerization notes for the
+> SWARM family. The canonical Fase A anchors live in
+> `docs/design-system/swarm-v1.md`: Halo may get warmer and more social here,
+> but it still has to read as SWARM.
 
 > **Estensione consumer di SWARM** per Halo. Eredita la grammatica del
 > brand-book SWARM (palette mono · spacing · radii · motion · voice ·
@@ -10,7 +15,7 @@
 > qui sono pensate per restare coerenti con la famiglia SWARM mentre si
 > consumerizza la superficie.
 >
-> **Source canonico**: questo file. Versionato nel repo `social`.
+> **Source canonico corrente**: `docs/design-system/swarm-v1.md`.
 > **Riferimento famiglia**: SWARM brand-book (esterno a questo repo).
 > **Decisioni di vocabolario**: `docs/research/vocabulary.md`.
 > **Ragionamento di direzione**: `docs/research/aesthetic-directions.md`.
