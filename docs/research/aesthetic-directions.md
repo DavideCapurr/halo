@@ -19,6 +19,11 @@
 - Halo è consumer-social, non operator-tactical. La superficie SWARM
   (frame brand-book, telemetria, RING-A · OP · RING-B) è troppo militare
   per un'app di studenti. Va consumerizzata.
+- **Halo è il sostantivo del prodotto, non solo il nome del brand.** Vedi
+  `vocabulary.md` §5. Conseguenza per il design: il glow attorno al
+  ritratto è letteralmente *il halo della persona*. La metafora visiva
+  cessa di essere decoro e diventa il nome dell'oggetto. Il bronze glow
+  guadagna peso semantico: rendering un halo, non un effetto.
 
 ## Tre direzioni a confronto
 
@@ -410,7 +415,7 @@ Milan-night"), C lo rende anonimo.
 
 ---
 
-# Recommendation — Hybrid "swarm-halo"
+# Recommendation — Hybrid "swarm-halo" *(confermata 22 mag)*
 
 Nessuna delle tre vince da sola. La giocata corretta è una **estensione
 SWARM consumer** che eredita la grammatica del design system e introduce
