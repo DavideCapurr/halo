@@ -134,10 +134,10 @@ struct ZoomSlider: View {
 private extension ZoomLevel {
   var accessibilityLabel: String {
     switch self {
-    case .innerOnly:  return "Solo cerchio"
-    case .innerClose: return "Cerchio e vicini"
-    case .full:       return "Cerchio, vicini, orbita"
-    case .asteroids:  return "Tutte le cerchie"
+    case .innerOnly:  return "solo inner"
+    case .innerClose: return "inner e close"
+    case .full:       return "inner, close, orbita"
+    case .asteroids:  return "tutto il halo"
     }
   }
 }

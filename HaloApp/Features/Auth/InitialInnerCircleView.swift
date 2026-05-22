@@ -42,15 +42,15 @@ struct InitialInnerCircleView: View {
 
   private var eyebrow: some View {
     VStack(alignment: .leading, spacing: 6) {
-      Text("CERCHIO · I PRIMI 5")
+      Text("INNER · I PRIMI 5")
         .font(.system(size: 11, weight: .semibold))
         .kerning(1.4)
         .foregroundStyle(HaloTheme.textCaption)
-      Text("scegli chi è davvero vicino")
+      Text("scegli i tuoi 5.")
         .font(.system(size: 24, weight: .semibold))
         .kerning(-0.5)
         .foregroundStyle(.white)
-      Text("massimo 5 · li puoi aggiornare in ogni momento")
+      Text("massimo 5. li puoi spostare quando vuoi.")
         .font(.system(size: 12))
         .foregroundStyle(Color.white.opacity(0.55))
     }
@@ -165,7 +165,7 @@ struct InitialInnerCircleView: View {
       .buttonStyle(.plain)
       Spacer()
       Button { Task { await confirm() } } label: {
-        Text(picked.isEmpty ? "Continua" : "Aggiungi al mio cerchio (\(picked.count))")
+        Text(picked.isEmpty ? "Continua" : "aggiungi al mio Inner (\(picked.count))")
           .font(.system(size: 15, weight: .semibold))
           .foregroundStyle(.white)
           .padding(.horizontal, 18).padding(.vertical, 12)

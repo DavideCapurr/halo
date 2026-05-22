@@ -242,7 +242,7 @@ struct VibeFirstComposeView: View {
   private var tierStep: some View {
     VStack(alignment: .leading, spacing: 12) {
       stepHeading(eyebrow: "STEP 4 · CON CHI", title: "condividi con…")
-      Text("Halo parte dal tuo cerchio più stretto. Allargare è una scelta.")
+      Text("Halo parte da Inner. Allargare è una scelta.")
         .font(.system(size: 13))
         .foregroundStyle(Color.white.opacity(0.55))
 
@@ -302,10 +302,10 @@ struct VibeFirstComposeView: View {
 
   private func audienceLabel(for t: FriendshipTier, count: Int) -> String {
     switch t {
-    case .inner:  return "i tuoi \(count) del cerchio"
-    case .close:  return "cerchio + i tuoi \(count) vicini"
-    case .orbit:  return "cerchio + vicini + i tuoi \(count) in orbita"
-    case .nebula: return "tutti quelli che ti seguono (\(count) in nebula)"
+    case .inner:  return "i tuoi \(count) di Inner"
+    case .close:  return "Inner + i tuoi \(count) di Close"
+    case .orbit:  return "Inner + Close + i tuoi \(count) in Orbita"
+    case .nebula: return "Inner + Close + Orbita + \(count) in Nebula"
     }
   }
 
