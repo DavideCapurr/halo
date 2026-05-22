@@ -43,16 +43,15 @@ struct InitialInnerCircleView: View {
   private var eyebrow: some View {
     VStack(alignment: .leading, spacing: 6) {
       Text("INNER · I PRIMI 5")
-        .font(.system(size: 11, weight: .semibold))
-        .kerning(1.4)
-        .foregroundStyle(HaloTheme.textCaption)
+        .font(HaloType.eyebrow(11))
+        .kerning(2.4)
+        .foregroundStyle(HaloInk.creamMute)
       Text("scegli i tuoi 5.")
-        .font(.system(size: 24, weight: .semibold))
-        .kerning(-0.5)
-        .foregroundStyle(.white)
+        .font(HaloType.serif(28, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
       Text("massimo 5. li puoi spostare quando vuoi.")
-        .font(.system(size: 12))
-        .foregroundStyle(Color.white.opacity(0.55))
+        .font(HaloType.ui(12, weight: .regular))
+        .foregroundStyle(HaloInk.creamLow)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }
@@ -60,11 +59,12 @@ struct InitialInnerCircleView: View {
   private var searchField: some View {
     HStack(spacing: 10) {
       Image(systemName: "magnifyingglass")
-        .foregroundStyle(.white.opacity(0.55))
+        .foregroundStyle(HaloInk.creamMute)
       TextField("cerca per handle", text: $query)
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
-        .foregroundStyle(.white)
+        .foregroundStyle(HaloInk.cream)
+        .font(HaloType.ui(14, weight: .regular))
         .onChange(of: query) { _, _ in
           Task { await search() }
         }
@@ -91,11 +91,11 @@ struct InitialInnerCircleView: View {
                       .clipShape(Circle())
                   )
                 Text("@\(p.handle)")
-                  .font(.system(size: 12, weight: .medium))
-                  .foregroundStyle(.white)
+                  .font(HaloType.ui(12, weight: .medium))
+                  .foregroundStyle(HaloInk.cream)
                 Image(systemName: "xmark")
                   .font(.system(size: 9, weight: .bold))
-                  .foregroundStyle(.white.opacity(0.55))
+                  .foregroundStyle(HaloInk.creamMute)
               }
               .padding(.horizontal, 10).padding(.vertical, 6)
               .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(.warm, l: 0.55), interactive: true)
@@ -113,9 +113,9 @@ struct InitialInnerCircleView: View {
         if isSearching {
           ProgressView().tint(.white).padding(.top, 18)
         } else if results.isEmpty && !query.isEmpty {
-          Text("nessun handle che inizia con \"\(query)\"")
-            .font(.system(size: 12))
-            .foregroundStyle(Color.white.opacity(0.45))
+          Text("nessun handle che inizia con \u{201C}\(query)\u{201D}.")
+            .font(HaloType.serif(13, weight: .regular))
+            .foregroundStyle(HaloInk.creamMute)
             .padding(.top, 18)
         } else {
           ForEach(results, id: \.id) { p in
@@ -131,18 +131,18 @@ struct InitialInnerCircleView: View {
                   )
                 VStack(alignment: .leading, spacing: 2) {
                   Text(p.displayName)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.white)
+                    .font(HaloType.serif(16, weight: .regular))
+                    .foregroundStyle(HaloInk.cream)
                   Text("@\(p.handle)")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.white.opacity(0.55))
+                    .font(HaloType.ui(11, weight: .regular))
+                    .foregroundStyle(HaloInk.creamMute)
                 }
                 Spacer()
                 Image(systemName: isPicked(p) ? "checkmark.circle.fill" : "plus.circle")
                   .font(.system(size: 18, weight: .regular))
                   .foregroundStyle(isPicked(p)
-                    ? MoodPalette.auraColor(.warm, l: 0.85)
-                    : Color.white.opacity(0.40))
+                    ? HaloInk.bronze
+                    : HaloInk.creamMute)
               }
               .padding(.horizontal, 12).padding(.vertical, 10)
               .haloGlass(in: RoundedRectangle(cornerRadius: 12), tint: isPicked(p) ? MoodPalette.auraColor(.warm, l: 0.55) : nil, interactive: true)
@@ -158,16 +158,16 @@ struct InitialInnerCircleView: View {
   private var ctaRow: some View {
     HStack {
       Button(action: onSkip) {
-        Text("Salta")
-          .font(.system(size: 14, weight: .medium))
-          .foregroundStyle(Color.white.opacity(0.55))
+        Text("salta")
+          .font(HaloType.ui(14, weight: .medium))
+          .foregroundStyle(HaloInk.creamMute)
       }
       .buttonStyle(.plain)
       Spacer()
       Button { Task { await confirm() } } label: {
-        Text(picked.isEmpty ? "Continua" : "aggiungi al mio Inner (\(picked.count))")
-          .font(.system(size: 15, weight: .semibold))
-          .foregroundStyle(.white)
+        Text(picked.isEmpty ? "continua" : "aggiungi al mio Inner (\(picked.count))")
+          .font(HaloType.ui(15, weight: .semibold))
+          .foregroundStyle(HaloInk.cream)
           .padding(.horizontal, 18).padding(.vertical, 12)
           .background(
             LinearGradient(

@@ -43,8 +43,8 @@ struct PostCardView: View {
       mediaSlot
       if let caption = post.caption, !caption.isEmpty, post.kind != .text {
         Text(caption)
-          .font(.system(size: 14)).italic()
-          .foregroundStyle(Color.white.opacity(0.78))
+          .font(HaloType.serif(15, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 16).padding(.vertical, 10)
       }
@@ -84,8 +84,9 @@ struct PostCardView: View {
       }
 
       Text(ageLabel)
-        .font(HaloTheme.mono)
-        .foregroundStyle(Color.white.opacity(0.55))
+        .font(HaloType.mono(11, weight: .medium))
+        .kerning(1.0)
+        .foregroundStyle(HaloInk.creamMute)
 
       Spacer()
 
@@ -95,8 +96,8 @@ struct PostCardView: View {
             .fill(MoodPalette.auraColor(mood, l: 0.82))
             .frame(width: 6, height: 6)
           Text(mood.rawValue)
-            .font(.system(size: 11, weight: .medium))
-            .foregroundStyle(Color.white.opacity(0.75))
+            .font(HaloType.ui(11, weight: .medium))
+            .foregroundStyle(HaloInk.creamLow)
         }
         .padding(.horizontal, 8).padding(.vertical, 4)
         .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(mood, l: 0.55))
@@ -151,10 +152,9 @@ struct PostCardView: View {
 
   private var textBody: some View {
     Text(post.caption ?? "—")
-      .font(.system(size: 16))
-      .kerning(-0.1)
+      .font(HaloType.serif(20, weight: .regular))
       .lineSpacing(4)
-      .foregroundStyle(.white)
+      .foregroundStyle(HaloInk.cream)
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.horizontal, 16).padding(.vertical, 16)
   }

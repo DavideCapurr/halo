@@ -18,9 +18,8 @@ struct PresenceBar: View {
             VStack(spacing: 6) {
               PresenceBubble(person: p, size: bubbleSize)
               Text(p.handle)
-                .font(.system(size: 10, weight: .medium, design: .rounded))
-                .kerning(-0.05)
-                .foregroundStyle(Color.white.opacity(0.65))
+                .font(HaloType.ui(10, weight: .medium))
+                .foregroundStyle(HaloInk.creamLow)
                 .lineLimit(1)
             }
           }

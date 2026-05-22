@@ -65,20 +65,20 @@ struct ReactionBarView: View {
               .frame(width: 10, height: 10)
               .overlay(
                 Text(initial(from: uuid))
-                  .font(.system(size: 6, weight: .semibold))
-                  .foregroundStyle(.white.opacity(0.85))
+                  .font(HaloType.ui(6, weight: .semibold))
+                  .foregroundStyle(HaloInk.cream)
               )
           }
           if agg.count > 2 {
             Text("+\(agg.count - 2)")
-              .font(.system(size: 9, design: .monospaced))
-              .foregroundStyle(Color.white.opacity(0.55))
+              .font(HaloType.mono(9, weight: .medium))
+              .foregroundStyle(HaloInk.creamMute)
           }
         }
       } else {
         Text("\(agg.count)")
-          .font(.system(size: 10, design: .monospaced))
-          .foregroundStyle(Color.white.opacity(0.55))
+          .font(HaloType.mono(10, weight: .medium))
+          .foregroundStyle(HaloInk.creamMute)
       }
     } else {
       Color.clear.frame(width: 1, height: 10)

@@ -21,11 +21,11 @@ struct SignInView: View {
       VStack(spacing: 24) {
         Spacer()
         Text("Halo")
-          .font(.system(size: 44, weight: .semibold, design: .rounded))
-          .foregroundStyle(.white)
+          .font(HaloType.serifUpright(56, weight: .medium))
+          .foregroundStyle(HaloInk.cream)
         Text("le tue persone. non un pubblico.")
-          .font(.callout)
-          .foregroundStyle(HaloTheme.textMuted)
+          .font(HaloType.serif(17, weight: .regular))
+          .foregroundStyle(HaloInk.creamLow)
         Spacer()
 
         SignInWithAppleButton(
@@ -43,9 +43,9 @@ struct SignInView: View {
         Button {
           showEmail.toggle()
         } label: {
-          Text(showEmail ? "Nascondi email" : "Entra con email")
-            .foregroundStyle(HaloTheme.textMuted)
-            .font(.system(size: 14, weight: .medium))
+          Text(showEmail ? "nascondi email" : "entra con email")
+            .foregroundStyle(HaloInk.creamMute)
+            .font(HaloType.ui(14, weight: .medium))
         }
 
         if showEmail {
@@ -56,8 +56,8 @@ struct SignInView: View {
 
         if let err = errorMessage {
           Text(err)
-            .font(.system(size: 12))
-            .foregroundStyle(MoodPalette.auraColor(.warm, l: 0.65))
+            .font(HaloType.ui(12, weight: .regular))
+            .foregroundStyle(SwarmHalo.warmMagenta)
             .padding(.horizontal, 24)
         }
 
@@ -78,8 +78,8 @@ struct SignInView: View {
     VStack(spacing: 10) {
       TextField("la tua email", text: $email)
         .textFieldStyle(.plain)
-        .font(.system(size: 15))
-        .foregroundStyle(.white)
+        .font(HaloType.ui(15, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
         .keyboardType(.emailAddress)
         .textContentType(.emailAddress)
         .textInputAutocapitalization(.never)
@@ -89,8 +89,8 @@ struct SignInView: View {
 
       SecureField("password", text: $password)
         .textFieldStyle(.plain)
-        .font(.system(size: 15))
-        .foregroundStyle(.white)
+        .font(HaloType.ui(15, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
         .textContentType(.password)
         .padding(.horizontal, 14).padding(.vertical, 12)
         .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
@@ -98,9 +98,9 @@ struct SignInView: View {
       Button {
         Task { await signInWithEmail() }
       } label: {
-        Text("Entra")
-          .font(.system(size: 15, weight: .semibold))
-          .foregroundStyle(.white)
+        Text("entra")
+          .font(HaloType.ui(15, weight: .semibold))
+          .foregroundStyle(HaloInk.cream)
           .frame(maxWidth: .infinity)
           .padding(.vertical, 12)
           .haloGlass(in: RoundedRectangle(cornerRadius: 12), interactive: true)
