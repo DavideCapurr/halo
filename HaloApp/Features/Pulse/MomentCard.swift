@@ -126,28 +126,27 @@ struct MomentCard: View {
   private var header: some View {
     HStack(spacing: 8) {
       Text(person.name)
-        .font(.system(size: 15, weight: .semibold))
-        .kerning(-0.2)
-        .foregroundStyle(.white)
+        .font(HaloType.serif(18, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
       tierBadge
       Spacer(minLength: 0)
       Text(timestampLabel)
-        .font(HaloTheme.mono)
-        .kerning(0.3)
-        .foregroundStyle(HaloTheme.textCaption)
+        .font(HaloType.mono(11, weight: .medium))
+        .kerning(1.0)
+        .foregroundStyle(HaloInk.creamMute)
     }
   }
 
   private var tierBadge: some View {
-    Text(person.tier.label.lowercased())
-      .font(.system(size: 10, weight: .semibold, design: .rounded))
-      .kerning(0.4)
+    Text(person.tier.label)
+      .font(HaloType.eyebrow(9))
+      .kerning(1.8)
       .textCase(.uppercase)
-      .foregroundStyle(.white.opacity(0.78))
+      .foregroundStyle(HaloInk.creamLow)
       .padding(.horizontal, 7)
       .padding(.vertical, 2.5)
-      .background(.white.opacity(0.06), in: Capsule())
-      .overlay(Capsule().strokeBorder(Color.white.opacity(0.12), lineWidth: 0.5))
+      .background(SwarmHalo.creamWhisper, in: Capsule())
+      .overlay(Capsule().strokeBorder(SwarmHalo.strokeRest, lineWidth: 0.5))
   }
 
   // MARK: - vibe note
@@ -157,9 +156,8 @@ struct MomentCard: View {
       moodChip
       if !person.note.isEmpty {
         Text("\u{201C}\(person.note)\u{201D}")
-          .font(.system(size: 13))
-          .italic()
-          .foregroundStyle(Color.white.opacity(0.62))
+          .font(HaloType.serif(15, weight: .regular))
+          .foregroundStyle(HaloInk.creamLow)
           .lineLimit(2)
       }
     }
@@ -172,14 +170,13 @@ struct MomentCard: View {
         .frame(width: 7, height: 7)
         .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 3)
       Text(person.mood.rawValue)
-        .font(.system(size: 11, weight: .medium))
-        .kerning(0.1)
-        .foregroundStyle(Color.white.opacity(0.82))
+        .font(HaloType.ui(11, weight: .medium))
+        .foregroundStyle(HaloInk.creamLow)
     }
     .padding(.horizontal, 8)
     .padding(.vertical, 4)
-    .background(.white.opacity(0.05), in: Capsule())
-    .overlay(Capsule().strokeBorder(Color.white.opacity(0.10), lineWidth: 0.5))
+    .background(SwarmHalo.creamWhisper, in: Capsule())
+    .overlay(Capsule().strokeBorder(SwarmHalo.strokeSoft, lineWidth: 0.5))
   }
 
   // MARK: - post inline + decay
@@ -264,10 +261,10 @@ struct MomentCard: View {
       )
       if !p.caption.isEmpty {
         Text(p.caption)
-          .font(.system(size: 12)).italic()
-          .foregroundStyle(Color.white.opacity(0.85))
+          .font(HaloType.serif(13, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
           .padding(.horizontal, 10).padding(.vertical, 6)
-          .background(Color.black.opacity(0.25))
+          .background(SwarmHalo.absoluteBlack.opacity(0.25))
           .clipShape(Capsule())
           .padding(8)
       }
@@ -278,13 +275,12 @@ struct MomentCard: View {
 
   private func textPreview(_ p: PostPreview) -> some View {
     Text(p.caption)
-      .font(.system(size: 13))
-      .kerning(-0.05)
-      .foregroundStyle(Color.white.opacity(0.85))
+      .font(HaloType.ui(13, weight: .regular))
+      .foregroundStyle(HaloInk.cream)
       .lineLimit(3)
       .padding(.horizontal, 12).padding(.vertical, 10)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
+      .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard * 2))
   }
 
   private func audioPreview(_ p: PostPreview) -> some View {

@@ -70,8 +70,8 @@ struct HaloTabBar: View {
         Image(systemName: tab.icon)
           .font(.system(size: 15, weight: .medium))
         Text(tab.label)
-          .font(HaloType.mono(8.5, weight: .medium))
-          .kerning(0.8)
+          .font(HaloType.eyebrow(8.5))
+          .kerning(1.6)
           .textCase(.uppercase)
       }
       .foregroundStyle(isActive ? HaloInk.cream : HaloInk.creamMute)

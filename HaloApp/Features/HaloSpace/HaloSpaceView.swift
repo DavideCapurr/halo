@@ -127,13 +127,12 @@ private struct HaloSpacePage: View {
 
       VStack(alignment: .leading, spacing: 6) {
         Text(person.name)
-          .font(.system(size: 22, weight: .semibold))
-          .kerning(-0.4)
-          .foregroundStyle(.white)
+          .font(HaloType.serif(28, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
         HStack(spacing: 8) {
           Text("@\(person.handle)")
-            .font(.system(size: 13))
-            .foregroundStyle(HaloTheme.textMuted)
+            .font(HaloType.ui(13, weight: .regular))
+            .foregroundStyle(HaloInk.creamMute)
           tierBadge
         }
         if person.hasActiveVibe {
@@ -143,12 +142,12 @@ private struct HaloSpacePage: View {
               .frame(width: 7, height: 7)
               .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 3)
             Text(person.mood.rawValue)
-              .font(.system(size: 12, weight: .medium))
-              .foregroundStyle(Color.white.opacity(0.85))
+              .font(HaloType.ui(12, weight: .medium))
+              .foregroundStyle(HaloInk.creamLow)
             if !person.note.isEmpty {
               Text("\u{201C}\(person.note)\u{201D}")
-                .font(.system(size: 12)).italic()
-                .foregroundStyle(Color.white.opacity(0.60))
+                .font(HaloType.serif(13, weight: .regular))
+                .foregroundStyle(HaloInk.creamLow)
                 .lineLimit(1)
             }
           }
@@ -161,11 +160,11 @@ private struct HaloSpacePage: View {
   }
 
   private var tierBadge: some View {
-    Text(person.tier.label.lowercased())
-      .font(.system(size: 10, weight: .semibold, design: .rounded))
-      .kerning(0.4)
+    Text(person.tier.label)
+      .font(HaloType.eyebrow(9))
+      .kerning(1.8)
       .textCase(.uppercase)
-      .foregroundStyle(.white.opacity(0.78))
+      .foregroundStyle(HaloInk.creamLow)
       .padding(.horizontal, 7)
       .padding(.vertical, 2.5)
       .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(person.mood, l: 0.50))
@@ -189,11 +188,11 @@ private struct HaloSpacePage: View {
           .frame(width: 64, height: 64)
       }
       Text("halospace silenzioso.")
-        .font(.system(size: 17, weight: .semibold))
-        .foregroundStyle(.white)
+        .font(HaloType.serif(22, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
       Text("nessun momento attivo nelle ultime 72h.")
-        .font(.system(size: 13))
-        .foregroundStyle(Color.white.opacity(0.55))
+        .font(HaloType.ui(13, weight: .regular))
+        .foregroundStyle(HaloInk.creamLow)
     }
     .frame(maxWidth: .infinity)
     .padding(.vertical, 32)

@@ -8,7 +8,7 @@ struct DeepSpaceBackground: View {
 
   var body: some View {
     ZStack {
-      Color.black
+      SwarmHalo.warmBlack
 
       // vignette (warm/cool shift in base al tema)
       RadialGradient(
@@ -38,9 +38,9 @@ struct DeepSpaceBackground: View {
 
   private var vignetteColors: [Color] {
     switch theme {
-    case .aurora:   return [Color(hex: "#050510"), Color(hex: "#020205"), .black]
-    case .dusk:     return [Color(hex: "#0a0609"), Color(hex: "#040203"), .black]
-    case .nocturne: return [Color(hex: "#04070e"), Color(hex: "#020308"), .black]
+    case .aurora:   return [Color(hex: "#050510"), Color(hex: "#020205"), SwarmHalo.absoluteBlack]
+    case .dusk:     return [Color(hex: "#0a0805"), Color(hex: "#050402"), SwarmHalo.absoluteBlack]
+    case .nocturne: return [Color(hex: "#0a0809"), Color(hex: "#050404"), SwarmHalo.absoluteBlack]
     }
   }
 
