@@ -1,7 +1,7 @@
 import Foundation
 import StoreKit
 
-/// Step 13: Halo Plus €3,99/mese via StoreKit 2, senza RevenueCat.
+/// Halo Plus via StoreKit 2, senza RevenueCat.
 @MainActor
 final class StoreKitManager {
   static let shared = StoreKitManager()
@@ -11,13 +11,59 @@ final class StoreKitManager {
 
   private(set) var isPlus: Bool = false
 
-  enum PlusError: Error { case notImplemented, notEntitled }
+  enum PlusError: LocalizedError {
+    case productUnavailable
+    case pending
+    case cancelled
+    case unverified
+
+    var errorDescription: String? {
+      switch self {
+      case .productUnavailable: return "Halo Plus non è disponibile."
+      case .pending: return "Acquisto in attesa."
+      case .cancelled: return "Acquisto annullato."
+      case .unverified: return "Acquisto non verificato."
+      }
+    }
+  }
 
   func loadEntitlements() async throws {
-    // TODO step 13: Transaction.currentEntitlements → setta isPlus.
+    var entitled = false
+    for await result in Transaction.currentEntitlements {
+      let transaction = try verified(result)
+      if transaction.productID == Self.monthlyProductID {
+        entitled = true
+      }
+    }
+    isPlus = entitled
   }
 
   func purchaseMonthly() async throws {
-    throw PlusError.notImplemented // TODO step 13
+    guard let product = try await Product.products(for: [Self.monthlyProductID]).first else {
+      throw PlusError.productUnavailable
+    }
+
+    let result = try await product.purchase()
+    switch result {
+    case .success(let verification):
+      let transaction = try verified(verification)
+      isPlus = transaction.productID == Self.monthlyProductID
+      await transaction.finish()
+    case .pending:
+      throw PlusError.pending
+    case .userCancelled:
+      throw PlusError.cancelled
+    @unknown default:
+      throw PlusError.unverified
+    }
+  }
+
+  private func verified<T>(_ result: VerificationResult<T>) throws -> T {
+    switch result {
+    case .verified(let value):
+      return value
+    case .unverified:
+      throw PlusError.unverified
+    }
   }
 }

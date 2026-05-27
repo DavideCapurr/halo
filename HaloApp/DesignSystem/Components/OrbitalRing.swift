@@ -10,25 +10,26 @@ struct OrbitalRing: View {
   var active: Bool = false
 
   var body: some View {
+    let state = tier.swarmHaloState
     ZStack {
       Circle()
         .stroke(
-          active ? HaloInk.bronzeSoft : HaloInk.creamLine,
+          active ? state.activeStroke : HaloInk.creamLine,
           style: StrokeStyle(lineWidth: active ? 0.8 : 0.5, dash: [3.5, 5.5])
         )
         .frame(width: diameter, height: diameter)
 
       if active || tier == .inner {
         Text("\(tier.label.lowercased()) \(String(format: "%02d", count))")
-          .haloEyebrow(active ? HaloInk.bronze : HaloInk.creamMute, size: 7.5, tracking: 1.7)
+          .haloEyebrow(active ? state.accent : HaloInk.creamMute, size: 7.5, tracking: 1.7)
           .padding(.horizontal, 8)
           .padding(.vertical, 4)
-          .background(Capsule().fill(HaloInk.creamWhisper))
-          .overlay(Capsule().strokeBorder(active ? HaloInk.bronzeSoft : HaloInk.creamLine, lineWidth: 0.5))
+          .background(Capsule().fill(active ? state.badgeFill : HaloInk.creamWhisper))
+          .overlay(Capsule().strokeBorder(active ? state.activeStroke : HaloInk.creamLine, lineWidth: 0.5))
           .offset(y: -diameter / 2)
       }
     }
-    .animation(.easeInOut(duration: 0.25), value: active)
+    .animation(SwarmHalo.easeSwarm(0.25), value: active)
     .accessibilityHidden(true)
   }
 }

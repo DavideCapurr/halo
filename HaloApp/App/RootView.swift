@@ -32,7 +32,7 @@ struct RootView: View {
           .transition(.opacity)
       }
     }
-    .animation(.easeInOut(duration: 0.30), value: state.phase)
+    .animation(SwarmMotion.mount, value: state.phase)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.black)
     .task {
@@ -49,8 +49,8 @@ struct RootView: View {
       DeepSpaceBackground()
       VStack(spacing: 14) {
         Text("Halo")
-          .font(.system(size: 40, weight: .semibold, design: .rounded))
-          .foregroundStyle(.white)
+          .font(HaloType.serifUpright(48, weight: .medium))
+          .foregroundStyle(SwarmHalo.ink)
         if let errorMessage = state.launchErrorMessage {
           Text(errorMessage)
             .font(HaloType.ui(13, weight: .regular))
@@ -65,11 +65,11 @@ struct RootView: View {
               .foregroundStyle(HaloInk.cream)
               .padding(.horizontal, 18)
               .padding(.vertical, 10)
-              .haloGlass(in: RoundedRectangle(cornerRadius: 12), interactive: true)
+              .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: .attention)
           }
           .buttonStyle(.plain)
         } else {
-          ProgressView().tint(.white.opacity(0.8))
+          ProgressView().tint(SwarmHalo.ink)
         }
       }
     }

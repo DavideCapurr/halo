@@ -5,10 +5,10 @@ import HaloShared
 /// con micro-drift orizzontale e verticale lento. Visibile solo a zoom `.asteroids`.
 /// Pan orizzontale per esplorare quando la cintura è lunga.
 struct AsteroidBeltView: View {
-  let people: [DemoPerson]
+  let people: [HaloPersonNode]
   /// Categoria opzionale: se vuota → cintura monolitica; se valorizzata → header pill.
-  var groupBy: ((DemoPerson) -> String)? = nil
-  var onTap: (DemoPerson) -> Void = { _ in }
+  var groupBy: ((HaloPersonNode) -> String)? = nil
+  var onTap: (HaloPersonNode) -> Void = { _ in }
 
   private let bubbleSize: CGFloat = 28
 
@@ -36,11 +36,11 @@ struct AsteroidBeltView: View {
     }
     .frame(height: bubbleSize + 38)
     .background(
-      RoundedRectangle(cornerRadius: 18, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .fill(.ultraThinMaterial)
     )
     .overlay(
-      RoundedRectangle(cornerRadius: 18, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
     )
     .padding(.horizontal, 14)
@@ -49,9 +49,9 @@ struct AsteroidBeltView: View {
 
   // MARK: - Grouping
 
-  private struct AsteroidGroup { let title: String; let items: [DemoPerson] }
+  private struct AsteroidGroup { let title: String; let items: [HaloPersonNode] }
 
-  private func makeGroups(people: [DemoPerson]) -> [AsteroidGroup] {
+  private func makeGroups(people: [HaloPersonNode]) -> [AsteroidGroup] {
     guard let groupBy else { return [.init(title: "", items: people)] }
     let dict = Dictionary(grouping: people, by: groupBy)
     return dict.keys.sorted().map { key in
@@ -62,7 +62,7 @@ struct AsteroidBeltView: View {
 
 /// Bolla "asteroide": piccola, drift animato, non interattiva oltre il tap.
 private struct AsteroidBubble: View {
-  let person: DemoPerson
+  let person: HaloPersonNode
   let size: CGFloat
 
   /// Seed deterministico per evitare che tutti gli asteroidi pulsino in fase.
@@ -82,7 +82,7 @@ private struct AsteroidBubble: View {
         Circle()
           .fill(person.hasActiveVibe
                 ? MoodPalette.auraColor(person.mood, l: 0.62)
-                : Color.white.opacity(0.18))
+                : person.tier.swarmHaloState.ringFill)
           .frame(width: size, height: size)
           .shadow(
             color: person.hasActiveVibe
@@ -102,7 +102,7 @@ private struct AsteroidBubble: View {
 
 #Preview {
   ZStack {
-    Color.black
+    SwarmHalo.background
     AsteroidBeltView(people: SeedPeople.asteroids)
   }
   .frame(height: 80)

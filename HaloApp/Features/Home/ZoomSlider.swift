@@ -29,7 +29,7 @@ struct ZoomSlider: View {
         Capsule()
           .fill(
             LinearGradient(
-              colors: [HaloInk.bronze.opacity(0.60), HaloInk.creamWhisper],
+              colors: [SwarmHalo.inkSecondary, HaloInk.creamWhisper],
               startPoint: .top,
               endPoint: .bottom
             )
@@ -49,13 +49,13 @@ struct ZoomSlider: View {
           Circle()
             .fill(HaloInk.cream)
           Circle()
-            .fill(HaloInk.bronze.opacity(0.18))
+            .fill(SwarmHalo.inkHairline)
             .frame(width: handleSize - 8, height: handleSize - 8)
         }
           .frame(width: handleSize, height: handleSize)
-          .shadow(color: HaloInk.bronzeGlow, radius: 9)
-          .shadow(color: .black.opacity(0.35), radius: 10, y: 4)
-          .overlay(Circle().stroke(Color.black.opacity(0.25), lineWidth: 0.5))
+          .shadow(color: SwarmHalo.inkLine, radius: 9)
+          .shadow(color: SwarmHalo.absoluteBlack.opacity(0.35), radius: 10, y: 4)
+          .overlay(Circle().stroke(SwarmHalo.absoluteBlack.opacity(0.25), lineWidth: 0.5))
           .position(x: geo.size.width / 2, y: y)
           .animation(.spring(response: 0.28, dampingFraction: 0.8), value: level)
       }
@@ -75,7 +75,7 @@ struct ZoomSlider: View {
     .frame(width: controlWidth, height: trackHeight)
     .opacity(visible ? 1 : 0)
     .scaleEffect(visible ? 1 : 0.92)
-    .animation(.easeInOut(duration: 0.25), value: visible)
+    .animation(SwarmHalo.easeSwarm(0.25), value: visible)
     .onAppear { show() }
     .onChange(of: level) { _, _ in show() }
     .accessibilityElement(children: .ignore)

@@ -32,7 +32,8 @@ struct InitialInnerCircleView: View {
       .padding(.top, 26)
       .padding(.bottom, 26)
       if isWorking {
-        ProgressView().tint(.white)
+        SwarmLoadingState(label: "inner sync")
+          .padding(.horizontal, SwarmHalo.s6)
       }
     }
     .preferredColorScheme(.dark)
@@ -42,10 +43,8 @@ struct InitialInnerCircleView: View {
 
   private var eyebrow: some View {
     VStack(alignment: .leading, spacing: 6) {
-      Text("INNER · I PRIMI 5")
-        .font(HaloType.eyebrow(11))
-        .kerning(2.4)
-        .foregroundStyle(HaloInk.creamMute)
+      Text("HALO / INNER")
+        .haloEyebrow(SwarmActivationRole.connected.color, size: 9, tracking: 2.2)
       Text("scegli i tuoi 5.")
         .font(HaloType.serif(28, weight: .regular))
         .foregroundStyle(HaloInk.cream)
@@ -70,7 +69,7 @@ struct InitialInnerCircleView: View {
         }
     }
     .padding(.horizontal, 14).padding(.vertical, 12)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
+    .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: .connected)
   }
 
   @ViewBuilder
@@ -84,7 +83,7 @@ struct InitialInnerCircleView: View {
             } label: {
               HStack(spacing: 6) {
                 Circle()
-                  .fill(MoodPalette.auraColor(.warm, l: 0.72))
+                  .fill(SwarmHalo.surfaceRaised)
                   .frame(width: 18, height: 18)
                   .overlay(
                     PortraitView(personId: p.handle, size: 16)
@@ -98,7 +97,7 @@ struct InitialInnerCircleView: View {
                   .foregroundStyle(HaloInk.creamMute)
               }
               .padding(.horizontal, 10).padding(.vertical, 6)
-              .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(.warm, l: 0.55), interactive: true)
+              .swarmChip(active: true, activation: .connected)
             }
             .buttonStyle(.plain)
           }
@@ -111,7 +110,7 @@ struct InitialInnerCircleView: View {
     ScrollView {
       LazyVStack(spacing: 8) {
         if isSearching {
-          ProgressView().tint(.white).padding(.top, 18)
+          ProgressView().tint(SwarmHalo.ink).padding(.top, 18)
         } else if results.isEmpty && !query.isEmpty {
           Text("nessun handle che inizia con \u{201C}\(query)\u{201D}.")
             .font(HaloType.serif(13, weight: .regular))
@@ -141,11 +140,11 @@ struct InitialInnerCircleView: View {
                 Image(systemName: isPicked(p) ? "checkmark.circle.fill" : "plus.circle")
                   .font(.system(size: 18, weight: .regular))
                   .foregroundStyle(isPicked(p)
-                    ? HaloInk.bronze
+                    ? SwarmHalo.orbitalBlue
                     : HaloInk.creamMute)
               }
               .padding(.horizontal, 12).padding(.vertical, 10)
-              .haloGlass(in: RoundedRectangle(cornerRadius: 12), tint: isPicked(p) ? MoodPalette.auraColor(.warm, l: 0.55) : nil, interactive: true)
+              .swarmSurface(.card, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: isPicked(p) ? .connected : .rest)
             }
             .buttonStyle(.plain)
           }
@@ -167,17 +166,11 @@ struct InitialInnerCircleView: View {
       Button { Task { await confirm() } } label: {
         Text(picked.isEmpty ? "continua" : "aggiungi al mio Inner (\(picked.count))")
           .font(HaloType.ui(15, weight: .semibold))
-          .foregroundStyle(HaloInk.cream)
+          .foregroundStyle(SwarmHalo.background)
           .padding(.horizontal, 18).padding(.vertical, 12)
-          .background(
-            LinearGradient(
-              colors: [MoodPalette.auraColor(.warm, l: 0.78), MoodPalette.auraColor(.warm, l: 0.55)],
-              startPoint: .top, endPoint: .bottom
-            ),
-            in: Capsule()
-          )
-          .shadow(color: MoodPalette.auraRing(.warm, alpha: 0.4), radius: 10, y: 4)
-          .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(.warm, l: 0.55), interactive: true)
+          .background(SwarmActivationRole.connected.color, in: Capsule())
+          .overlay(Capsule().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: SwarmStroke.standard))
+          .shadow(color: SwarmActivationRole.connected.glow, radius: 10, y: 4)
       }
       .buttonStyle(.plain)
     }

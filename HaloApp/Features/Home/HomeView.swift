@@ -1,22 +1,17 @@
 import SwiftUI
 import HaloShared
 
-/// Schermata principale con `TabView` di sistema: Orbita · Pulse · Tu.
-/// Le sheet (peek / vibe / tier / compose) restano coordinate qui.
+/// Schermata principale con shell SWARM: campo full-bleed, rail operativa e
+/// command dock custom. Le sheet restano coordinate qui.
 struct HomeView: View {
-  private enum HomeTab: Hashable {
-    case orbit
-    case pulse
-    case profile
-  }
-
-  @State private var me: DemoPerson = SeedPeople.me
-  @State private var people: [DemoPerson] = SeedPeople.all + SeedPeople.asteroids
-  @State private var peek: DemoPerson? = nil
+  @State private var me: HaloPersonNode = SeedPeople.me
+  @State private var people: [HaloPersonNode] = SeedPeople.all + SeedPeople.asteroids
+  @State private var vm = HomeViewModel()
+  @State private var peek: HaloPersonNode? = nil
   @State private var showVibeSetter: Bool = false
   @State private var pendingProposal: TierConfirmationSheet.Proposal? = nil
   @State private var fieldZoom: ZoomLevel = .full
-  @State private var selectedTab: HomeTab = .orbit
+  @State private var selectedTab: HaloTabBar.Tab = .orbit
   @State private var showCompose: Bool = false
 
   /// Conteggio dei tier delle proprie cerchie per il `VibeFirstComposeView`.
@@ -24,19 +19,19 @@ struct HomeView: View {
     Dictionary(grouping: people.filter(\.isMutual), by: \.tier).mapValues(\.count)
   }
 
-  private var asteroids: [DemoPerson] { people.filter { !$0.isMutual } }
+  private var asteroids: [HaloPersonNode] { people.filter { !$0.isMutual } }
 
-  private var mutuals: [DemoPerson] {
+  private var mutuals: [HaloPersonNode] {
     people.filter(\.isMutual)
   }
 
-  private var activeMutuals: [DemoPerson] {
+  private var activeMutuals: [HaloPersonNode] {
     mutuals.filter(\.hasActiveVibe)
   }
 
   /// Lista mutuali ordinata per tier-rank, usata come "peers" nelle pagine
   /// HaloSpace così che lo swipe orizzontale resti consistente con l'orbita.
-  private var sortedMutuals: [DemoPerson] {
+  private var sortedMutuals: [HaloPersonNode] {
     people.filter(\.isMutual)
       .sorted { (a, b) in
         if a.tier.rank != b.tier.rank { return a.tier.rank > b.tier.rank }
@@ -45,32 +40,28 @@ struct HomeView: View {
   }
 
   var body: some View {
-    ZStack {
+    ZStack(alignment: .bottom) {
       DeepSpaceBackground()
-      TabView(selection: $selectedTab) {
-        orbitTab
-          .tag(HomeTab.orbit)
-          .tabItem {
-            Label("Orbita", systemImage: "circle.grid.cross")
-          }
+      currentTab
+        .transition(.opacity.combined(with: .scale(scale: 0.985)))
 
-        PulseFeedView(onPersonTap: { peek = $0 })
-          .tag(HomeTab.pulse)
-          .tabItem {
-            Label("Pulse", systemImage: "waveform.path.ecg")
-          }
-
-        ProfilePlaceholder(me: me, onVibeTap: { showVibeSetter = true })
-          .tag(HomeTab.profile)
-          .tabItem {
-            Label("Tu", systemImage: "person.crop.circle")
-          }
-      }
-      .tint(HaloInk.bronze)
-      .toolbarBackground(.ultraThinMaterial, for: .tabBar)
-      .toolbarBackground(.visible, for: .tabBar)
+      HaloTabBar(
+        active: selectedTab,
+        selfMood: me.mood,
+        onSelect: { selectedTab = $0 },
+        onCompose: { showCompose = true }
+      )
+      .padding(.bottom, 8)
     }
     .preferredColorScheme(.dark)
+    .animation(SwarmMotion.mount, value: selectedTab)
+    .task {
+      await vm.load()
+      let liveNodes = vm.feedItems.map(HaloPersonNode.init(item:))
+      if !liveNodes.isEmpty {
+        people = liveNodes
+      }
+    }
     .sheet(item: $peek) { person in
       HaloSpaceView(
         person: person,
@@ -117,125 +108,174 @@ struct HomeView: View {
     }
   }
 
-  private var orbitTab: some View {
-    VStack(spacing: 0) {
-      orbitHeader
-        .padding(.horizontal, 22)
-        .padding(.top, 12)
-
-      orbitStats
-        .padding(.horizontal, 22)
-        .padding(.top, 14)
-        .padding(.bottom, 8)
-
-      fieldArea
-        .frame(maxHeight: .infinity)
+  @ViewBuilder
+  private var currentTab: some View {
+    switch selectedTab {
+    case .orbit:
+      orbitTab
+    case .pulse:
+      PulseFeedView(onPersonTap: { peek = $0 })
+    case .profile:
+      ProfileView(
+        person: me,
+        tierCounts: tierCounts,
+        onVibeTap: { showVibeSetter = true },
+        onComposeTap: { showCompose = true }
+      )
     }
-    .padding(.top, 4)
   }
 
-  private var orbitHeader: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      HStack(spacing: 8) {
-        Text("orbite")
-          .haloEyebrow(HaloInk.creamMute, size: 9.5, tracking: 2.6)
-        Rectangle()
-          .fill(HaloInk.creamLine)
-          .frame(height: 0.5)
+  private var orbitTab: some View {
+    ZStack(alignment: .bottom) {
+      fieldArea
+
+      VStack(spacing: 0) {
+        orbitSystemRail
+          .padding(.horizontal, 16)
+          .padding(.top, 10)
+
+        Spacer(minLength: 0)
+
+        orbitLiveStrip
+          .padding(.bottom, 10)
+
+        orbitConsole
+          .padding(.horizontal, 14)
+          .padding(.bottom, 8)
+      }
+    }
+  }
+
+  private var orbitSystemRail: some View {
+    HStack(spacing: 12) {
+      VStack(alignment: .leading, spacing: 3) {
+        Text("HALO / ORBITA")
+          .haloEyebrow(SwarmActivationRole.connected.color, size: 8.5, tracking: 2.5)
         Text(Self.dateString)
           .font(HaloType.mono(9, weight: .medium))
-          .kerning(1.5)
+          .kerning(1.4)
           .textCase(.uppercase)
           .foregroundStyle(HaloInk.creamMute)
       }
 
-      HStack(alignment: .bottom, spacing: 14) {
-        VStack(alignment: .leading, spacing: 5) {
-          Text("chi è sveglio.")
-            .font(HaloType.serif(36, weight: .regular))
+      Rectangle()
+        .fill(HaloInk.creamLine)
+        .frame(height: 0.5)
+
+      Button(action: { showVibeSetter = true }) {
+        HStack(spacing: 7) {
+          Circle()
+            .fill(MoodPalette.auraColor(me.mood, l: 0.80))
+            .frame(width: 7, height: 7)
+            .shadow(color: MoodPalette.auraRing(me.mood, alpha: 0.45), radius: 4)
+          Text(me.mood.rawValue)
+            .font(HaloType.ui(12, weight: .medium))
             .foregroundStyle(HaloInk.cream)
-            .kerning(-0.5)
             .lineLimit(1)
-            .minimumScaleFactor(0.72)
-
-          Text("inner · close · orbita")
-            .font(HaloType.serif(15))
-            .foregroundStyle(HaloInk.creamLow)
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(Capsule().fill(.ultraThinMaterial))
+        .overlay(Capsule().strokeBorder(HaloInk.creamHair, lineWidth: 0.6))
+      }
+      .buttonStyle(.plain)
 
-        Spacer(minLength: 10)
+      Button(action: { showCompose = true }) {
+        Image(systemName: "plus")
+          .font(.system(size: 13, weight: .semibold))
+          .foregroundStyle(SwarmHalo.background)
+          .frame(width: 32, height: 32)
+          .background(Circle().fill(SwarmHalo.ink))
+      }
+      .buttonStyle(.plain)
+    }
+    .swarmRail()
+  }
 
-        VStack(alignment: .trailing, spacing: 8) {
-          Button(action: { showVibeSetter = true }) {
-            HStack(spacing: 7) {
-              Circle()
-                .fill(MoodPalette.auraColor(me.mood, l: 0.80))
-                .frame(width: 8, height: 8)
-                .shadow(color: MoodPalette.auraRing(me.mood, alpha: 0.50), radius: 5)
-              Text(me.mood.rawValue)
-                .font(HaloType.ui(12, weight: .medium))
-                .foregroundStyle(HaloInk.cream)
-                .lineLimit(1)
+  private var orbitLiveStrip: some View {
+    Group {
+      if activeMutuals.isEmpty {
+        Text("nessun segnale live")
+          .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 1.8)
+          .padding(.horizontal, 12)
+          .padding(.vertical, 7)
+          .swarmChip()
+      } else {
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack(spacing: 8) {
+            ForEach(activeMutuals.prefix(8)) { person in
+              orbitLiveChip(person)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(Capsule().fill(.ultraThinMaterial))
-            .overlay(Capsule().strokeBorder(HaloInk.creamHair, lineWidth: 0.6))
           }
-          .buttonStyle(.plain)
-
-          Button(action: {}) {
-            Image(systemName: "magnifyingglass")
-              .font(.system(size: 14, weight: .regular))
-              .foregroundStyle(HaloInk.creamLow)
-              .frame(width: 34, height: 34)
-              .background(Circle().fill(.ultraThinMaterial))
-              .overlay(Circle().strokeBorder(HaloInk.creamHair, lineWidth: 0.6))
-          }
-          .buttonStyle(.plain)
+          .padding(.horizontal, 16)
         }
       }
     }
   }
 
-  private var orbitStats: some View {
-    HStack(alignment: .center, spacing: 0) {
-      orbitStatCell("inner", value: String(format: "%02d", tierCounts[.inner] ?? 0), accent: fieldZoom == .innerOnly)
-      orbitStatSeparator
-      orbitStatCell("live", value: String(format: "%02d", activeMutuals.count), accent: !activeMutuals.isEmpty)
-      orbitStatSeparator
-      orbitStatCell("zoom", value: fieldZoom.shortLabel, accent: fieldZoom != .full)
+  private func orbitLiveChip(_ person: HaloPersonNode) -> some View {
+    Button(action: { peek = person }) {
+      HStack(spacing: 8) {
+        PortraitView(personId: person.id, size: 24, grayscale: true)
+          .background(HaloTheme.portraitBacking, in: Circle())
+          .overlay(Circle().strokeBorder(person.tier.swarmHaloState.stroke, lineWidth: 0.6))
+        VStack(alignment: .leading, spacing: 1) {
+          Text(person.name.lowercased())
+            .font(HaloType.ui(11, weight: .semibold))
+            .foregroundStyle(HaloInk.cream)
+            .lineLimit(1)
+          Text(person.mood.rawValue)
+            .haloEyebrow(HaloInk.creamMute, size: 6.8, tracking: 1.3)
+        }
+        Circle()
+          .fill(MoodPalette.auraColor(person.mood, l: 0.78))
+          .frame(width: 5, height: 5)
+      }
+      .padding(.horizontal, 9)
+      .padding(.vertical, 7)
+      .swarmChip(active: true, activation: person.tier == .inner ? .connected : .operational)
     }
-    .padding(.vertical, 12)
-    .padding(.horizontal, 16)
-    .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(.ultraThinMaterial))
-    .overlay(
-      RoundedRectangle(cornerRadius: 18, style: .continuous)
-        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    .buttonStyle(.plain)
+  }
+
+  private var orbitConsole: some View {
+    HStack(alignment: .center, spacing: 12) {
+      VStack(alignment: .leading, spacing: 5) {
+        Text("chi è sveglio.")
+          .font(HaloType.serif(24, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+          .lineLimit(1)
+          .minimumScaleFactor(0.76)
+        Text("inner · close · orbita")
+          .haloEyebrow(HaloInk.creamMute, size: 8.5, tracking: 1.9)
+      }
+
+      Spacer(minLength: 8)
+
+      orbitMetric("inner", String(format: "%02d", tierCounts[.inner] ?? 0), accent: fieldZoom == .innerOnly)
+      orbitMetric("live", String(format: "%02d", activeMutuals.count), accent: !activeMutuals.isEmpty)
+      orbitMetric("range", fieldZoom.shortLabel, accent: fieldZoom != .full)
+    }
+    .padding(.horizontal, 14)
+    .padding(.vertical, 13)
+    .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: .connected)
+    .shadow(color: SwarmHalo.absoluteBlack.opacity(0.40), radius: 20, y: 12)
+  }
+
+  private func orbitMetric(_ label: String, _ value: String, accent: Bool = false) -> some View {
+    SwarmMetricTile(
+      label: label,
+      value: value,
+      activation: accent ? .connected : .rest,
+      active: accent
     )
-  }
-
-  private var orbitStatSeparator: some View {
-    Rectangle()
-      .fill(HaloInk.creamLine)
-      .frame(width: 0.5, height: 28)
-  }
-
-  private func orbitStatCell(_ label: String, value: String, accent: Bool = false) -> some View {
-    VStack(spacing: 4) {
-      Text(value)
-        .font(HaloType.mono(18, weight: .semibold))
-        .foregroundStyle(accent ? HaloInk.bronze : HaloInk.cream)
-      Text(label)
-        .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 2.4)
-    }
-    .frame(maxWidth: .infinity)
+    .frame(width: 42)
   }
 
   // MARK: - field area (orbital + asteroids)
 
   private var fieldArea: some View {
-    VStack(spacing: 0) {
+    ZStack(alignment: .bottom) {
       OrbitalFieldView(
         people: people,
         me: me,
@@ -255,17 +295,19 @@ struct HomeView: View {
         onZoomChange: { fieldZoom = $0 }
       )
       .frame(maxHeight: .infinity)
+      .padding(.top, 64)
+      .padding(.bottom, fieldZoom == .asteroids ? 166 : 128)
 
       if fieldZoom == .asteroids && !asteroids.isEmpty {
         AsteroidBeltView(
           people: asteroids,
           onTap: { peek = $0 }
         )
-        .padding(.bottom, 6)
+        .padding(.bottom, 92)
         .transition(.opacity.combined(with: .move(edge: .bottom)))
       }
     }
-    .animation(.easeInOut(duration: 0.30), value: fieldZoom)
+    .animation(SwarmMotion.mount, value: fieldZoom)
   }
 
   private func requiresTierConfirmation(from: FriendshipTier, to: FriendshipTier) -> Bool {
@@ -293,65 +335,6 @@ private extension ZoomLevel {
 
 extension TierConfirmationSheet.Proposal: Identifiable {
   var id: String { "\(person.id)-\(from.rawValue)-\(to.rawValue)" }
-}
-
-// MARK: - Profile placeholder
-
-/// Quick profile destination — keeps the tab usable while the full profile
-/// flow (`ProfileView`) is still TODO. Reuses the v2 editorial vocabulary.
-private struct ProfilePlaceholder: View {
-  let me: DemoPerson
-  var onVibeTap: () -> Void = {}
-
-  var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 18) {
-        Text(me.name.lowercased())
-          .font(HaloType.serif(40, weight: .regular))
-          .foregroundStyle(HaloInk.cream)
-          .padding(.top, 80)
-
-        HStack(spacing: 8) {
-          Circle()
-            .fill(MoodPalette.auraColor(me.mood, l: 0.78))
-            .frame(width: 7, height: 7)
-            .shadow(color: MoodPalette.auraRing(me.mood, alpha: 0.55), radius: 3)
-          Text(me.mood.rawValue)
-            .haloEyebrow(HaloInk.creamLow, size: 9.5, tracking: 2.4)
-          Text("·")
-            .haloEyebrow(HaloInk.creamMute)
-          Text("@\(me.handle)")
-            .haloEyebrow(HaloInk.creamMute)
-        }
-
-        Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
-
-        Button(action: onVibeTap) {
-          HStack {
-            Text("modifica la tua vibe")
-              .font(HaloType.ui(14, weight: .medium))
-              .foregroundStyle(HaloInk.cream)
-            Spacer()
-            Image(systemName: "arrow.up.right")
-              .font(.system(size: 12, weight: .medium))
-              .foregroundStyle(HaloInk.creamLow)
-          }
-          .padding(.vertical, 14)
-        }
-        .buttonStyle(.plain)
-
-        Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
-
-        Text("più funzioni in arrivo.")
-          .font(HaloType.serif(16))
-          .foregroundStyle(HaloInk.creamMute)
-          .padding(.top, 12)
-      }
-      .padding(.horizontal, 26)
-      .padding(.bottom, 80)
-      .frame(maxWidth: .infinity, alignment: .leading)
-    }
-  }
 }
 
 #Preview {

@@ -9,6 +9,7 @@ struct BubbleView: View {
   let handle: String
   let mood: Mood
   let size: CGFloat
+  var tier: FriendshipTier = .orbit
   var hasNew: Bool = false
   var showName: Bool = false
   var pulsing: Bool = true
@@ -18,11 +19,11 @@ struct BubbleView: View {
   private var ringWidth: CGFloat { max(3, size * 0.075) }
 
   private var ringFill: Color {
-    hasActiveVibe ? MoodPalette.auraColor(mood, l: 0.72) : HaloInk.creamHair
+    tier.swarmHaloState.ringFill
   }
 
-  private var auraGlow: Color {
-    hasActiveVibe ? MoodPalette.auraRing(mood, alpha: 0.52) : Color.white.opacity(0.10)
+  private var moodAura: Color {
+    hasActiveVibe ? MoodPalette.auraRing(mood, alpha: 0.30) : .clear
   }
 
   private var isAdesso: Bool {
@@ -35,11 +36,11 @@ struct BubbleView: View {
       TimelineView(.animation(minimumInterval: 1.0 / 18, paused: !(pulsing && hasActiveVibe))) { ctx in
         let t = ctx.date.timeIntervalSinceReferenceDate
         let phase = sin((t / 3.4) * .pi * 2)
-        let opacity = hasActiveVibe ? (0.42 + 0.16 * phase) : 0.16
+        let opacity = hasActiveVibe ? (0.28 + 0.10 * phase) : 0.12
         Circle()
           .fill(
             RadialGradient(
-              colors: [auraGlow, .clear],
+              colors: [moodAura, .clear],
               center: .center,
               startRadius: 0,
               endRadius: size * 0.90
@@ -53,24 +54,27 @@ struct BubbleView: View {
       Circle()
         .fill(ringFill)
         .frame(width: size, height: size)
-        .shadow(color: auraGlow, radius: hasActiveVibe ? size * 0.14 : 3)
+        .overlay(
+          Circle().strokeBorder(tier.swarmHaloState.stroke, lineWidth: tier == .nebula ? 0.5 : 1)
+        )
+        .shadow(color: tier.swarmHaloState.glow, radius: size * 0.14)
 
-      PortraitView(personId: personId, size: size - ringWidth * 2)
+      PortraitView(personId: personId, size: size - ringWidth * 2, grayscale: true)
         .background(HaloTheme.portraitBacking, in: Circle())
 
       Circle()
         .fill(MoodPalette.auraColor(mood, l: 0.78))
         .frame(width: max(8, size * 0.14), height: max(8, size * 0.14))
-        .overlay(Circle().stroke(HaloInk.nightSurface, lineWidth: 1.5))
+        .overlay(Circle().stroke(SwarmHalo.background, lineWidth: 1.5))
         .opacity(hasActiveVibe ? 1 : 0.42)
         .offset(x: size * 0.38, y: -size * 0.38)
 
       if isAdesso {
         Circle()
-          .fill(HaloInk.cream)
+          .fill(SwarmHalo.ink)
           .frame(width: max(10, size * 0.16), height: max(10, size * 0.16))
-          .overlay(Circle().stroke(HaloInk.nightSurface.opacity(0.85), lineWidth: 2))
-          .shadow(color: HaloInk.cream.opacity(0.75), radius: 5)
+          .overlay(Circle().stroke(SwarmHalo.background.opacity(0.85), lineWidth: 2))
+          .shadow(color: SwarmHalo.ink.opacity(0.68), radius: 5)
           .offset(x: -size * 0.38, y: -size * 0.38)
       }
 
@@ -84,8 +88,8 @@ struct BubbleView: View {
           .fixedSize()
           .padding(.horizontal, 7)
           .padding(.vertical, 3)
-          .background(Capsule().fill(HaloInk.nightSurface.opacity(0.62)))
-          .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+          .background(Capsule().fill(tier.swarmHaloState.badgeFill))
+          .overlay(Capsule().strokeBorder(tier.swarmHaloState.stroke, lineWidth: 0.5))
           .offset(y: size * 0.5 + 13)
       }
     }
@@ -95,7 +99,7 @@ struct BubbleView: View {
 
 #Preview {
   ZStack {
-    Color.black
+    SwarmHalo.background
     HStack(spacing: 30) {
       BubbleView(personId: "p01", handle: "gia", mood: .warm, size: 96, hasNew: true, showName: true,
                  hasActiveVibe: true, lastPostAt: .now.addingTimeInterval(-15 * 60))

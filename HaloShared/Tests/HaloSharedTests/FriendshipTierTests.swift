@@ -32,4 +32,21 @@ final class FriendshipTierTests: XCTestCase {
     }
     XCTAssertEqual(parsed, id)
   }
+
+  func testInviteMemoryAndReportDeepLinks() {
+    guard case .invite(let token) = DeepLink(url: DeepLink.invite(token: "abc123").url!) else {
+      return XCTFail("failed to parse invite deep link")
+    }
+    XCTAssertEqual(token, "abc123")
+
+    guard case .memory = DeepLink(url: DeepLink.memory.url!) else {
+      return XCTFail("failed to parse memory deep link")
+    }
+
+    let id = UUID()
+    guard case .report(let parsed) = DeepLink(url: DeepLink.report(userId: id).url!) else {
+      return XCTFail("failed to parse report deep link")
+    }
+    XCTAssertEqual(parsed, id)
+  }
 }

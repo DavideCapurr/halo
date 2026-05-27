@@ -2,12 +2,12 @@ import SwiftUI
 import UIKit
 import HaloShared
 
-/// Compose flow vibe-first: mood (obbligatorio) → nota (opzionale) → momento
+/// Compose flow vibe-first: mood (obbligatorio) → nota (opzionale) → Moment
 /// (foto/testo/audio/salta) → tier (default Inner) → CTA "Manda".
 /// Anti-cringe: parte sempre col tier più ristretto; il tier selector mostra
 /// numeri reali e dà un warning soft quando si allarga.
 struct VibeFirstComposeView: View {
-  enum Step: Int { case mood = 0, nota = 1, momento = 2, tier = 3 }
+  enum Step: Int, CaseIterable { case mood = 0, nota = 1, momento = 2, tier = 3 }
   enum Momento { case foto, testo, audio, salta }
 
   /// Conteggi delle proprie cerchie (per il tier selector). Vengono passati dall'esterno.
@@ -42,21 +42,24 @@ struct VibeFirstComposeView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      progressBar
-        .padding(.horizontal, 22).padding(.top, 14).padding(.bottom, 8)
+      composeTopRail
+        .padding(.horizontal, 18)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
 
-      ScrollView {
-        VStack(spacing: 18) {
-          switch step {
-          case .mood:    moodStep
-          case .nota:    notaStep
-          case .momento: momentoStep
-          case .tier:    tierStep
-          }
+      HStack(alignment: .top, spacing: 12) {
+        stepRail
+          .padding(.leading, 18)
+          .padding(.top, 6)
+
+        ScrollView {
+          stageCard
+            .padding(.trailing, 18)
+            .padding(.bottom, 20)
         }
-        .padding(.horizontal, 22)
-        .padding(.vertical, 12)
+        .scrollIndicators(.hidden)
       }
+      .frame(maxHeight: .infinity)
 
       footer
         .padding(.horizontal, 22).padding(.bottom, 22).padding(.top, 8)
@@ -70,17 +73,104 @@ struct VibeFirstComposeView: View {
 
   // MARK: - progress
 
+  private var composeTopRail: some View {
+    HStack(spacing: 12) {
+      VStack(alignment: .leading, spacing: 3) {
+        Text("COMPOSE / VIBE")
+          .haloEyebrow(SwarmHalo.inkSecondary, size: 8.5, tracking: 2.3)
+        Text(step.shortTitle)
+          .font(HaloType.ui(13, weight: .semibold))
+          .foregroundStyle(HaloInk.cream)
+      }
+
+      Rectangle()
+        .fill(HaloInk.creamLine)
+        .frame(height: 0.5)
+
+      Text("\(step.rawValue + 1)/4")
+        .font(HaloType.mono(10, weight: .semibold))
+        .kerning(1.2)
+        .foregroundStyle(HaloInk.creamLow)
+
+      Button(action: onClose) {
+        Image(systemName: "xmark")
+          .font(.system(size: 12, weight: .semibold))
+          .foregroundStyle(HaloInk.creamLow)
+          .frame(width: 30, height: 30)
+          .background(Circle().fill(SwarmHalo.inkWhisper))
+          .overlay(Circle().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+      }
+      .buttonStyle(.plain)
+    }
+  }
+
+  private var stepRail: some View {
+    VStack(spacing: 8) {
+      ForEach(Step.allCases, id: \.self) { item in
+        VStack(spacing: 6) {
+          Circle()
+            .fill(item.rawValue <= step.rawValue ? MoodPalette.auraColor(mood, l: 0.78) : SwarmHalo.strokeRest)
+            .frame(width: item == step ? 11 : 7, height: item == step ? 11 : 7)
+            .shadow(color: item == step ? MoodPalette.auraRing(mood, alpha: 0.35) : .clear, radius: 6)
+
+          if item != .tier {
+            Rectangle()
+              .fill(item.rawValue < step.rawValue ? MoodPalette.auraColor(mood, l: 0.52) : HaloInk.creamLine)
+              .frame(width: 0.5, height: 34)
+          }
+        }
+        .frame(width: 22)
+        .contentShape(Rectangle())
+        .onTapGesture {
+          guard item.rawValue <= step.rawValue else { return }
+          UISelectionFeedbackGenerator().selectionChanged()
+          step = item
+        }
+      }
+    }
+    .padding(.vertical, 12)
+    .background(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .fill(.ultraThinMaterial)
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .strokeBorder(HaloInk.creamHair, lineWidth: 0.5)
+    )
+  }
+
+  private var stageCard: some View {
+    VStack(spacing: 18) {
+      switch step {
+      case .mood:    moodStep
+      case .nota:    notaStep
+      case .momento: momentoStep
+      case .tier:    tierStep
+      }
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .fill(.ultraThinMaterial)
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    )
+  }
+
   private var progressBar: some View {
     HStack(spacing: 6) {
       ForEach(0..<4) { idx in
         Capsule()
           .fill(idx <= step.rawValue
             ? MoodPalette.auraColor(mood, l: 0.78)
-            : Color.white.opacity(0.10))
+            : SwarmHalo.strokeRest)
           .frame(height: 3)
       }
     }
-    .animation(.easeInOut(duration: 0.25), value: step)
+    .animation(SwarmHalo.easeSwarm(0.25), value: step)
   }
 
   // MARK: - step 1: mood
@@ -169,7 +259,7 @@ struct VibeFirstComposeView: View {
           .foregroundStyle(HaloInk.creamMute)
       }
       .padding(.horizontal, 14).padding(.vertical, 12)
-      .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard * 2 + 2))
+      .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
 
       Button { note = ""; advance() } label: {
         Text("salta")
@@ -180,11 +270,11 @@ struct VibeFirstComposeView: View {
     }
   }
 
-  // MARK: - step 3: momento
+  // MARK: - step 3: Moment
 
   private var momentoStep: some View {
     VStack(alignment: .leading, spacing: 12) {
-      stepHeading(eyebrow: "STEP 3 · MOMENTO", title: "vuoi aggiungere un momento?")
+      stepHeading(eyebrow: "STEP 3 · MOMENT", title: "vuoi aggiungere un Moment?")
       Text("se non aggiungi nulla, condividi solo la presenza.")
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
@@ -197,7 +287,7 @@ struct VibeFirstComposeView: View {
           .foregroundStyle(HaloInk.cream)
           .lineLimit(6, reservesSpace: true)
           .padding(.horizontal, 14).padding(.vertical, 12)
-          .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard * 2 + 2))
+          .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
       }
     }
   }
@@ -220,7 +310,7 @@ struct VibeFirstComposeView: View {
           HStack(spacing: 10) {
             Image(systemName: icon)
               .font(.system(size: 16, weight: .regular))
-              .foregroundStyle(on ? Color.white : Color.white.opacity(0.55))
+              .foregroundStyle(on ? SwarmHalo.ink : SwarmHalo.inkMuted)
               .frame(width: 22)
             Text(label)
               .font(HaloType.ui(15, weight: on ? .semibold : .medium))
@@ -228,7 +318,7 @@ struct VibeFirstComposeView: View {
             Spacer()
           }
           .padding(.horizontal, 14).padding(.vertical, 14)
-          .haloGlass(in: RoundedRectangle(cornerRadius: 14), tint: on ? MoodPalette.auraColor(mood, l: 0.55) : nil, interactive: true)
+          .haloGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput), tint: on ? MoodPalette.auraColor(mood, l: 0.55) : nil, interactive: true)
         }
         .buttonStyle(.plain)
       }
@@ -253,31 +343,32 @@ struct VibeFirstComposeView: View {
       if let warning = wideningWarning {
         HStack(spacing: 8) {
           Image(systemName: "exclamationmark.circle")
-            .foregroundStyle(MoodPalette.auraColor(.warm, l: 0.78))
+            .foregroundStyle(SwarmHalo.launchAmber)
           Text(warning)
             .font(HaloType.ui(12, weight: .regular))
             .foregroundStyle(HaloInk.creamLow)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .haloGlass(in: RoundedRectangle(cornerRadius: 12), tint: MoodPalette.auraColor(.warm, l: 0.55))
+        .haloGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput), tint: SwarmHalo.launchAmber.opacity(0.22))
         .transition(.opacity.combined(with: .move(edge: .top)))
       }
     }
-    .animation(.easeInOut(duration: 0.20), value: tier)
+    .animation(SwarmHalo.easeSwarm(0.20), value: tier)
   }
 
   private func tierRow(_ t: FriendshipTier) -> some View {
     let on = t == tier
     let n = tierCounts[t] ?? 0
+    let state = t.swarmHaloState
     return Button {
       tier = t
       UISelectionFeedbackGenerator().selectionChanged()
     } label: {
       HStack(spacing: 12) {
         Circle()
-          .fill(on ? MoodPalette.auraColor(mood, l: 0.85) : Color.white.opacity(0.30))
+          .fill(on ? state.accent : state.stroke)
           .frame(width: 9, height: 9)
-          .shadow(color: on ? MoodPalette.auraRing(mood, alpha: 0.55) : .clear, radius: 4)
+          .shadow(color: on ? state.glow : .clear, radius: 4)
         VStack(alignment: .leading, spacing: 2) {
           Text(t.label)
             .font(HaloType.ui(15, weight: on ? .semibold : .medium))
@@ -293,7 +384,7 @@ struct VibeFirstComposeView: View {
           .foregroundStyle(on ? HaloInk.cream : HaloInk.creamMute)
       }
       .padding(.horizontal, 14).padding(.vertical, 12)
-      .haloGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard * 2 + 2), tint: on ? MoodPalette.auraColor(mood, l: 0.55) : nil, interactive: true)
+      .haloGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput), tint: on ? state.accent.opacity(0.18) : nil, interactive: true)
     }
     .buttonStyle(.plain)
   }
@@ -379,6 +470,17 @@ struct VibeFirstComposeView: View {
 
   private func send() {
     onSend(.init(mood: mood, note: note, momento: momento, tier: tier))
+  }
+}
+
+private extension VibeFirstComposeView.Step {
+  var shortTitle: String {
+    switch self {
+    case .mood: return "mood"
+    case .nota: return "nota"
+    case .momento: return "Moment"
+    case .tier: return "con chi"
+    }
   }
 }
 

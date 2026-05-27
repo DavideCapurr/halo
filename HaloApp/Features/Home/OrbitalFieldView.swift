@@ -7,13 +7,13 @@ import HaloShared
 /// Tap singolo → `onBubbleTap(person)`.
 /// Pinch → cambia `ZoomLevel` (innerOnly · innerClose · full · asteroids).
 struct OrbitalFieldView: View {
-  let people: [DemoPerson]
-  let me: DemoPerson
+  let people: [HaloPersonNode]
+  let me: HaloPersonNode
   var pulsing: Bool = true
-  var onBubbleTap: (DemoPerson) -> Void = { _ in }
+  var onBubbleTap: (HaloPersonNode) -> Void = { _ in }
   var onSelfTap: () -> Void = {}
   var onSelfLongPress: () -> Void = {}
-  var onProposeTier: (DemoPerson, FriendshipTier) -> Void = { _, _ in }
+  var onProposeTier: (HaloPersonNode, FriendshipTier) -> Void = { _, _ in }
 
   @State private var drag: DragState? = nil
   @State private var zoomLevel: ZoomLevel = .full
@@ -38,9 +38,9 @@ struct OrbitalFieldView: View {
       let W = geo.size.width
       let H = geo.size.height
       let cx = W / 2
-      let cy = H * 0.52
+      let cy = H * 0.49
       // Espande lateralmente: l'anello esterno tocca quasi i bordi.
-      let maxR = min(W, H) * 0.56
+      let maxR = min(W, H) * 0.52
       // Solo follow mutuali finiscono sugli anelli; gli asimmetrici sono asteroidi.
       let mutuals = people.filter(\.isMutual)
       let counts = Dictionary(grouping: mutuals, by: \.tier).mapValues(\.count)
@@ -49,13 +49,16 @@ struct OrbitalFieldView: View {
 
       ZStack {
         RadialGradient(
-          colors: [MoodPalette.auraRing(me.mood, alpha: 0.13), .clear],
+          colors: [MoodPalette.auraRing(me.mood, alpha: 0.06), .clear],
           center: .center,
           startRadius: 0,
           endRadius: maxR * 1.18
         )
         .position(x: cx, y: cy)
         .allowsHitTesting(false)
+
+        orbitGrid(cx: cx, cy: cy, maxR: maxR)
+          .allowsHitTesting(false)
 
         // 1. anelli (illuminati se ghostTier li attraversa). Nebula in dezoom
         // diventa una fascia diffusa, non un anello orbitale classico.
@@ -95,7 +98,7 @@ struct OrbitalFieldView: View {
           let pos = polarToXY(tier: original.tier, angle: original.angle, cx: cx, cy: cy, maxR: maxR)
           let s = original.tier.bubbleSize(at: zoomLevel)
           Circle()
-            .stroke(Color.white.opacity(0.4), style: .init(lineWidth: 1, dash: [3, 3]))
+            .stroke(SwarmHalo.ink.opacity(0.4), style: .init(lineWidth: 1, dash: [3, 3]))
             .frame(width: s, height: s)
             .position(x: pos.x, y: pos.y)
         }
@@ -117,8 +120,9 @@ struct OrbitalFieldView: View {
               handle: p.handle,
               mood: p.mood,
               size: size,
+              tier: effectiveTier,
               hasNew: p.hasNew,
-              showName: effectiveTier == .inner || effectiveTier == .close,
+              showName: shouldShowName(for: effectiveTier),
               pulsing: pulsing,
               hasActiveVibe: p.hasActiveVibe,
               lastPostAt: p.lastPostAt
@@ -155,14 +159,14 @@ struct OrbitalFieldView: View {
           .padding(.horizontal, 14)
           .padding(.vertical, 8)
           .background(Capsule().fill(.ultraThinMaterial))
-          .overlay(Capsule().strokeBorder(HaloInk.bronzeSoft, lineWidth: 0.6))
+          .overlay(Capsule().strokeBorder(d.ghostTier.swarmHaloState.activeStroke, lineWidth: 0.6))
           .position(x: cx, y: 32)
           .zIndex(60)
           .transition(.opacity.combined(with: .move(edge: .top)))
         }
       }
       .contentShape(Rectangle())
-      .animation(.easeInOut(duration: 0.2), value: drag?.ghostTier)
+      .animation(SwarmHalo.easeSwarm(0.2), value: drag?.ghostTier)
       .animation(.spring(response: 0.55, dampingFraction: 0.82), value: zoomLevel)
       .gesture(pinchGesture)
       .simultaneousGesture(
@@ -200,6 +204,30 @@ struct OrbitalFieldView: View {
   }
 
   @ViewBuilder
+  private func orbitGrid(cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> some View {
+    Path { path in
+      path.move(to: CGPoint(x: cx - maxR * 1.02, y: cy))
+      path.addLine(to: CGPoint(x: cx + maxR * 1.02, y: cy))
+      path.move(to: CGPoint(x: cx, y: cy - maxR * 1.02))
+      path.addLine(to: CGPoint(x: cx, y: cy + maxR * 1.02))
+    }
+    .stroke(HaloInk.creamLine, lineWidth: 0.5)
+
+    ForEach(0..<16, id: \.self) { i in
+      let angle = Double(i) / 16.0 * Double.pi * 2
+      let r = maxR * 1.02
+      Capsule()
+        .fill(i.isMultiple(of: 4) ? HaloInk.creamHair : HaloInk.creamLine)
+        .frame(width: 0.7, height: i.isMultiple(of: 4) ? 11 : 5)
+        .rotationEffect(.radians(angle))
+        .position(
+          x: cx + CGFloat(cos(angle)) * r,
+          y: cy + CGFloat(sin(angle)) * r
+        )
+    }
+  }
+
+  @ViewBuilder
   private func nebulaBand(cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> some View {
     let nebulaPeople = people.filter { $0.isMutual && $0.tier == .nebula }
 
@@ -207,7 +235,7 @@ struct OrbitalFieldView: View {
       ForEach([0.66, 0.76, 0.86, 0.96], id: \.self) { radius in
         Circle()
           .stroke(
-            Color.white.opacity(radius == 0.76 ? 0.11 : 0.06),
+            SwarmHalo.ink.opacity(radius == 0.76 ? 0.11 : 0.06),
             style: StrokeStyle(lineWidth: 1, dash: [2, 9], dashPhase: radius * 17)
           )
           .frame(width: maxR * CGFloat(radius) * 2, height: maxR * CGFloat(radius) * 2)
@@ -230,6 +258,7 @@ struct OrbitalFieldView: View {
             handle: p.handle,
             mood: p.mood,
             size: size,
+            tier: p.tier,
             hasNew: p.hasNew,
             showName: false,
             pulsing: pulsing,
@@ -278,7 +307,7 @@ struct OrbitalFieldView: View {
   }
 
   private func fieldZoomDragGesture(
-    mutuals: [DemoPerson],
+    mutuals: [HaloPersonNode],
     placementByPerson: [String: OrbitalLayout.Placement],
     cx: CGFloat,
     cy: CGFloat,
@@ -317,7 +346,7 @@ struct OrbitalFieldView: View {
       }
   }
 
-  private func bubbleGesture(for person: DemoPerson, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> some Gesture {
+  private func bubbleGesture(for person: HaloPersonNode, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> some Gesture {
     DragGesture(minimumDistance: 6, coordinateSpace: .named(fieldSpace))
       .onChanged { value in
         let target = nearestTier(to: value.location, cx: cx, cy: cy, maxR: maxR)
@@ -342,8 +371,19 @@ struct OrbitalFieldView: View {
     switch zoomLevel {
     case .innerOnly:  return 168
     case .innerClose: return 144
-    case .full:       return 128
+    case .full:       return 110
     case .asteroids:  return 96
+    }
+  }
+
+  private func shouldShowName(for tier: FriendshipTier) -> Bool {
+    switch zoomLevel {
+    case .innerOnly:
+      return tier == .inner
+    case .innerClose:
+      return tier == .inner
+    case .full, .asteroids:
+      return false
     }
   }
 
@@ -352,7 +392,7 @@ struct OrbitalFieldView: View {
     return CGPoint(x: cx + CGFloat(cos(angle) * r), y: cy + CGFloat(sin(angle) * r))
   }
 
-  private func nebulaBeltPosition(for person: DemoPerson, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> CGPoint {
+  private func nebulaBeltPosition(for person: HaloPersonNode, cx: CGFloat, cy: CGFloat, maxR: CGFloat) -> CGPoint {
     let seed = nebulaSeed(for: person.id)
     let angle = Double(OrbitalLayout.angleSeedFor(person.id, tier: .nebula, seed: 19)) * .pi / 180.0
     let radius = maxR * CGFloat(0.68 + seed * 0.26)
@@ -367,7 +407,7 @@ struct OrbitalFieldView: View {
 
   private func isNearBubble(
     _ location: CGPoint,
-    mutuals: [DemoPerson],
+    mutuals: [HaloPersonNode],
     placementByPerson: [String: OrbitalLayout.Placement],
     cx: CGFloat,
     cy: CGFloat,

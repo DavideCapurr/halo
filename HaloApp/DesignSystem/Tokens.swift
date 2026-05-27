@@ -1,51 +1,70 @@
 import SwiftUI
+import HaloShared
 
-/// Swarm Halo — single source of truth for all visual tokens.
+/// SWARM Halo visual tokens used by app-side surfaces.
 ///
-/// See `docs/design-system/swarm-halo-v1.md`.
-///
-/// Token shape mirrors SWARM (`surface · ink · stroke · activation ·
-/// radius · spacing · motion`) with Halo's warm-consumer customizations:
-/// `warmBlack` instead of `absoluteBlack`, `paperCream` instead of
-/// `platinum`, single `bronze` activation instead of SWARM's three.
-///
-/// The mood palette (`MoodPalette.swift`) is a parallel channel and
-/// intentionally not part of this token set.
+/// `absoluteBlack`, `platinum`, and activation values are confirmed by the
+/// SWARM Fase A brief in `docs/design-system/swarm-v1.md`. The official
+/// intermediate 14-step mono ramp is still an external brand asset, so the
+/// semantic overlay tokens below avoid minting replacement hex steps.
 enum SwarmHalo {
 
-  // MARK: - Surfaces
+  // MARK: - Confirmed SWARM endpoints
 
-  static let absoluteBlack   = Color(hex: "#000000")
-  static let warmBlack       = Color(hex: "#0F0E10")  // primary background
-  static let nightSurface    = Color(hex: "#161516")  // card
-  static let nightSurface2   = Color(hex: "#1B191A")  // modal sheet
-  static let nightEdge       = Color(hex: "#07070A")  // separator
+  static let absoluteBlack = Color(hex: "#000000")
+  static let platinum = Color(hex: "#E8E8EA")
 
-  // MARK: - Ink
+  // MARK: - Activation
 
-  static let paperCream      = Color(hex: "#E4DDCF")
-  static let creamLow        = paperCream.opacity(0.62)
-  static let creamMute       = paperCream.opacity(0.42)
-  static let creamHair       = paperCream.opacity(0.18)
-  static let creamLine       = paperCream.opacity(0.10)
-  static let creamWhisper    = paperCream.opacity(0.06)
+  /// Connected proximity state. SWARM token name is literal from brand.
+  static let orbitalBlue = Color(hex: "#B8FF00")
+  /// Operational proximity state. SWARM token name is literal from brand.
+  static let signalGreen = Color(hex: "#7B2BFF")
+  /// Attention state for alerts and widening warnings.
+  static let launchAmber = Color(hex: "#FF2BB8")
 
-  // MARK: - Activation (single bronze, vs SWARM's three)
+  // MARK: - Semantic surfaces
 
-  static let bronze          = Color(hex: "#A88260")
-  static let bronzeSoft      = bronze.opacity(0.55)
-  static let bronzeGlow      = bronze.opacity(0.35)
+  static let background = absoluteBlack
+  static let surface = platinum.opacity(0.055)
+  static let surfaceRaised = platinum.opacity(0.085)
+  static let surfaceModal = platinum.opacity(0.11)
+  static let edge = platinum.opacity(0.035)
 
-  // MARK: - Attention (errors, downgrades, reports — only)
+  // MARK: - Semantic ink
 
-  static let warmMagenta     = Color(hex: "#FF2B6E")
+  static let ink = platinum
+  static let inkSecondary = platinum.opacity(0.68)
+  static let inkMuted = platinum.opacity(0.44)
+  static let inkHairline = platinum.opacity(0.18)
+  static let inkLine = platinum.opacity(0.10)
+  static let inkWhisper = platinum.opacity(0.06)
 
-  // MARK: - Strokes
+  // MARK: - Semantic strokes
 
-  static let strokeRest      = paperCream.opacity(0.12)
-  static let strokeActive    = paperCream.opacity(0.42)
-  static let strokeSoft      = paperCream.opacity(0.08)
-  static let strokeHair      = paperCream.opacity(0.16)
+  static let strokeRest = platinum.opacity(0.12)
+  static let strokeActive = platinum.opacity(0.42)
+  static let strokeSoft = platinum.opacity(0.08)
+  static let strokeHair = platinum.opacity(0.16)
+
+  // MARK: - Legacy aliases during migration
+
+  static let warmBlack = background
+  static let nightSurface = surface
+  static let nightSurface2 = surfaceModal
+  static let nightEdge = edge
+
+  static let paperCream = ink
+  static let creamLow = inkSecondary
+  static let creamMute = inkMuted
+  static let creamHair = inkHairline
+  static let creamLine = inkLine
+  static let creamWhisper = inkWhisper
+
+  static let bronze = inkSecondary
+  static let bronzeSoft = inkHairline
+  static let bronzeGlow = inkLine
+  static let warmMagenta = launchAmber
 
   // MARK: - Radii (SWARM literal)
 
@@ -53,7 +72,7 @@ enum SwarmHalo {
   static let radiusInput: CGFloat = 4
   static let radiusChip:  CGFloat = 2
   static let radiusPill:  CGFloat = 999
-  static let radiusSheet: CGFloat = 32   // sheet present, Halo extension
+  static let radiusSheet: CGFloat = 24   // sheet present, Halo extension
 
   // MARK: - Spacing (SWARM 4/8 scale)
 
@@ -90,6 +109,90 @@ enum SwarmHalo {
   }
 }
 
+// MARK: - Type scale
+
+enum SwarmHaloTypeScale {
+  static let hero: CGFloat = 144
+  static let h1: CGFloat = 64
+  static let h2: CGFloat = 40
+  static let h3: CGFloat = 28
+  static let lede: CGFloat = 17
+  static let body: CGFloat = 15
+  static let ui: CGFloat = 13
+  static let eyebrow: CGFloat = 11
+}
+
+// MARK: - Halo tier mapping
+
+/// App-side state mapping. `HaloShared` stays data-only and never imports
+/// SwiftUI color types.
+enum SwarmHaloTierState {
+  case connected
+  case operational
+  case rest
+  case farRest
+
+  var accent: Color {
+    switch self {
+    case .connected: return SwarmHalo.orbitalBlue
+    case .operational: return SwarmHalo.signalGreen
+    case .rest: return SwarmHalo.platinum
+    case .farRest: return SwarmHalo.absoluteBlack
+    }
+  }
+
+  var stroke: Color {
+    switch self {
+    case .connected, .operational: return accent.opacity(0.26)
+    case .rest: return SwarmHalo.strokeHair
+    case .farRest: return SwarmHalo.absoluteBlack.opacity(0.84)
+    }
+  }
+
+  var activeStroke: Color {
+    switch self {
+    case .rest: return SwarmHalo.platinum.opacity(0.44)
+    case .farRest: return SwarmHalo.platinum.opacity(0.10)
+    case .connected, .operational: return accent.opacity(0.64)
+    }
+  }
+
+  var ringFill: Color {
+    switch self {
+    case .connected, .operational: return SwarmHalo.surfaceRaised
+    case .rest: return SwarmHalo.platinum.opacity(0.16)
+    case .farRest: return SwarmHalo.absoluteBlack
+    }
+  }
+
+  var glow: Color {
+    switch self {
+    case .connected, .operational: return accent.opacity(0.05)
+    case .rest: return SwarmHalo.platinum.opacity(0.08)
+    case .farRest: return .clear
+    }
+  }
+
+  var badgeFill: Color {
+    switch self {
+    case .connected, .operational: return accent.opacity(0.04)
+    case .rest: return SwarmHalo.inkWhisper
+    case .farRest: return SwarmHalo.absoluteBlack.opacity(0.72)
+    }
+  }
+}
+
+extension FriendshipTier {
+  var swarmHaloState: SwarmHaloTierState {
+    switch self {
+    case .inner: return .connected
+    case .close: return .operational
+    case .orbit: return .rest
+    case .nebula: return .farRest
+    }
+  }
+}
+
 // MARK: - Type families
 
 /// PostScript names for the bundled fonts. Source: Google Fonts.
@@ -103,6 +206,14 @@ enum SwarmHaloFont {
     static let mediumItalic  = "CormorantGaramond-MediumItalic"
   }
 
+  /// Expected PostScript names for the licensed app bundle.
+  enum Satoshi {
+    static let regular = "Satoshi-Regular"
+    static let medium = "Satoshi-Medium"
+    static let bold = "Satoshi-Bold"
+  }
+
+  /// Bundled development fallback until Satoshi assets land.
   enum Inter {
     static let regular   = "Inter-Regular"
     static let medium    = "Inter-Medium"

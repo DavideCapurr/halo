@@ -6,7 +6,7 @@ import HaloShared
 /// + spiegazione cosa cambia in visibilità + due CTA.
 struct TierConfirmationSheet: View {
   struct Proposal: Equatable {
-    let person: DemoPerson
+    let person: HaloPersonNode
     let from: FriendshipTier
     let to: FriendshipTier
     var closer: Bool { to.rank > from.rank } // verso inner (più alto)
