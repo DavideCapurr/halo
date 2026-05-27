@@ -78,7 +78,7 @@ struct BottomBarView: View {
           .haloGlass(in: Circle(), tint: MoodPalette.auraColor(selfMood, l: 0.58), interactive: true)
         Image(systemName: "plus")
           .font(.system(size: 20, weight: .semibold))
-          .foregroundStyle(.white)
+          .foregroundStyle(SwarmHalo.background)
       }
       .frame(width: 50, height: 50)
       .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.26), radius: 10, y: 3)
@@ -90,7 +90,7 @@ struct BottomBarView: View {
   private func tabTint(for tab: Tab) -> Color {
     switch tab {
     case .orbit:   return MoodPalette.auraColor(selfMood, l: 0.48)
-    case .feed:    return Color.white.opacity(0.18)
+    case .feed:    return SwarmHalo.inkHairline
     case .pulse:   return MoodPalette.auraColor(.electric, l: 0.55)
     case .profile: return MoodPalette.auraColor(.soft, l: 0.58)
     }
@@ -99,7 +99,7 @@ struct BottomBarView: View {
 
 #Preview {
   ZStack {
-    Color.black
+    SwarmHalo.background
     BottomBarView(selfMood: .focused, activeTab: .pulse)
   }
   .frame(width: 402, height: 120)

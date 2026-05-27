@@ -60,7 +60,7 @@ struct TopBarView: View {
 
 #Preview {
   ZStack {
-    Color.black
+    SwarmHalo.background
     TopBarView(mood: .chill)
   }
   .frame(width: 402, height: 100)

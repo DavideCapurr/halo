@@ -42,7 +42,7 @@ struct AudioRecorderView: View {
     }
     .padding(.vertical, 22)
     .frame(maxWidth: .infinity)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: 22))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
     .onDisappear { cleanup() }
   }
 
@@ -75,7 +75,7 @@ struct AudioRecorderView: View {
         ForEach(0..<count, id: \.self) { i in
           let v = i < levels.count ? levels[i] : 0.05
           Capsule()
-            .fill(Color.white.opacity(0.20 + Double(v) * 0.65))
+            .fill(SwarmHalo.ink.opacity(0.20 + Double(v) * 0.65))
             .frame(width: max(2, width), height: max(4, geo.size.height * v))
         }
       }
@@ -88,21 +88,21 @@ struct AudioRecorderView: View {
     HStack(spacing: 24) {
       switch phase {
       case .idle:
-        circleButton(icon: "mic.fill", color: .white, bg: Color.white.opacity(0.12)) { startRecording() }
+        circleButton(icon: "mic.fill", color: SwarmHalo.ink, bg: SwarmHalo.ink.opacity(0.12)) { startRecording() }
       case .recording:
-        circleButton(icon: "stop.fill", color: .white, bg: Color.red.opacity(0.85)) { stopRecording() }
+        circleButton(icon: "stop.fill", color: SwarmHalo.background, bg: SwarmHalo.launchAmber.opacity(0.85)) { stopRecording() }
       case .recorded:
         Button("ripeti") { reset() }
           .buttonStyle(.plain)
           .font(HaloType.ui(14, weight: .medium))
           .foregroundStyle(HaloInk.creamMute)
-        circleButton(icon: "play.fill", color: .white, bg: Color.white.opacity(0.18)) { play() }
+        circleButton(icon: "play.fill", color: SwarmHalo.ink, bg: SwarmHalo.ink.opacity(0.18)) { play() }
         Button("conferma") { confirm() }
           .buttonStyle(.plain)
           .font(HaloType.ui(14, weight: .semibold))
           .foregroundStyle(HaloInk.cream)
       case .playing:
-        circleButton(icon: "pause.fill", color: .white, bg: Color.white.opacity(0.18)) { stopPlayback() }
+        circleButton(icon: "pause.fill", color: SwarmHalo.ink, bg: SwarmHalo.ink.opacity(0.18)) { stopPlayback() }
       }
     }
   }
@@ -228,7 +228,7 @@ struct AudioRecorderView: View {
 
 #Preview {
   ZStack {
-    Color.black.ignoresSafeArea()
+    SwarmHalo.background.ignoresSafeArea()
     AudioRecorderView()
       .padding(20)
   }

@@ -1,23 +1,12 @@
 import SwiftUI
 import HaloShared
 
-/// Step 6: compose post — foto/testo/audio + mood + min_tier.
+/// Legacy entry point kept for routes that still reference the old compose
+/// surface. It now resolves to the SWARM vibe-first command sheet.
 struct ComposePostView: View {
-  @State private var caption: String = ""
-  @State private var mood: Mood = .chill
-  @State private var minTier: FriendshipTier = .inner
-
   var body: some View {
-    VStack(spacing: 12) {
-      Text("Nuovo post").font(.headline).foregroundStyle(.white)
-      // TODO step 6: photo picker / audio recorder / mood chips / min_tier selector
-      Picker("Visibile da", selection: $minTier) {
-        ForEach(FriendshipTier.allCases, id: \.self) { t in
-          Text(t.rawValue.capitalized).tag(t)
-        }
-      }
-    }
-    .padding()
-    .background(HaloTheme.background)
+    VibeFirstComposeView(
+      tierCounts: [.inner: 0, .close: 0, .orbit: 0, .nebula: 0]
+    )
   }
 }

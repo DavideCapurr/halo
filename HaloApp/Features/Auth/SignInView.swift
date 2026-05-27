@@ -18,14 +18,21 @@ struct SignInView: View {
   var body: some View {
     ZStack {
       DeepSpaceBackground()
-      VStack(spacing: 24) {
+      VStack(spacing: SwarmHalo.s6) {
         Spacer()
-        Text("Halo")
-          .font(HaloType.serifUpright(56, weight: .medium))
-          .foregroundStyle(HaloInk.cream)
-        Text("le tue persone. non un pubblico.")
-          .font(HaloType.serif(17, weight: .regular))
-          .foregroundStyle(HaloInk.creamLow)
+        VStack(alignment: .leading, spacing: SwarmHalo.s3) {
+          Text("Halo")
+            .font(HaloType.serifUpright(64, weight: .medium))
+            .foregroundStyle(SwarmHalo.ink)
+          Text("Le tue persone. Non un pubblico.")
+            .font(HaloType.serif(32, weight: .regular))
+            .foregroundStyle(SwarmHalo.ink)
+            .fixedSize(horizontal: false, vertical: true)
+          Text("presenza, non performance.")
+            .haloEyebrow(SwarmHalo.inkSecondary, size: 9, tracking: 2.0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, SwarmHalo.s6)
         Spacer()
 
         SignInWithAppleButton(
@@ -46,6 +53,7 @@ struct SignInView: View {
           Text(showEmail ? "nascondi email" : "entra con email")
             .foregroundStyle(HaloInk.creamMute)
             .font(HaloType.ui(14, weight: .medium))
+            .swarmChip()
         }
 
         if showEmail {
@@ -57,7 +65,7 @@ struct SignInView: View {
         if let err = errorMessage {
           Text(err)
             .font(HaloType.ui(12, weight: .regular))
-            .foregroundStyle(SwarmHalo.warmMagenta)
+            .foregroundStyle(SwarmHalo.launchAmber)
             .padding(.horizontal, 24)
         }
 
@@ -65,7 +73,8 @@ struct SignInView: View {
       }
       .animation(.easeInOut(duration: 0.25), value: showEmail)
       if isWorking {
-        ProgressView().tint(.white)
+      SwarmLoadingState(label: "auth")
+        .padding(.horizontal, SwarmHalo.s6)
       }
     }
     .preferredColorScheme(.dark)
@@ -85,7 +94,7 @@ struct SignInView: View {
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
         .padding(.horizontal, 14).padding(.vertical, 12)
-        .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
+        .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
 
       SecureField("password", text: $password)
         .textFieldStyle(.plain)
@@ -93,7 +102,7 @@ struct SignInView: View {
         .foregroundStyle(HaloInk.cream)
         .textContentType(.password)
         .padding(.horizontal, 14).padding(.vertical, 12)
-        .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
+        .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
 
       Button {
         Task { await signInWithEmail() }
@@ -103,7 +112,7 @@ struct SignInView: View {
           .foregroundStyle(HaloInk.cream)
           .frame(maxWidth: .infinity)
           .padding(.vertical, 12)
-          .haloGlass(in: RoundedRectangle(cornerRadius: 12), interactive: true)
+          .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: .connected)
       }
       .buttonStyle(.plain)
     }

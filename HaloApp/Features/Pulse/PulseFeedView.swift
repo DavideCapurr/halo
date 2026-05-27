@@ -1,7 +1,7 @@
 import SwiftUI
 import HaloShared
 
-/// Pulse: feed di drop spontanei.
+/// Pulse: timeline cronologica di Vibe e Moment.
 /// Il default resta Inner, ma "Tutti" apre il flusso delle proprie orbite
 /// senza trasformare la schermata in una chat di gruppo.
 struct PulseFeedView: View {
@@ -11,7 +11,7 @@ struct PulseFeedView: View {
   @State private var draft: String = ""
   @State private var isDraftOpen: Bool = false
 
-  var onPersonTap: (DemoPerson) -> Void = { _ in }
+  var onPersonTap: (HaloPersonNode) -> Void = { _ in }
 
   var body: some View {
     ZStack {
@@ -27,8 +27,7 @@ struct PulseFeedView: View {
             .padding(.horizontal, 22)
             .padding(.top, 16)
 
-          pulseStats
-            .padding(.horizontal, 22)
+          pulseSignalDeck
             .padding(.top, 14)
             .padding(.bottom, 12)
 
@@ -39,15 +38,17 @@ struct PulseFeedView: View {
               .padding(.bottom, 10)
 
             ForEach(group.events) { event in
-              PulseDropCard(event: event, onPersonTap: { onPersonTap(event.person) })
+              PulseTimelineRow(event: event) {
+                PulseDropCard(event: event, onPersonTap: { onPersonTap(event.person) })
+              }
                 .padding(.horizontal, 14)
-                .padding(.vertical, 5)
+                .padding(.vertical, 3)
             }
           }
 
           Spacer().frame(height: 32)
         }
-        .padding(.bottom, 118)
+        .padding(.bottom, 176)
       }
       .scrollIndicators(.hidden)
     }
@@ -60,7 +61,7 @@ struct PulseFeedView: View {
         onQuickDrop: addQuickDrop
       )
       .padding(.horizontal, 14)
-      .padding(.bottom, 8)
+      .padding(.bottom, 76)
     }
     .task {
       moment = .current()
@@ -79,31 +80,85 @@ struct PulseFeedView: View {
         endRadius: 470
       )
       .ignoresSafeArea()
-      .animation(.easeInOut(duration: 0.6), value: dominant)
+      .animation(SwarmHalo.easeSwarm(0.6), value: dominant)
     }
   }
 
   private var headerSection: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      HStack(spacing: 8) {
-        Text(moment.eyebrow)
-          .haloEyebrow(HaloInk.creamMute, size: 9.5, tracking: 2.6)
-        Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
+    HStack(alignment: .top, spacing: 16) {
+      VStack(alignment: .leading, spacing: 8) {
+        HStack(spacing: 8) {
+          Text(moment.eyebrow)
+            .haloEyebrow(HaloInk.creamMute, size: 9.5, tracking: 2.6)
+          Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
+        }
+        .padding(.bottom, 2)
+
+        Text(moment.headline + ".")
+          .font(HaloType.serif(36, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+          .lineLimit(1)
+          .minimumScaleFactor(0.72)
+
+        Text(scope == .inner ? "Moment spontanei dal tuo Inner" : "tutti i segnali dalle tue orbite")
+          .font(HaloType.ui(13, weight: .regular))
+          .foregroundStyle(HaloInk.creamLow)
+          .animation(SwarmHalo.easeSwarm(0.18), value: scope)
       }
-      .padding(.bottom, 2)
 
-      Text(moment.headline + ".")
-        .font(HaloType.serif(36, weight: .regular))
-        .foregroundStyle(HaloInk.cream)
-        .kerning(-0.5)
-        .lineLimit(1)
-        .minimumScaleFactor(0.72)
-
-      Text(scope == .inner ? "drop spontanei dal tuo Inner" : "tutti i segnali dalle tue orbite")
-        .font(HaloType.serif(15))
-        .foregroundStyle(HaloInk.creamLow)
-        .animation(.easeInOut(duration: 0.18), value: scope)
+      Text("PULSE")
+        .font(HaloType.mono(9, weight: .semibold))
+        .kerning(2.4)
+        .foregroundStyle(SwarmHalo.inkSecondary)
+        .rotationEffect(.degrees(90))
+        .frame(width: 18, height: 58)
+        .padding(.top, 6)
     }
+  }
+
+  private var pulseSignalDeck: some View {
+    ScrollView(.horizontal, showsIndicators: false) {
+      HStack(spacing: 8) {
+        pulseMetricTile
+        ForEach(vm.pulsePeople(in: scope).prefix(8)) { person in
+          PulseSignalTile(person: person)
+            .onTapGesture { onPersonTap(person) }
+        }
+      }
+      .padding(.horizontal, 22)
+    }
+  }
+
+  private var pulseMetricTile: some View {
+    let liveCount = vm.liveEventCount(in: scope)
+    let eventCount = vm.pulseEvents(in: scope).count
+
+    return VStack(alignment: .leading, spacing: 8) {
+      Text(scope.title)
+        .haloEyebrow(HaloInk.creamMute, size: 7.8, tracking: 1.7)
+      HStack(alignment: .firstTextBaseline, spacing: 6) {
+        Text(String(format: "%02d", liveCount))
+          .font(HaloType.mono(22, weight: .semibold))
+          .foregroundStyle(liveCount > 0 ? SwarmHalo.ink : HaloInk.cream)
+        Text("live")
+          .font(HaloType.ui(10, weight: .medium))
+          .foregroundStyle(HaloInk.creamMute)
+      }
+      Text("\(eventCount) Moment")
+        .font(HaloType.ui(11, weight: .regular))
+        .foregroundStyle(HaloInk.creamLow)
+    }
+    .frame(width: 104, alignment: .leading)
+    .padding(.horizontal, 12)
+    .padding(.vertical, 11)
+    .background(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .fill(.ultraThinMaterial)
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    )
   }
 
   private var pulseStats: some View {
@@ -116,13 +171,13 @@ struct PulseFeedView: View {
       separator
       statCell("live", value: String(format: "%02d", liveCount), accent: liveCount > 0)
       separator
-      statCell("drop", value: String(format: "%02d", eventCount), accent: activeCount > 0)
+      statCell("Moment", value: String(format: "%02d", eventCount), accent: activeCount > 0)
     }
     .padding(.vertical, 12)
     .padding(.horizontal, 16)
-    .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(.ultraThinMaterial))
+    .background(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous).fill(.ultraThinMaterial))
     .overlay(
-      RoundedRectangle(cornerRadius: 18, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
     )
   }
@@ -137,7 +192,7 @@ struct PulseFeedView: View {
     VStack(spacing: 4) {
       Text(value)
         .font(HaloType.mono(18, weight: .semibold))
-        .foregroundStyle(accent ? HaloInk.bronze : HaloInk.cream)
+        .foregroundStyle(accent ? SwarmHalo.ink : HaloInk.cream)
       Text(label)
         .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 2.4)
     }
@@ -147,14 +202,14 @@ struct PulseFeedView: View {
   private func momentSeparator(_ group: PulseEventGroup) -> some View {
     HStack(spacing: 10) {
       Text(group.moment.title)
-        .haloEyebrow(group.moment == .adesso ? HaloInk.bronze : HaloInk.creamMute, size: 9.5, tracking: 3.0)
+        .haloEyebrow(group.moment == .adesso ? SwarmHalo.inkSecondary : HaloInk.creamMute, size: 9.5, tracking: 3.0)
       Rectangle()
-        .fill(group.moment == .adesso ? HaloInk.bronzeSoft : HaloInk.creamLine)
+        .fill(group.moment == .adesso ? SwarmHalo.strokeActive : HaloInk.creamLine)
         .frame(height: 0.5)
       Text(String(format: "%02d", group.events.count))
         .font(HaloType.mono(9, weight: .medium))
         .kerning(2.0)
-        .foregroundStyle(group.moment == .adesso ? HaloInk.bronze : HaloInk.creamMute)
+        .foregroundStyle(group.moment == .adesso ? SwarmHalo.inkSecondary : HaloInk.creamMute)
     }
   }
 
@@ -163,7 +218,7 @@ struct PulseFeedView: View {
     guard !text.isEmpty else { return }
     vm.addLocalMessage(text, audience: scope)
     draft = ""
-    withAnimation(.easeInOut(duration: 0.18)) {
+    withAnimation(SwarmHalo.easeSwarm(0.18)) {
       isDraftOpen = false
     }
   }
@@ -171,7 +226,7 @@ struct PulseFeedView: View {
   private func addQuickDrop(_ type: PulseDropDock.DropType) {
     switch type {
     case .note:
-      withAnimation(.easeInOut(duration: 0.18)) {
+      withAnimation(SwarmHalo.easeSwarm(0.18)) {
         isDraftOpen = true
       }
     case .photo:
@@ -196,7 +251,99 @@ private struct PulseScopePicker: View {
       }
     }
     .pickerStyle(.segmented)
-    .tint(HaloInk.bronze)
+    .tint(SwarmHalo.ink)
+  }
+}
+
+private struct PulseSignalTile: View {
+  let person: HaloPersonNode
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      HStack(spacing: 8) {
+        PortraitView(personId: person.id, size: 30, grayscale: true)
+          .background(HaloTheme.portraitBacking, in: Circle())
+          .overlay(Circle().strokeBorder(person.tier.swarmHaloState.stroke, lineWidth: 0.6))
+        VStack(alignment: .leading, spacing: 1) {
+          Text(person.name.lowercased())
+            .font(HaloType.ui(11, weight: .semibold))
+            .foregroundStyle(HaloInk.cream)
+            .lineLimit(1)
+          Text(person.tier.label.lowercased())
+            .haloEyebrow(HaloInk.creamMute, size: 6.8, tracking: 1.3)
+        }
+      }
+
+      HStack(spacing: 6) {
+        Circle()
+          .fill(MoodPalette.auraColor(person.mood, l: 0.78))
+          .frame(width: 6, height: 6)
+        Text(person.hasActiveVibe ? person.mood.rawValue : "rest")
+          .font(HaloType.ui(10, weight: .medium))
+          .foregroundStyle(HaloInk.creamLow)
+          .lineLimit(1)
+      }
+    }
+    .frame(width: 118, alignment: .leading)
+    .padding(.horizontal, 11)
+    .padding(.vertical, 10)
+    .background(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .fill(SwarmHalo.inkWhisper)
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .strokeBorder(person.hasActiveVibe ? person.tier.swarmHaloState.stroke : HaloInk.creamLine, lineWidth: 0.6)
+    )
+  }
+}
+
+private struct PulseTimelineRow<Content: View>: View {
+  let event: PulseEvent
+  @ViewBuilder var content: () -> Content
+
+  var body: some View {
+    HStack(alignment: .top, spacing: 9) {
+      VStack(spacing: 6) {
+        Text(timeLabel(event.createdAt))
+          .font(HaloType.mono(8, weight: .medium))
+          .kerning(0.7)
+          .textCase(.uppercase)
+          .foregroundStyle(HaloInk.creamMute)
+          .frame(width: 34)
+
+        Circle()
+          .fill(event.isLive ? event.person.tier.swarmHaloState.accent.opacity(0.82) : HaloInk.creamLine)
+          .frame(width: event.isLive ? 7 : 5, height: event.isLive ? 7 : 5)
+          .shadow(color: event.isLive ? event.person.tier.swarmHaloState.glow : .clear, radius: 5)
+
+        Rectangle()
+          .fill(HaloInk.creamLine)
+          .frame(width: 0.5, height: railHeight)
+      }
+      .frame(width: 38)
+      .padding(.top, 10)
+
+      content()
+        .frame(maxWidth: .infinity)
+    }
+  }
+
+  private var railHeight: CGFloat {
+    switch event.kind {
+    case .moodChange: return 24
+    case .audioPost: return 104
+    case .photoPost: return 178
+    default: return 136
+    }
+  }
+
+  private func timeLabel(_ date: Date) -> String {
+    let age = Date.now.timeIntervalSince(date)
+    if age < 30 * 60 { return "ora" }
+    if age < 3600 { return "\(Int(age / 60))m" }
+    if age < 24 * 3600 { return "\(Int(age / 3600))h" }
+    return "\(Int(age / (24 * 3600)))g"
   }
 }
 
@@ -252,7 +399,7 @@ private struct PulseDropCard: View {
           .font(HaloType.mono(9, weight: .medium))
           .kerning(0.7)
           .textCase(.uppercase)
-          .foregroundStyle(event.isLive ? HaloInk.bronze : HaloInk.creamMute)
+          .foregroundStyle(event.isLive ? SwarmHalo.inkSecondary : HaloInk.creamMute)
         audienceBadge
       }
     }
@@ -261,10 +408,11 @@ private struct PulseDropCard: View {
   private var avatar: some View {
     ZStack {
       Circle()
-        .fill(MoodPalette.auraColor(event.person.mood, l: 0.72))
+        .fill(event.person.tier.swarmHaloState.ringFill)
         .frame(width: 42, height: 42)
-        .shadow(color: MoodPalette.auraRing(event.person.mood, alpha: 0.38), radius: 7)
-      PortraitView(personId: event.person.id, size: 36)
+        .overlay(Circle().strokeBorder(event.person.tier.swarmHaloState.stroke, lineWidth: 0.7))
+        .shadow(color: event.person.tier.swarmHaloState.glow, radius: 7)
+      PortraitView(personId: event.person.id, size: 36, grayscale: true)
         .background(HaloTheme.portraitBacking, in: Circle())
     }
     .frame(width: 46, height: 46)
@@ -272,7 +420,7 @@ private struct PulseDropCard: View {
 
   private var audienceBadge: some View {
     Text(event.audience.title.lowercased())
-      .haloEyebrow(event.audience == .inner ? HaloInk.bronze : HaloInk.creamMute, size: 7.4, tracking: 1.5)
+      .haloEyebrow(event.audience == .inner ? event.person.tier.swarmHaloState.accent.opacity(0.82) : HaloInk.creamMute, size: 7.4, tracking: 1.5)
       .padding(.horizontal, 7)
       .padding(.vertical, 4)
       .background(Capsule().fill(HaloInk.creamWhisper))
@@ -300,7 +448,7 @@ private struct PulseDropCard: View {
   private func noteDrop(_ text: String, label: String, accent: Bool = false) -> some View {
     VStack(alignment: .leading, spacing: 9) {
       Text(label)
-        .haloEyebrow(accent ? HaloInk.bronze : HaloInk.creamMute, size: 7.8, tracking: 1.7)
+        .haloEyebrow(accent ? SwarmHalo.launchAmber : HaloInk.creamMute, size: 7.8, tracking: 1.7)
       Text(text)
         .font(HaloType.serif(19))
         .foregroundStyle(HaloInk.cream)
@@ -311,7 +459,7 @@ private struct PulseDropCard: View {
     .padding(.leading, 12)
     .overlay(alignment: .leading) {
       RoundedRectangle(cornerRadius: 1)
-        .fill(accent ? MoodPalette.auraColor(event.person.mood, l: 0.68) : HaloInk.creamLine)
+        .fill(accent ? SwarmHalo.launchAmber.opacity(0.76) : HaloInk.creamLine)
         .frame(width: 2)
     }
   }
@@ -336,24 +484,24 @@ private struct PulseDropCard: View {
           path.addLine(to: CGPoint(x: x + size.height, y: 0))
           x += step
         }
-        ctx.stroke(path, with: .color(.white), lineWidth: 0.5)
+        ctx.stroke(path, with: .color(SwarmHalo.ink.opacity(0.50)), lineWidth: 0.5)
       }
       VStack(alignment: .leading, spacing: 6) {
         Text("scatto")
-          .haloEyebrow(Color.white.opacity(0.70), size: 7.8, tracking: 1.8)
+          .haloEyebrow(SwarmHalo.inkSecondary, size: 7.8, tracking: 1.8)
         if !caption.isEmpty {
           Text(caption)
             .font(HaloType.serif(15))
-            .foregroundStyle(Color.white.opacity(0.95))
+            .foregroundStyle(SwarmHalo.ink)
             .lineLimit(2)
         }
       }
       .padding(14)
     }
     .frame(height: 158)
-    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous))
     .overlay(
-      RoundedRectangle(cornerRadius: 16, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
     )
   }
@@ -371,11 +519,11 @@ private struct PulseDropCard: View {
     }
     .padding(13)
     .background(
-      RoundedRectangle(cornerRadius: 15, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .fill(HaloInk.nightSurface.opacity(0.34))
     )
     .overlay(
-      RoundedRectangle(cornerRadius: 15, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
     )
   }
@@ -387,7 +535,7 @@ private struct PulseDropCard: View {
           .fill(MoodPalette.auraColor(event.person.mood, l: 0.70))
         Image(systemName: "play.fill")
           .font(.system(size: 11, weight: .bold))
-          .foregroundStyle(.white)
+          .foregroundStyle(SwarmHalo.background)
           .offset(x: 1)
       }
       .frame(width: 34, height: 34)
@@ -398,7 +546,7 @@ private struct PulseDropCard: View {
         HStack(spacing: 2) {
           ForEach(0..<30, id: \.self) { i in
             Capsule()
-              .fill(Color.white.opacity(i < 13 ? 0.78 : 0.22))
+              .fill(SwarmHalo.ink.opacity(i < 13 ? 0.78 : 0.22))
               .frame(width: 2, height: CGFloat(5 + abs(sin(Double(i) * 1.3)) * 16))
           }
         }
@@ -413,11 +561,11 @@ private struct PulseDropCard: View {
     }
     .padding(13)
     .background(
-      RoundedRectangle(cornerRadius: 15, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .fill(HaloInk.nightSurface.opacity(0.34))
     )
     .overlay(
-      RoundedRectangle(cornerRadius: 15, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
     )
   }
@@ -429,7 +577,7 @@ private struct PulseDropCard: View {
       Spacer()
       if event.isLive {
         Text("live")
-          .haloEyebrow(HaloInk.bronze, size: 7.8, tracking: 1.7)
+          .haloEyebrow(SwarmHalo.inkSecondary, size: 7.8, tracking: 1.7)
       }
     }
   }
@@ -469,16 +617,16 @@ private struct PulseDropCard: View {
   }
 
   private var cardBackground: some View {
-    RoundedRectangle(cornerRadius: 22, style: .continuous)
+    RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
       .fill(.ultraThinMaterial)
       .overlay(
-        RoundedRectangle(cornerRadius: 22, style: .continuous)
+        RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
           .fill(
             LinearGradient(
               colors: [
-                Color.white.opacity(0.035),
+                SwarmHalo.inkWhisper,
                 Color.clear,
-                Color.black.opacity(0.12),
+                SwarmHalo.absoluteBlack.opacity(0.12),
               ],
               startPoint: .top,
               endPoint: .bottom
@@ -488,8 +636,8 @@ private struct PulseDropCard: View {
   }
 
   private var cardBorder: some View {
-    RoundedRectangle(cornerRadius: 22, style: .continuous)
-      .strokeBorder(event.isLive ? HaloInk.bronzeSoft : HaloInk.creamHair, lineWidth: event.isLive ? 0.8 : 0.5)
+    RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      .strokeBorder(event.isLive ? SwarmHalo.strokeActive : HaloInk.creamHair, lineWidth: event.isLive ? 0.8 : 0.5)
   }
 
   private func timeLabel(_ date: Date) -> String {
@@ -534,27 +682,27 @@ private struct PulseDropDock: View {
       }
       .padding(10)
       .background(
-        RoundedRectangle(cornerRadius: 24, style: .continuous)
+        Capsule()
           .fill(.ultraThinMaterial)
       )
       .overlay(
-        RoundedRectangle(cornerRadius: 24, style: .continuous)
+        Capsule()
           .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
       )
-      .shadow(color: .black.opacity(0.45), radius: 18, y: 10)
+      .shadow(color: SwarmHalo.absoluteBlack.opacity(0.45), radius: 18, y: 10)
     }
   }
 
   private var draftPanel: some View {
     VStack(alignment: .leading, spacing: 10) {
       HStack(spacing: 8) {
-        Text("nuovo drop")
+        Text("nuovo Moment")
           .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 1.8)
         Rectangle()
           .fill(HaloInk.creamLine)
           .frame(height: 0.5)
         Text(scope.title.lowercased())
-          .haloEyebrow(scope == .inner ? HaloInk.bronze : HaloInk.creamMute, size: 8, tracking: 1.8)
+          .haloEyebrow(scope == .inner ? SwarmHalo.inkSecondary : HaloInk.creamMute, size: 8, tracking: 1.8)
       }
 
       TextField("una cosa vera, adesso", text: $text, axis: .vertical)
@@ -566,7 +714,7 @@ private struct PulseDropDock: View {
 
       HStack(spacing: 8) {
         Button {
-          withAnimation(.easeInOut(duration: 0.18)) {
+          withAnimation(SwarmHalo.easeSwarm(0.18)) {
             isDraftOpen = false
           }
         } label: {
@@ -581,14 +729,14 @@ private struct PulseDropDock: View {
         Spacer()
 
         Button(action: onPublish) {
-          Text("pubblica")
+          Text("manda")
             .font(HaloType.mono(9, weight: .semibold))
             .kerning(0.8)
             .textCase(.uppercase)
-            .foregroundStyle(canPublish ? Color.black : HaloInk.creamMute)
+            .foregroundStyle(canPublish ? SwarmHalo.background : HaloInk.creamMute)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Capsule().fill(canPublish ? HaloInk.cream : HaloInk.creamWhisper))
+            .background(Capsule().fill(canPublish ? SwarmHalo.ink : HaloInk.creamWhisper))
             .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
         }
         .buttonStyle(.plain)
@@ -597,14 +745,14 @@ private struct PulseDropDock: View {
     }
     .padding(14)
     .background(
-      RoundedRectangle(cornerRadius: 22, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .fill(.ultraThinMaterial)
     )
     .overlay(
-      RoundedRectangle(cornerRadius: 22, style: .continuous)
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
         .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
     )
-    .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
+    .shadow(color: SwarmHalo.absoluteBlack.opacity(0.35), radius: 16, y: 8)
   }
 
   private func dockButton(_ label: String, icon: String, type: DropType) -> some View {
@@ -625,11 +773,11 @@ private struct PulseDropDock: View {
       .frame(maxWidth: .infinity)
       .frame(height: 46)
       .background(
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
+        RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous)
           .fill(HaloInk.creamWhisper)
       )
       .overlay(
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
+        RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous)
           .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
       )
     }

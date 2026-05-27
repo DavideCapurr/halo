@@ -33,14 +33,14 @@ struct ReactionBarView: View {
               size: 20,
               color: on
                 ? MoodPalette.auraColor(accentMood, l: 0.85)
-                : Color.white.opacity(0.45)
+                : SwarmHalo.ink.opacity(0.45)
             )
             footerLabel(for: kind, agg: agg)
           }
           .frame(maxWidth: .infinity)
           .padding(.vertical, 8)
           .haloGlass(
-            in: RoundedRectangle(cornerRadius: 10),
+            in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput),
             tint: on ? MoodPalette.auraColor(accentMood, l: 0.55) : nil,
             interactive: true,
             stroke: on ? HaloTheme.glassStroke : .clear
@@ -61,7 +61,7 @@ struct ReactionBarView: View {
         HStack(spacing: 3) {
           ForEach(actors.prefix(2), id: \.self) { uuid in
             Circle()
-              .fill(Color.white.opacity(0.18))
+              .fill(SwarmHalo.inkHairline)
               .frame(width: 10, height: 10)
               .overlay(
                 Text(initial(from: uuid))

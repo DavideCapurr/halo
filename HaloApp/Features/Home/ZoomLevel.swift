@@ -70,10 +70,10 @@ extension FriendshipTier {
       }
     case .full:
       switch self {
-      case .inner:  return self.bubbleSize * 1.18
-      case .close:  return self.bubbleSize * 1.24
-      case .orbit:  return self.bubbleSize * 1.38
-      case .nebula: return self.bubbleSize * 1.24
+      case .inner:  return self.bubbleSize * 0.86
+      case .close:  return self.bubbleSize * 0.86
+      case .orbit:  return self.bubbleSize * 0.96
+      case .nebula: return self.bubbleSize * 1.02
       }
     case .asteroids:
       switch self {

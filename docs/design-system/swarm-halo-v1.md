@@ -1,11 +1,11 @@
 # Swarm Halo — Consumer Variant Notes
 
-> Roadmap note: this document records Halo consumerization notes for the
-> SWARM family. The canonical Fase A anchors live in
-> `docs/design-system/swarm-v1.md`: Halo may get warmer and more social here,
-> but it still has to read as SWARM.
+> Roadmap note: this document records pre-Fase A Halo consumerization notes
+> for the SWARM family. The canonical Fase A anchors now live in
+> `docs/design-system/swarm-v1.md`: Halo may stay social and living, but
+> palette, activation, type categories, stroke and motion come from SWARM.
 
-> **Estensione consumer di SWARM** per Halo. Eredita la grammatica del
+> **Legacy consumer exploration for SWARM Halo.** Eredita la grammatica del
 > brand-book SWARM (palette mono · spacing · radii · motion · voice ·
 > type families) e introduce due variazioni: palette **warm** (paper-cream
 > su warm-black invece di platinum su absolute-black) e **single activation
@@ -15,7 +15,7 @@
 > qui sono pensate per restare coerenti con la famiglia SWARM mentre si
 > consumerizza la superficie.
 >
-> **Source canonico corrente**: `docs/design-system/swarm-v1.md`.
+> **Source canonico corrente per Fase A**: `docs/design-system/swarm-v1.md`.
 > **Riferimento famiglia**: SWARM brand-book (esterno a questo repo).
 > **Decisioni di vocabolario**: `docs/research/vocabulary.md`.
 > **Ragionamento di direzione**: `docs/research/aesthetic-directions.md`.
@@ -29,7 +29,7 @@ docs/design-system/swarm-halo-v1.md            — canonical reference (questo f
 HaloApp/DesignSystem/Tokens.swift              — token extraction
         │
         ├──▶ HaloApp/DesignSystem/HaloTheme.swift          — thin wrapper backwards-compat
-        ├──▶ HaloApp/DesignSystem/HaloTypography.swift     — type system su Cormorant/Inter/Plex Mono/Space Grotesk
+        ├──▶ HaloApp/DesignSystem/HaloTypography.swift     — type system su Cormorant/Satoshi fallback Inter/Plex Mono/Space Grotesk
         ├──▶ HaloApp/DesignSystem/HapticEngine.swift       — feedback per tier
         ├──▶ HaloApp/DesignSystem/MoodPalette.swift        — canale colore mood (OKLCH) — non collide con i token
         │
@@ -51,7 +51,7 @@ Cosa eredita letterale:
 | Durations | 120ms tap · 320ms card mount · 4000ms breath · 900ms loader | adattato da SWARM |
 | Iconografia | 24×24 grid · stroke-only 1.5px · round caps | identico |
 | Voice rules | sentence case · periodi · numerali in cifre · em-dash · uppercase solo wordmark | identico (adattato all'italiano in `vocabulary.md` §9) |
-| Type families | Cormorant Garamond · Inter (sostituisce Satoshi per licenza Google Fonts) · IBM Plex Mono · Space Grotesk | identico nelle 4 categorie |
+| Type families | Cormorant Garamond · Satoshi · IBM Plex Mono · Space Grotesk | Inter resta fallback dev finche arrivano i file Satoshi ufficiali |
 | Token naming | `surface · ink · stroke · activation · radius · motion` | identico |
 
 Cosa Halo customizza dentro la famiglia:
@@ -60,7 +60,7 @@ Cosa Halo customizza dentro la famiglia:
 |---|---|---|
 | Background | `absolute-black #000000` | `warm-black #0F0E10` |
 | Ink primaria | `platinum #E8E8EA` | `paper-cream #E4DDCF` |
-| Activation | 3 colori (lime · purple · magenta) | 1 colore: `bronze #A88260` + `warm-magenta #FF2B6E` (solo attention/error) |
+| Activation | 3 colori (lime · purple · magenta) | Fase A usa i 3 activation SWARM; bronze resta alias legacy temporaneo |
 | Type hero | scala SWARM Hero 144 | scala mobile-friendly max 72 |
 | Surfaces | frame brand-book statici | **living surfaces** — bolle pulsanti, glow decay, ring breath |
 | Eyebrow font | Space Grotesk uppercase tracked | Space Grotesk uppercase tracked (identico) |
@@ -117,7 +117,8 @@ Cosa Halo aggiunge come estensione:
 | Famiglia | Postscript | Uso |
 |---|---|---|
 | Cormorant Garamond | `CormorantGaramond-Regular/Italic/Medium/MediumItalic` | display, headlines, nomi persona, vibe note, manifesto |
-| Inter | `Inter-Regular/Medium/SemiBold` | UI, body, controlli, navigazione |
+| Satoshi | `Satoshi-Regular/Medium/Bold` | UI, body, controlli, navigazione |
+| Inter | `Inter-Regular/Medium/SemiBold` | fallback sviluppo finche Satoshi ufficiale non e nel bundle |
 | IBM Plex Mono | `IBMPlexMono-Regular/Medium` | telemetria, timestamps, count, short labels |
 | Space Grotesk | `SpaceGrotesk-Medium` | eyebrow micro-labels (UPPERCASE tracked) |
 

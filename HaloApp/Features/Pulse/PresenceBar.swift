@@ -5,8 +5,8 @@ import HaloShared
 /// attiva. Tier-sorted (Inner prima). Non c'è nulla di "live"-vs-"dead":
 /// presenza = avere una vibe nelle ultime 24h.
 struct PresenceBar: View {
-  let people: [DemoPerson]
-  var onTap: (DemoPerson) -> Void = { _ in }
+  let people: [HaloPersonNode]
+  var onTap: (HaloPersonNode) -> Void = { _ in }
 
   private let bubbleSize: CGFloat = 44
 
@@ -34,7 +34,7 @@ struct PresenceBar: View {
 }
 
 private struct PresenceBubble: View {
-  let person: DemoPerson
+  let person: HaloPersonNode
   let size: CGFloat
 
   private var pulseSeed: UInt32 {
@@ -63,10 +63,13 @@ private struct PresenceBubble: View {
       .allowsHitTesting(false)
 
       Circle()
-        .fill(MoodPalette.auraColor(person.mood, l: 0.72))
+        .fill(person.tier.swarmHaloState.ringFill)
         .frame(width: size, height: size)
-        .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 6)
-      PortraitView(personId: person.id, size: size - 4)
+        .overlay(
+          Circle().strokeBorder(person.tier.swarmHaloState.stroke, lineWidth: 0.8)
+        )
+        .shadow(color: person.tier.swarmHaloState.glow, radius: 6)
+      PortraitView(personId: person.id, size: size - 4, grayscale: true)
         .background(HaloTheme.portraitBacking, in: Circle())
     }
     .frame(width: size, height: size)
@@ -75,7 +78,7 @@ private struct PresenceBubble: View {
 
 #Preview {
   ZStack {
-    Color.black
+    SwarmHalo.background
     PresenceBar(people: SeedPeople.all.filter(\.hasActiveVibe))
   }
   .frame(height: 90)
