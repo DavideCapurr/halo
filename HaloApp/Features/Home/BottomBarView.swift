@@ -47,7 +47,7 @@ struct BottomBarView: View {
     return Button(action: action) {
       VStack(spacing: 3) {
         Image(systemName: isSelected ? selectedIcon : icon)
-          .font(.system(size: 17, weight: isSelected ? .semibold : .regular))
+          .font(HaloType.system(17, weight: isSelected ? .semibold : .regular))
         Text(title)
           .font(HaloType.eyebrow(9))
           .kerning(1.6)
@@ -77,7 +77,7 @@ struct BottomBarView: View {
           .fill(.clear)
           .haloGlass(in: Circle(), tint: MoodPalette.auraColor(selfMood, l: 0.58), interactive: true)
         Image(systemName: "plus")
-          .font(.system(size: 20, weight: .semibold))
+          .font(HaloType.system(20, weight: .semibold))
           .foregroundStyle(SwarmHalo.background)
       }
       .frame(width: 50, height: 50)

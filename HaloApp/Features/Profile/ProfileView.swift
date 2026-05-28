@@ -210,7 +210,7 @@ struct ProfileView: View {
     Button(action: action) {
       HStack(spacing: SwarmHalo.s3) {
         Image(systemName: icon)
-          .font(.system(size: 14, weight: .semibold))
+          .font(HaloType.system(14, weight: .semibold))
           .foregroundStyle(role.color)
           .swarmIconFrame(active: true, activation: role)
         Text(title)
@@ -218,7 +218,7 @@ struct ProfileView: View {
           .foregroundStyle(SwarmHalo.ink)
         Spacer()
         Image(systemName: "arrow.up.right")
-          .font(.system(size: 11, weight: .semibold))
+          .font(HaloType.system(11, weight: .semibold))
           .foregroundStyle(SwarmHalo.inkMuted)
       }
       .contentShape(Rectangle())

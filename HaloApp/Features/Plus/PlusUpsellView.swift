@@ -52,7 +52,7 @@ struct PlusUpsellView: View {
     SwarmOperationalRail(title: "HALO / PLUS", context: "memory surface", activation: .attention) {
       Button(action: { dismiss() }) {
         Image(systemName: "xmark")
-          .font(.system(size: 12, weight: .semibold))
+          .font(HaloType.system(12, weight: .semibold))
           .foregroundStyle(SwarmHalo.inkSecondary)
           .swarmIconFrame()
       }

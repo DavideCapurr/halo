@@ -93,7 +93,7 @@ struct InitialInnerCircleView: View {
                   .font(HaloType.ui(12, weight: .medium))
                   .foregroundStyle(HaloInk.cream)
                 Image(systemName: "xmark")
-                  .font(.system(size: 9, weight: .bold))
+                  .font(HaloType.system(9, weight: .bold))
                   .foregroundStyle(HaloInk.creamMute)
               }
               .padding(.horizontal, 10).padding(.vertical, 6)
@@ -138,7 +138,7 @@ struct InitialInnerCircleView: View {
                 }
                 Spacer()
                 Image(systemName: isPicked(p) ? "checkmark.circle.fill" : "plus.circle")
-                  .font(.system(size: 18, weight: .regular))
+                  .font(HaloType.system(18, weight: .regular))
                   .foregroundStyle(isPicked(p)
                     ? SwarmHalo.orbitalBlue
                     : HaloInk.creamMute)

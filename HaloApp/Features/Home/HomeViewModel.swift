@@ -2,7 +2,7 @@ import Foundation
 import Observation
 import HaloShared
 
-/// View model condiviso da OrbitalFieldView e PulseFeedView.
+/// View model condiviso da HomeView e PulseFeedView.
 /// Fonde follows + profiles + vibes + post in `feedItems` (vedi `MomentItem`).
 @Observable
 @MainActor

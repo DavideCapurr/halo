@@ -110,7 +110,7 @@ struct AudioRecorderView: View {
   private func circleButton(icon: String, color: Color, bg: Color, action: @escaping () -> Void) -> some View {
     Button(action: action) {
       Image(systemName: icon)
-        .font(.system(size: 22, weight: .bold))
+        .font(HaloType.system(22, weight: .bold))
         .foregroundStyle(color)
         .frame(width: 64, height: 64)
         .haloGlass(in: Circle(), tint: bg, interactive: true)

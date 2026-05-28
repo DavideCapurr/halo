@@ -51,7 +51,7 @@ struct HaloTabBar: View {
     } label: {
       VStack(spacing: 4) {
         Image(systemName: tab.icon)
-          .font(.system(size: 15, weight: .medium))
+          .font(HaloType.system(15, weight: .medium))
         Text(tab.label)
           .font(HaloType.eyebrow(8.5))
           .kerning(1.6)
@@ -82,7 +82,7 @@ struct HaloTabBar: View {
           .fill(SwarmActivationRole.attention.color)
           .shadow(color: SwarmActivationRole.attention.glow, radius: 12)
         Image(systemName: "plus")
-          .font(.system(size: 18, weight: .bold))
+          .font(HaloType.system(18, weight: .bold))
           .foregroundStyle(SwarmHalo.background)
       }
       .frame(width: 46, height: 46)

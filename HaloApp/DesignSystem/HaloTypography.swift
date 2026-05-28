@@ -14,20 +14,25 @@ import UIKit
 /// development fallback until the official Satoshi files are registered.
 enum HaloType {
 
+  /// Scala globale di leggibilità. Unico punto per ingrandire tutta la tipografia Halo.
+  static let scale: CGFloat = 1.15
+
+  private static func scaled(_ size: CGFloat) -> CGFloat { size * scale }
+
   // MARK: - serif (Cormorant Garamond italic — display)
 
   /// Editorial italic serif. The brand voice — used for names, manifesto,
   /// vibe notes.
   static func serif(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
     .custom(serifName(weight: weight, italic: true),
-            size: size,
+            size: scaled(size),
             relativeTo: .title)
   }
 
   /// Non-italic serif (rare — used for crests, ordinal markers).
   static func serifUpright(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
     .custom(serifName(weight: weight, italic: false),
-            size: size,
+            size: scaled(size),
             relativeTo: .title)
   }
 
@@ -35,13 +40,13 @@ enum HaloType {
 
   static func ui(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
     .custom(uiName(weight: weight),
-            size: size,
+            size: scaled(size),
             relativeTo: .body)
   }
 
   static func display(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
     .custom(uiName(weight: weight),
-            size: size,
+            size: scaled(size),
             relativeTo: .title)
   }
 
@@ -49,7 +54,7 @@ enum HaloType {
 
   static func mono(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
     .custom(monoName(weight: weight),
-            size: size,
+            size: scaled(size),
             relativeTo: .caption)
   }
 
@@ -59,8 +64,14 @@ enum HaloType {
   /// `haloEyebrow` modifier already applies those.
   static func eyebrow(_ size: CGFloat) -> Font {
     .custom(SwarmHaloFont.SpaceGrotesk.medium,
-            size: size,
+            size: scaled(size),
             relativeTo: .caption2)
+  }
+
+  // MARK: - system (SF Symbols & fallback — shares the global scale)
+
+  static func system(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+    .system(size: scaled(size), weight: weight)
   }
 
   // MARK: - SWARM roles

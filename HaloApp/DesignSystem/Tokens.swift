@@ -1,31 +1,30 @@
 import SwiftUI
 import HaloShared
 
-/// SWARM Halo visual tokens used by app-side surfaces.
+/// Backwards-compatible visual tokens used by app-side surfaces.
 ///
-/// `absoluteBlack`, `platinum`, and activation values are confirmed by the
-/// SWARM Fase A brief in `docs/design-system/swarm-v1.md`. The official
-/// intermediate 14-step mono ramp is still an external brand asset, so the
-/// semantic overlay tokens below avoid minting replacement hex steps.
+/// Keep the concrete visual direction in `HaloVisual` below. The older
+/// `SwarmHalo`/`HaloTheme` facade remains so existing screens inherit palette
+/// changes without a global refactor.
 enum SwarmHalo {
 
-  // MARK: - Confirmed SWARM endpoints
+  // MARK: - Current endpoints
 
-  static let absoluteBlack = Color(hex: "#000000")
-  static let platinum = Color(hex: "#E8E8EA")
+  static let absoluteBlack = HaloVisual.Palette.absoluteBlack
+  static let platinum = HaloVisual.Palette.cream
 
   // MARK: - Activation
 
-  /// Connected proximity state. SWARM token name is literal from brand.
-  static let orbitalBlue = Color(hex: "#B8FF00")
-  /// Operational proximity state. SWARM token name is literal from brand.
-  static let signalGreen = Color(hex: "#7B2BFF")
+  /// Connected proximity state.
+  static let orbitalBlue = HaloVisual.Aura.color(.electric)
+  /// Operational proximity state.
+  static let signalGreen = HaloVisual.Aura.color(.focused)
   /// Attention state for alerts and widening warnings.
-  static let launchAmber = Color(hex: "#FF2BB8")
+  static let launchAmber = HaloVisual.Aura.color(.wild)
 
   // MARK: - Semantic surfaces
 
-  static let background = absoluteBlack
+  static let background = HaloVisual.Palette.warmBlack
   static let surface = platinum.opacity(0.055)
   static let surfaceRaised = platinum.opacity(0.085)
   static let surfaceModal = platinum.opacity(0.11)
@@ -49,22 +48,22 @@ enum SwarmHalo {
 
   // MARK: - Legacy aliases during migration
 
-  static let warmBlack = background
-  static let nightSurface = surface
-  static let nightSurface2 = surfaceModal
-  static let nightEdge = edge
+  static let warmBlack = HaloVisual.Palette.warmBlack
+  static let nightSurface = HaloVisual.Palette.nightSurface
+  static let nightSurface2 = HaloVisual.Palette.nightSurface2
+  static let nightEdge = HaloVisual.Palette.creamWhisper
 
-  static let paperCream = ink
-  static let creamLow = inkSecondary
-  static let creamMute = inkMuted
-  static let creamHair = inkHairline
-  static let creamLine = inkLine
-  static let creamWhisper = inkWhisper
+  static let paperCream = HaloVisual.Palette.cream
+  static let creamLow = HaloVisual.Palette.creamLow
+  static let creamMute = HaloVisual.Palette.creamMute
+  static let creamHair = HaloVisual.Palette.creamHair
+  static let creamLine = HaloVisual.Palette.creamLine
+  static let creamWhisper = HaloVisual.Palette.creamWhisper
 
-  static let bronze = inkSecondary
-  static let bronzeSoft = inkHairline
-  static let bronzeGlow = inkLine
-  static let warmMagenta = launchAmber
+  static let bronze = HaloVisual.Palette.bronze
+  static let bronzeSoft = HaloVisual.Palette.bronzeSoft
+  static let bronzeGlow = HaloVisual.Palette.bronzeGlow
+  static let warmMagenta = HaloVisual.Aura.color(.soft)
 
   // MARK: - Radii (SWARM literal)
 
@@ -189,6 +188,7 @@ extension FriendshipTier {
     case .close: return .operational
     case .orbit: return .rest
     case .nebula: return .farRest
+    case .asteroid: return .farRest
     }
   }
 }
@@ -227,5 +227,130 @@ enum SwarmHaloFont {
 
   enum SpaceGrotesk {
     static let medium = "SpaceGrotesk-Medium"
+  }
+}
+
+// MARK: - App-wide editable visual direction
+
+/// Single edit point for the current Halo visual direction.
+///
+/// Keep surface-specific views wired to these values instead of hardcoding
+/// hex colors, mood hues, radii, or key sizing constants in feature files.
+enum HaloVisual {
+  enum Palette {
+    static let absoluteBlack = Color(hex: "#000000")
+    static let warmBlack = Color(hex: "#0F0E10")
+    static let nightSurface = Color(hex: "#161516")
+    static let nightSurface2 = Color(hex: "#1B191A")
+
+    static let cream = Color(hex: "#E4DDCF")
+    static let creamLow = cream.opacity(0.62)
+    static let creamMute = cream.opacity(0.42)
+    static let creamHair = cream.opacity(0.18)
+    static let creamLine = cream.opacity(0.10)
+    static let creamWhisper = cream.opacity(0.06)
+
+    static let bronze = Color(hex: "#A88260")
+    static let bronzeSoft = bronze.opacity(0.55)
+    static let bronzeGlow = bronze.opacity(0.35)
+
+    static let glassInkFill = Color(red: 11 / 255, green: 14 / 255, blue: 17 / 255)
+  }
+
+  enum Aura {
+    static func color(_ mood: Mood, alpha: Double = 1) -> Color {
+      color(mood, luminance: nil, alpha: alpha)
+    }
+
+    static func color(_ mood: Mood, luminance: Double?, alpha: Double = 1) -> Color {
+      let token = token(for: mood)
+      return Color.fromOKLCH(l: luminance ?? token.l, c: token.c, h: token.h, alpha: alpha)
+    }
+
+    private static func token(for mood: Mood) -> (l: Double, c: Double, h: Double) {
+      switch mood {
+      case .chill:
+        return (0.78, 0.10, 220)
+      case .wild:
+        return (0.74, 0.18, 30)
+      case .focused:
+        return (0.78, 0.12, 160)
+      case .warm:
+        return (0.80, 0.14, 60)
+      case .electric:
+        return (0.86, 0.18, 145)
+      case .blue:
+        return (0.66, 0.16, 250)
+      case .soft:
+        return (0.82, 0.10, 350)
+      case .lost:
+        return (0.62, 0.07, 290)
+      }
+    }
+  }
+
+  enum Typography {
+    static func inter(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+      let name: String
+      switch weight {
+      case .bold, .semibold:
+        name = SwarmHaloFont.Inter.semibold
+      case .medium:
+        name = SwarmHaloFont.Inter.medium
+      default:
+        name = SwarmHaloFont.Inter.regular
+      }
+
+      return .custom(name, size: size, relativeTo: .body)
+    }
+  }
+
+  enum Orbita {
+    static let contentTopPadding: CGFloat = 48
+    static let sectionGap: CGFloat = 12
+
+    static let headerHorizontalPadding: CGFloat = 26
+    static let headerTopPadding: CGFloat = 14
+    static let headerBottomPadding: CGFloat = 4
+    static let logoRingSize: CGFloat = 9
+    static let logoRingLeading: CGFloat = 18
+    static let logoTextSize: CGFloat = 15
+    static let logoTracking: CGFloat = 6.3
+    static let logoTextLeading: CGFloat = 6.3
+    static let vibePillTopPadding: CGFloat = 12
+    static let vibePillHorizontalPadding: CGFloat = 11
+    static let vibePillVerticalPadding: CGFloat = 6
+    static let vibeDotSize: CGFloat = 7
+    static let headerPillFillOpacity = 0.55
+
+    static let heroHorizontalPadding: CGFloat = 22
+    static let heroTopPadding: CGFloat = 14
+    static let heroCardRadius: CGFloat = 14
+    static let heroCardHorizontalPadding: CGFloat = 12
+    static let heroCardVerticalPadding: CGFloat = 10
+    static let heroPortraitSize: CGFloat = 44
+    static let heroPortraitFontSize: CGFloat = 22
+    static let heroDotSize: CGFloat = 8
+
+    static let fieldBaseWidth: CGFloat = 360
+    static let fieldBaseHeight: CGFloat = 533
+    static let fieldMinScale: CGFloat = 0.86
+    static let innerRadius: CGFloat = 78
+    static let closeRadius: CGFloat = 130
+    static let orbitRadius: CGFloat = 172
+    static let innerBubbleSize: CGFloat = 36
+    static let closeBubbleSize: CGFloat = 26
+    static let orbitBubbleSize: CGFloat = 18
+
+    static let selfOuterSize: CGFloat = 64
+    static let selfInnerSize: CGFloat = 48
+    static let selfFrameSize: CGFloat = 118
+
+    static let zoomRailTrailingPadding: CGFloat = 10
+    static let zoomRailFillOpacity = 0.45
+    static let zoomRailLineHeight: CGFloat = 64
+
+    static let footerBottomPadding: CGFloat = 92
+    static let footerSafeAreaExtra: CGFloat = 70
   }
 }

@@ -102,9 +102,10 @@ final class FeedViewModel {
 
     static func from(tier: FriendshipTier) -> FeedSection {
       switch tier {
-      case .inner, .close: return .innerClose
-      case .orbit:         return .orbit
-      case .nebula:        return .nebula
+      case .inner, .close:   return .innerClose
+      case .orbit:           return .orbit
+      case .nebula:          return .nebula
+      case .asteroid:        return .nebula
       }
     }
   }

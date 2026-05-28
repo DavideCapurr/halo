@@ -182,7 +182,7 @@ struct HaloSpacePeekSheet: View {
       ZStack {
         Circle().fill(MoodPalette.auraColor(person.mood, l: 0.7))
         Image(systemName: "play.fill")
-          .font(.system(size: 12, weight: .bold))
+          .font(HaloType.system(12, weight: .bold))
           .foregroundStyle(SwarmHalo.background)
           .offset(x: 1)
       }

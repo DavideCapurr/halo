@@ -83,7 +83,7 @@ struct OnboardingView: View {
             .background(HaloTheme.portraitBacking, in: Circle())
         }
         Image(systemName: "camera.fill")
-          .font(.system(size: 12, weight: .bold))
+          .font(HaloType.system(12, weight: .bold))
           .foregroundStyle(SwarmHalo.background)
           .frame(width: 32, height: 32)
           .background(SwarmHalo.ink, in: Circle())

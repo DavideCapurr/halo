@@ -144,6 +144,15 @@ enum SeedPeople {
     .init(id: "p29", handle: "eva",   name: "Eva",       tier: .orbit, mood: .blue,     note: "", hasNew: false, lastPostAt: hoursAgo(45), hasActiveVibe: false),
   ]
 
+  // Mutuali esplicitamente depriorizzati: amici reali che l'utente ha "buttato
+  // fuori" dai 4 anelli trascinandoli oltre il bordo. Restano nel grafo ma
+  // vivono nella cintura asteroidi con stile attenuato.
+  static let demoted: [HaloPersonNode] = [
+    .init(id: "d01", handle: "kev",  name: "Kevin",  tier: .asteroid, mood: .chill, note: "", hasNew: false, lastPostAt: hoursAgo(30), hasActiveVibe: false, isMutual: true),
+    .init(id: "d02", handle: "luna", name: "Luna",   tier: .asteroid, mood: .blue,  note: "", hasNew: false, lastPostAt: hoursAgo(70), hasActiveVibe: false, isMutual: true),
+    .init(id: "d03", handle: "rik",  name: "Riccardo", tier: .asteroid, mood: .lost, note: "", hasNew: false, lastPostAt: nil,        hasActiveVibe: false, isMutual: true),
+  ]
+
   // Asteroidi: account pubblici / artisti / brand seguiti in modo asimmetrico.
   static let asteroids: [HaloPersonNode] = [
     .init(id: "a01", handle: "mura",   name: "Mura",       tier: .nebula, mood: .electric, note: "", hasNew: false, lastPostAt: hoursAgo(3),  hasActiveVibe: true,  isMutual: false),

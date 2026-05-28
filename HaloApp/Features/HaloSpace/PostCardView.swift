@@ -79,7 +79,7 @@ struct PostCardView: View {
           .rotationEffect(.degrees(-90))
           .frame(width: 22, height: 22)
         Image(systemName: kindIcon(post.kind))
-          .font(.system(size: 9, weight: .semibold))
+          .font(HaloType.system(9, weight: .semibold))
           .foregroundStyle(SwarmHalo.inkSecondary)
       }
 
@@ -164,7 +164,7 @@ struct PostCardView: View {
       ZStack {
         Circle().fill(MoodPalette.auraColor(accentMood, l: 0.7))
         Image(systemName: "play.fill")
-          .font(.system(size: 12, weight: .bold))
+          .font(HaloType.system(12, weight: .bold))
           .foregroundStyle(SwarmHalo.background)
           .offset(x: 1)
       }

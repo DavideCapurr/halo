@@ -33,7 +33,8 @@ enum HaloTheme {
   static let sheetCornerRadius: CGFloat = SwarmHalo.radiusSheet
 
   /// Mono digit font for timestamps and counters. Now uses IBM Plex Mono.
-  static let mono = Font.custom(SwarmHaloFont.Plex.medium, size: 11, relativeTo: .caption2)
+  /// Routed through `HaloType.mono` so it inherits the global type scale.
+  static let mono = HaloType.mono(11)
 }
 
 // MARK: - SWARM semantic primitives
@@ -281,7 +282,7 @@ struct SwarmCommandButton: View {
       HStack(spacing: SwarmHalo.s2) {
         if let icon {
           Image(systemName: icon)
-            .font(.system(size: 13, weight: .semibold))
+            .font(HaloType.system(13, weight: .semibold))
         }
         Text(label)
           .font(HaloType.ui(13, weight: .semibold))

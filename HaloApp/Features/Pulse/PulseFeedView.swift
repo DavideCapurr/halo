@@ -534,7 +534,7 @@ private struct PulseDropCard: View {
         Circle()
           .fill(MoodPalette.auraColor(event.person.mood, l: 0.70))
         Image(systemName: "play.fill")
-          .font(.system(size: 11, weight: .bold))
+          .font(HaloType.system(11, weight: .bold))
           .foregroundStyle(SwarmHalo.background)
           .offset(x: 1)
       }
@@ -585,7 +585,7 @@ private struct PulseDropCard: View {
   private func actionChip(_ label: String, icon: String) -> some View {
     HStack(spacing: 5) {
       Image(systemName: icon)
-        .font(.system(size: 9, weight: .medium))
+        .font(HaloType.system(9, weight: .medium))
       Text(label)
         .font(HaloType.mono(8.5, weight: .medium))
         .kerning(0.5)
@@ -761,7 +761,7 @@ private struct PulseDropDock: View {
     } label: {
       VStack(spacing: 5) {
         Image(systemName: icon)
-          .font(.system(size: 14, weight: .semibold))
+          .font(HaloType.system(14, weight: .semibold))
         Text(label)
           .font(HaloType.mono(8.5, weight: .medium))
           .kerning(0.6)

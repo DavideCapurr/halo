@@ -10,10 +10,11 @@ enum HapticEngine {
   static func tap(for tier: FriendshipTier) {
     let style: UIImpactFeedbackGenerator.FeedbackStyle
     switch tier {
-    case .inner:  style = .heavy
-    case .close:  style = .medium
-    case .orbit:  style = .light
-    case .nebula: style = .soft
+    case .inner:    style = .heavy
+    case .close:    style = .medium
+    case .orbit:    style = .light
+    case .nebula:   style = .soft
+    case .asteroid: style = .soft
     }
     UIImpactFeedbackGenerator(style: style).impactOccurred()
   }

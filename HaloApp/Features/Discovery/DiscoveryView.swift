@@ -58,7 +58,7 @@ struct DiscoveryView: View {
     SwarmOperationalRail(title: "HALO / DISCOVERY", context: "public asteroids", activation: .operational) {
       Button(action: onClose) {
         Image(systemName: "xmark")
-          .font(.system(size: 14, weight: .semibold))
+          .font(HaloType.system(14, weight: .semibold))
           .foregroundStyle(SwarmHalo.inkSecondary)
           .swarmIconFrame()
       }
@@ -103,7 +103,7 @@ struct DiscoveryView: View {
             .font(HaloType.serif(16, weight: .regular))
             .foregroundStyle(HaloInk.cream)
           Image(systemName: "checkmark.seal.fill")
-            .font(.system(size: 10))
+            .font(HaloType.system(10))
             .foregroundStyle(MoodPalette.auraColor(.electric, l: 0.85))
         }
         Text("@\(p.handle)")

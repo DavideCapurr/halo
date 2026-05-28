@@ -225,7 +225,7 @@ struct MomentCard: View {
           .rotationEffect(.degrees(-90))
           .frame(width: 22, height: 22)
         Image(systemName: postIcon(preview.kind))
-          .font(.system(size: 9, weight: .semibold))
+          .font(HaloType.system(9, weight: .semibold))
           .foregroundStyle(SwarmHalo.inkSecondary)
       }
       .accessibilityLabel("decay")
@@ -289,7 +289,7 @@ struct MomentCard: View {
       ZStack {
         Circle().fill(MoodPalette.auraColor(person.mood, l: 0.7))
         Image(systemName: "play.fill")
-          .font(.system(size: 10, weight: .bold))
+          .font(HaloType.system(10, weight: .bold))
           .foregroundStyle(SwarmHalo.background)
           .offset(x: 1)
       }

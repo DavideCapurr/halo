@@ -58,7 +58,7 @@ struct TierConfirmationSheet: View {
     HStack(spacing: 22) {
       tierBadge(proposal.from, dimmed: true, highlight: nil)
       Image(systemName: "arrow.right")
-        .font(.system(size: 15, weight: .regular))
+        .font(HaloType.system(15, weight: .regular))
         .foregroundStyle(Color.white.opacity(0.55))
       tierBadge(proposal.to, dimmed: false, highlight: MoodPalette.auraColor(proposal.person.mood, l: 0.75))
     }
@@ -157,6 +157,7 @@ struct TierConfirmationSheet: View {
     case .close:  return "Potrà vedere foto, testo e audio. Reazioni in chiaro."
     case .orbit:  return "Vedrà foto e testo. Reazioni solo aggregate."
     case .nebula: return "Vedrà solo la tua presenza e la bio. Niente post."
+    case .asteroid: return "Sparirà dai tuoi anelli: resta tra i contatti ma non comparirà più nell'orbita né nelle storie."
     }
   }
 }

@@ -94,7 +94,7 @@ struct VibeFirstComposeView: View {
 
       Button(action: onClose) {
         Image(systemName: "xmark")
-          .font(.system(size: 12, weight: .semibold))
+          .font(HaloType.system(12, weight: .semibold))
           .foregroundStyle(HaloInk.creamLow)
           .frame(width: 30, height: 30)
           .background(Circle().fill(SwarmHalo.inkWhisper))
@@ -309,7 +309,7 @@ struct VibeFirstComposeView: View {
         } label: {
           HStack(spacing: 10) {
             Image(systemName: icon)
-              .font(.system(size: 16, weight: .regular))
+              .font(HaloType.system(16, weight: .regular))
               .foregroundStyle(on ? SwarmHalo.ink : SwarmHalo.inkMuted)
               .frame(width: 22)
             Text(label)
@@ -335,7 +335,8 @@ struct VibeFirstComposeView: View {
         .foregroundStyle(HaloInk.creamLow)
 
       VStack(spacing: 8) {
-        ForEach(FriendshipTier.allCases.reversed(), id: \.self) { t in
+        // `.asteroid` non è un'audience: non si pubblica verso i depriorizzati.
+        ForEach(FriendshipTier.allCases.reversed().filter { $0 != .asteroid }, id: \.self) { t in
           tierRow(t)
         }
       }
@@ -395,6 +396,7 @@ struct VibeFirstComposeView: View {
     case .close:  return "Inner + i tuoi \(count) di Close"
     case .orbit:  return "Inner + Close + i tuoi \(count) in Orbita"
     case .nebula: return "Inner + Close + Orbita + \(count) in Nebula"
+    case .asteroid: return ""
     }
   }
 

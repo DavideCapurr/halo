@@ -47,7 +47,7 @@ struct HaloSpaceView: View {
     HStack {
       Button(action: onClose) {
         Image(systemName: "xmark")
-          .font(.system(size: 14, weight: .semibold))
+          .font(HaloType.system(14, weight: .semibold))
           .foregroundStyle(SwarmHalo.inkSecondary)
           .frame(width: 32, height: 32)
           .background(SwarmHalo.inkWhisper, in: Circle())
