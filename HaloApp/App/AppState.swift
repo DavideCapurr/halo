@@ -9,6 +9,9 @@ final class AppState {
     case home
     case haloSpace(userId: UUID)
     case profile(userId: UUID)
+    case invite(token: String)
+    case memory
+    case report(userId: UUID)
   }
 
   enum Phase {
@@ -95,6 +98,12 @@ final class AppState {
     switch link {
     case .haloSpace(let userId):
       route = .haloSpace(userId: userId)
+    case .invite(let token):
+      route = .invite(token: token)
+    case .memory:
+      route = .memory
+    case .report(let userId):
+      route = .report(userId: userId)
     }
   }
 }

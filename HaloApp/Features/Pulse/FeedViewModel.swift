@@ -28,6 +28,10 @@ enum PulseScope: String, CaseIterable, Hashable, Identifiable {
     case .tutti: return [.inner, .close, .orbit]
     }
   }
+
+  var presentation: HaloScopePresentation {
+    .init(id: id, title: title, subtitle: subtitle, visibleTiers: visibleTiers)
+  }
 }
 
 struct PulseEvent: Identifiable, Hashable {
@@ -41,7 +45,7 @@ struct PulseEvent: Identifiable, Hashable {
   }
 
   let id: String
-  var person: DemoPerson
+  var person: HaloPersonNode
   var kind: Kind
   var createdAt: Date
   var isMine: Bool = false
@@ -75,10 +79,8 @@ struct PulseEventGroup: Identifiable, Hashable {
 
 /// View model del Pulse feed.
 ///
-/// In demo mode (`bootstrap = .seed`) costruisce le sezioni a partire da
-/// `SeedPeople`. Quando il backend sarà cablato, `bootstrap = .live` userà
-/// `PostsService.feedPosts()` + `VibesService.currentVibes()` per produrre
-/// `[MomentItem]` reali (vedi `HomeViewModel.feedItems`).
+/// In live mode it hydrates the presentation nodes from `HomeViewModel`.
+/// Seed mode remains available for previews and offline design iteration.
 @Observable
 @MainActor
 final class FeedViewModel {
@@ -100,16 +102,17 @@ final class FeedViewModel {
 
     static func from(tier: FriendshipTier) -> FeedSection {
       switch tier {
-      case .inner, .close: return .innerClose
-      case .orbit:         return .orbit
-      case .nebula:        return .nebula
+      case .inner, .close:   return .innerClose
+      case .orbit:           return .orbit
+      case .nebula:          return .nebula
+      case .asteroid:        return .nebula
       }
     }
   }
 
   // Stato di base
   private let bootstrap: Bootstrap
-  var people: [DemoPerson] = []
+  var people: [HaloPersonNode] = []
   var localEvents: [PulseEvent] = []
   var isLoading: Bool = false
   var lastError: String?
@@ -118,7 +121,7 @@ final class FeedViewModel {
   private let realtime = FeedRealtime()
   private var realtimeTask: Task<Void, Never>?
 
-  init(bootstrap: Bootstrap = .seed) {
+  init(bootstrap: Bootstrap = .live) {
     self.bootstrap = bootstrap
   }
 
@@ -132,8 +135,10 @@ final class FeedViewModel {
       // Mutuali in feed; gli asteroidi non finiscono nelle sezioni Inner/Close/Orbit/Nebula.
       self.people = SeedPeople.all
     case .live:
-      // TODO: cablato a PostsService/VibesService quando Auth è pronta.
-      self.people = SeedPeople.all
+      let home = HomeViewModel()
+      await home.load()
+      let liveNodes = home.feedItems.map(HaloPersonNode.init(item:)).filter(\.isMutual)
+      self.people = liveNodes.isEmpty ? SeedPeople.all : liveNodes
       startRealtime()
     }
   }
@@ -145,7 +150,7 @@ final class FeedViewModel {
       guard let self else { return }
       for await event in self.realtime.subscribe() {
         // Strategia minimale: marca lastError nil e ricarica.
-        // Quando MomentItem reali sostituiscono DemoPerson, qui verrà fatto un
+        // Quando MomentItem reali sostituiscono i seed, qui verrà fatto un
         // upsert mirato (single-event) invece del re-fetch completo.
         switch event {
         case .newPost, .newVibe, .newReaction:
@@ -164,11 +169,11 @@ final class FeedViewModel {
   // MARK: - derivate
 
   /// Default legacy: Pulse parte da Inner.
-  var pulsePeople: [DemoPerson] {
+  var pulsePeople: [HaloPersonNode] {
     pulsePeople(in: .inner)
   }
 
-  func pulsePeople(in scope: PulseScope) -> [DemoPerson] {
+  func pulsePeople(in scope: PulseScope) -> [HaloPersonNode] {
     people
       .filter { $0.isMutual && scope.visibleTiers.contains($0.tier) }
       .sorted { lhs, rhs in
@@ -183,7 +188,7 @@ final class FeedViewModel {
 
   /// Persone con post negli ultimi 30 min (sezione "Adesso").
   /// Ordinate per ultimo post desc.
-  var adessoItems: [DemoPerson] {
+  var adessoItems: [HaloPersonNode] {
     people
       .filter { p in
         guard let t = p.lastPostAt else { return false }
@@ -194,7 +199,7 @@ final class FeedViewModel {
 
   /// Persone con vibe attiva, tier-sorted (Inner prima).
   /// Alimenta la `PresenceBar` in cima al feed.
-  var presenceItems: [DemoPerson] {
+  var presenceItems: [HaloPersonNode] {
     people
       .filter(\.hasActiveVibe)
       .sorted { (a, b) in
@@ -205,7 +210,7 @@ final class FeedViewModel {
 
   /// Sezioni del feed (Inner&Close / Orbit / Nebula), ognuna ordinata per
   /// "ultima attività" desc (= ultimo post; fallback su vibe attiva).
-  var sections: [(FeedSection, [DemoPerson])] {
+  var sections: [(FeedSection, [HaloPersonNode])] {
     let grouped = Dictionary(grouping: people, by: { FeedSection.from(tier: $0.tier) })
     return FeedSection.allCases.compactMap { section in
       guard let items = grouped[section], !items.isEmpty else { return nil }
@@ -372,7 +377,7 @@ final class FeedViewModel {
     return h
   }
 
-  private func fallbackCaption(for person: DemoPerson) -> String {
+  private func fallbackCaption(for person: HaloPersonNode) -> String {
     switch person.mood {
     case .warm: return "luce calda, poco rumore"
     case .focused: return "ancora sui libri"

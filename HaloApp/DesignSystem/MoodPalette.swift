@@ -7,12 +7,12 @@ import HaloShared
 enum MoodPalette {
   /// Colore "aura" pieno per un mood, alla luminanza data (default 0.58 come nel design).
   static func auraColor(_ mood: Mood, l: Double = 0.58) -> Color {
-    Color.fromOKLCH(l: l, c: mood.chroma, h: mood.hue, alpha: 1.0)
+    HaloVisual.Aura.color(mood, luminance: l)
   }
 
   /// Variante semitrasparente con luminanza fissa 0.55, usata per glow/halo.
   static func auraRing(_ mood: Mood, alpha: Double = 0.35) -> Color {
-    Color.fromOKLCH(l: 0.55, c: mood.chroma, h: mood.hue, alpha: alpha)
+    HaloVisual.Aura.color(mood, luminance: 0.55, alpha: alpha)
   }
 }
 

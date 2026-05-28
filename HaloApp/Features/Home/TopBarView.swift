@@ -38,7 +38,7 @@ struct TopBarView: View {
 
       Button(action: onSearchTap) {
         Image(systemName: "magnifyingglass")
-          .font(.system(size: 15, weight: .regular))
+          .font(HaloType.system(15, weight: .regular))
           .foregroundStyle(HaloInk.creamLow)
           .frame(width: 36, height: 36)
           .background(Circle().fill(.ultraThinMaterial))
@@ -60,7 +60,7 @@ struct TopBarView: View {
 
 #Preview {
   ZStack {
-    Color.black
+    SwarmHalo.background
     TopBarView(mood: .chill)
   }
   .frame(width: 402, height: 100)

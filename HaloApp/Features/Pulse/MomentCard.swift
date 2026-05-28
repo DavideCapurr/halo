@@ -10,7 +10,7 @@ import HaloShared
 ///
 /// Card senza post = valida (presenza pura).
 struct MomentCard: View {
-  let person: DemoPerson
+  let person: HaloPersonNode
   /// Tap sull'intera card (apre HaloSpace).
   var onTap: () -> Void = {}
   /// Tap su una reazione (no-op nel demo).
@@ -56,8 +56,8 @@ struct MomentCard: View {
     }
     .padding(.horizontal, 18)
     .padding(.vertical, 14)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: 22), stroke: borderColor)
-    .contentShape(RoundedRectangle(cornerRadius: 22))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard), stroke: borderColor)
+    .contentShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
     .overlay(alignment: .topTrailing) {
       ForEach(Array(livePings), id: \.key) { (id, kind) in
         LivePingView(kind: kind, color: MoodPalette.auraColor(person.mood, l: 0.85))
@@ -107,18 +107,19 @@ struct MomentCard: View {
       Circle()
         .fill(ringFill)
         .frame(width: portraitSize, height: portraitSize)
-        .shadow(color: auraGlow, radius: 7)
-      PortraitView(personId: person.id, size: portraitSize - 6)
+        .overlay(Circle().strokeBorder(person.tier.swarmHaloState.stroke, lineWidth: 0.8))
+        .shadow(color: person.tier.swarmHaloState.glow, radius: 7)
+      PortraitView(personId: person.id, size: portraitSize - 6, grayscale: true)
         .background(HaloTheme.portraitBacking, in: Circle())
     }
     .frame(width: 64, height: 64)
   }
 
   private var ringFill: Color {
-    person.hasActiveVibe ? MoodPalette.auraColor(person.mood, l: 0.72) : Color.white.opacity(0.18)
+    person.tier.swarmHaloState.ringFill
   }
   private var auraGlow: Color {
-    person.hasActiveVibe ? MoodPalette.auraRing(person.mood, alpha: 0.55) : Color.white.opacity(0.10)
+    person.hasActiveVibe ? MoodPalette.auraRing(person.mood, alpha: 0.55) : .clear
   }
 
   // MARK: - header
@@ -142,11 +143,11 @@ struct MomentCard: View {
       .font(HaloType.eyebrow(9))
       .kerning(1.8)
       .textCase(.uppercase)
-      .foregroundStyle(HaloInk.creamLow)
+      .foregroundStyle(person.tier.swarmHaloState.accent)
       .padding(.horizontal, 7)
       .padding(.vertical, 2.5)
-      .background(SwarmHalo.creamWhisper, in: Capsule())
-      .overlay(Capsule().strokeBorder(SwarmHalo.strokeRest, lineWidth: 0.5))
+      .background(person.tier.swarmHaloState.badgeFill, in: Capsule())
+      .overlay(Capsule().strokeBorder(person.tier.swarmHaloState.stroke, lineWidth: 0.5))
   }
 
   // MARK: - vibe note
@@ -215,7 +216,7 @@ struct MomentCard: View {
       // Decay ring: anello sottile che si svuota nelle 72h.
       ZStack {
         Circle()
-          .stroke(Color.white.opacity(0.10), lineWidth: 1.5)
+          .stroke(SwarmHalo.strokeRest, lineWidth: 1.5)
           .frame(width: 22, height: 22)
         Circle()
           .trim(from: 0, to: postDecay)
@@ -224,8 +225,8 @@ struct MomentCard: View {
           .rotationEffect(.degrees(-90))
           .frame(width: 22, height: 22)
         Image(systemName: postIcon(preview.kind))
-          .font(.system(size: 9, weight: .semibold))
-          .foregroundStyle(Color.white.opacity(0.75))
+          .font(HaloType.system(9, weight: .semibold))
+          .foregroundStyle(SwarmHalo.inkSecondary)
       }
       .accessibilityLabel("decay")
 
@@ -270,7 +271,7 @@ struct MomentCard: View {
       }
     }
     .frame(height: 96)
-    .clipShape(RoundedRectangle(cornerRadius: 12))
+    .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
   }
 
   private func textPreview(_ p: PostPreview) -> some View {
@@ -288,8 +289,8 @@ struct MomentCard: View {
       ZStack {
         Circle().fill(MoodPalette.auraColor(person.mood, l: 0.7))
         Image(systemName: "play.fill")
-          .font(.system(size: 10, weight: .bold))
-          .foregroundStyle(.white)
+          .font(HaloType.system(10, weight: .bold))
+          .foregroundStyle(SwarmHalo.background)
           .offset(x: 1)
       }
       .frame(width: 28, height: 28)
@@ -297,7 +298,7 @@ struct MomentCard: View {
       HStack(spacing: 2) {
         ForEach(0..<18, id: \.self) { i in
           Capsule()
-            .fill(Color.white.opacity(0.20 + (Double(i) / 22) * 0.5))
+            .fill(SwarmHalo.ink.opacity(0.20 + (Double(i) / 22) * 0.5))
             .frame(width: 2.5, height: CGFloat(6 + abs(sin(Double(i) * 1.3)) * 14))
         }
       }
@@ -338,7 +339,7 @@ struct MomentCard: View {
           onReact(kind)
         } label: {
           HStack(spacing: 5) {
-            ReactionGlyph(kind: kind, size: 14, color: Color.white.opacity(0.65))
+            ReactionGlyph(kind: kind, size: 14, color: SwarmHalo.inkSecondary)
             if canSeeActors {
               Text(actors.prefix(2).map { "@\($0)" }.joined(separator: " "))
                 .font(HaloType.ui(10, weight: .medium))
@@ -380,7 +381,7 @@ struct MomentCard: View {
 
   private var borderColor: Color {
     if isExpiringSoon {
-      return MoodPalette.auraColor(.warm, l: 0.65)
+      return SwarmHalo.launchAmber.opacity(0.86)
     }
     return HaloTheme.hairlineSoft
   }
@@ -431,7 +432,7 @@ private struct LivePingView: View {
 
 #Preview {
   ZStack {
-    Color.black
+    SwarmHalo.background
     VStack(spacing: 12) {
       MomentCard(person: SeedPeople.all[0])
       MomentCard(person: SeedPeople.all[6])

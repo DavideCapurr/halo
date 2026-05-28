@@ -6,7 +6,7 @@ import HaloShared
 struct ReactionGlyph: View {
   let kind: ReactionKind
   var size: CGFloat = 22
-  var color: Color = .white
+  var color: Color = SwarmHalo.ink
 
   var body: some View {
     Canvas { ctx, _ in
@@ -104,5 +104,5 @@ struct ReactionGlyph: View {
     }
   }
   .padding()
-  .background(Color.black)
+  .background(SwarmHalo.background)
 }

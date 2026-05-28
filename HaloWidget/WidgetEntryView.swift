@@ -2,6 +2,18 @@ import SwiftUI
 import WidgetKit
 import HaloShared
 
+private enum WidgetSwarm {
+  static let absoluteBlack = Color.black
+  static let field = Color(red: 0.01, green: 0.01, blue: 0.012)
+  static let surface = Color(red: 0.91, green: 0.91, blue: 0.92).opacity(0.08)
+  static let platinum = Color(red: 0.91, green: 0.91, blue: 0.92)
+  static let line = platinum.opacity(0.16)
+  static let hair = platinum.opacity(0.08)
+  static let connected = Color(red: 184/255, green: 1, blue: 0)
+  static let operational = Color(red: 123/255, green: 43/255, blue: 1)
+  static let attention = Color(red: 1, green: 43/255, blue: 184/255)
+}
+
 /// Render del widget Halo.
 /// - `.accessoryCircular`: mini orbital field con 6 bolle radiali su un anello.
 /// - `.accessoryRectangular`: 4 bolle inline + count totale.
@@ -31,7 +43,9 @@ struct WidgetEntryView: View {
 
   private var circularBody: some View {
     ZStack {
-      Circle().strokeBorder(.white.opacity(0.30), style: .init(lineWidth: 0.6, dash: [2, 2]))
+      Circle().strokeBorder(WidgetSwarm.line, style: .init(lineWidth: 0.6, dash: [2, 3]))
+      Circle().strokeBorder(WidgetSwarm.connected.opacity(0.55), lineWidth: 0.8)
+        .frame(width: 34, height: 34)
       ForEach(Array(circularBubbles.enumerated()), id: \.offset) { index, bubble in
         CircularWidgetBubble(
           color: bubbleColor(for: bubble),
@@ -40,8 +54,8 @@ struct WidgetEntryView: View {
         )
       }
       Text("\(entry.snapshot.bubbles.count)")
-        .font(.system(size: 13, weight: .semibold, design: .rounded))
-        .foregroundStyle(.white)
+        .font(.system(size: 13, weight: .semibold, design: .monospaced))
+        .foregroundStyle(WidgetSwarm.platinum)
     }
     .frame(width: 56, height: 56)
   }
@@ -49,14 +63,17 @@ struct WidgetEntryView: View {
   // MARK: - Lockscreen rectangular
 
   private var rectangularBody: some View {
-    HStack(spacing: 4) {
+    HStack(spacing: 6) {
+      Text("HALO")
+        .font(.system(size: 9, weight: .semibold, design: .monospaced))
+        .foregroundStyle(WidgetSwarm.platinum.opacity(0.62))
       ForEach(entry.snapshot.bubbles.prefix(4), id: \.userId) { b in
         RectangularWidgetBubble(color: bubbleColor(for: b), handle: b.handle)
       }
       if entry.snapshot.bubbles.count > 4 {
         Text("+\(entry.snapshot.bubbles.count - 4)")
           .font(.system(size: 11, weight: .medium, design: .monospaced))
-          .foregroundStyle(.white.opacity(0.75))
+          .foregroundStyle(WidgetSwarm.platinum.opacity(0.75))
       }
       Spacer(minLength: 0)
     }
@@ -67,9 +84,8 @@ struct WidgetEntryView: View {
 
   private var standByMediumBody: some View {
     ZStack {
-      // Deep space background
       LinearGradient(
-        colors: [Color.black, Color(red: 12/255, green: 10/255, blue: 18/255)],
+        colors: [WidgetSwarm.absoluteBlack, WidgetSwarm.field],
         startPoint: .top, endPoint: .bottom
       )
       .ignoresSafeArea()
@@ -94,7 +110,7 @@ struct WidgetEntryView: View {
     if let mood = b.mood {
       return Color(hex: mood.defaultHex)
     }
-    return Color.white.opacity(0.35)
+    return WidgetSwarm.platinum.opacity(0.35)
   }
 
   private func bubbleGlow(for b: WidgetSnapshot.Bubble) -> Color {
@@ -115,6 +131,7 @@ private struct CircularWidgetBubble: View {
     Circle()
       .fill(color)
       .frame(width: 7, height: 7)
+      .overlay(Circle().strokeBorder(WidgetSwarm.absoluteBlack.opacity(0.4), lineWidth: 0.4))
       .position(
         x: 28 + cos(angle) * 18,
         y: 28 + sin(angle) * 18
@@ -130,10 +147,11 @@ private struct RectangularWidgetBubble: View {
     Circle()
       .fill(color)
       .frame(width: 14, height: 14)
+      .overlay(Circle().strokeBorder(WidgetSwarm.line, lineWidth: 0.5))
       .overlay(
         Text(String(handle.prefix(1)))
           .font(.system(size: 8, weight: .bold))
-          .foregroundStyle(.black.opacity(0.7))
+          .foregroundStyle(WidgetSwarm.absoluteBlack.opacity(0.78))
       )
   }
 }
@@ -159,14 +177,15 @@ private struct StandByWidgetOrbit: View {
   var body: some View {
     ZStack {
       Circle()
-        .strokeBorder(.white.opacity(0.10), style: .init(lineWidth: 0.5, dash: [3, 3]))
+        .strokeBorder(WidgetSwarm.line, style: .init(lineWidth: 0.5, dash: [3, 3]))
         .frame(width: radius * 2, height: radius * 2)
         .position(center)
 
       Circle()
-        .fill(Color.white.opacity(0.35))
+        .strokeBorder(WidgetSwarm.connected.opacity(0.75), lineWidth: 1)
+        .background(Circle().fill(WidgetSwarm.surface))
         .frame(width: 26, height: 26)
-        .shadow(color: .white.opacity(0.4), radius: 6)
+        .shadow(color: WidgetSwarm.connected.opacity(0.20), radius: 8)
         .position(center)
 
       ForEach(Array(ringBubbles.enumerated()), id: \.offset) { index, bubble in
@@ -180,9 +199,9 @@ private struct StandByWidgetOrbit: View {
         )
       }
 
-      Text("\(snapshot.bubbles.count) bolle")
+      Text(String(format: "%02d live", snapshot.bubbles.count))
         .font(.system(size: 10, weight: .medium, design: .monospaced))
-        .foregroundStyle(.white.opacity(0.55))
+        .foregroundStyle(WidgetSwarm.platinum.opacity(0.55))
         .position(x: center.x, y: size.height - 14)
     }
   }
@@ -204,6 +223,7 @@ private struct StandByWidgetBubble: View {
     Circle()
       .fill(color)
       .frame(width: 16, height: 16)
+      .overlay(Circle().strokeBorder(WidgetSwarm.line, lineWidth: 0.5))
       .shadow(color: glow, radius: 4)
       .position(x: center.x + cos(angle) * radius, y: center.y + sin(angle) * radius)
   }

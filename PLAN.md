@@ -24,16 +24,18 @@ SWARM**.
 
 ### Design - SWARM da adottare
 
-- [~] Palette mono 14-step (`absolute-black` -> `platinum`) + activation
+- [!] Palette mono 14-step (`absolute-black` -> `platinum`) + activation
       (`orbital-blue` lime, `signal-green` purple, `launch-amber` magenta).
-      Il codice corrente usa ancora warm surfaces, cream e bronze.
-- [~] Type system Cormorant Garamond / Satoshi / IBM Plex Mono /
+      Codice migrato su endpoint e semantic token SWARM; restano bloccanti
+      i 12 step intermedi ufficiali della mono ramp.
+- [!] Type system Cormorant Garamond / Satoshi / IBM Plex Mono /
       Space Grotesk. Il repo ha gia alcuni font bundle, ma Satoshi e il
       mapping SWARM completo non sono ancora la fonte unica.
-- [~] Type scale 144 / 64 / 40 / 28 / 17 / 15 / 13 / 11, radii
+      Fallback Inter cablato finche arrivano i file Satoshi ufficiali.
+- [x] Type scale 144 / 64 / 40 / 28 / 17 / 15 / 13 / 11, radii
       6 / 4 / 2 / 999 e motion
       `cubic-bezier(0.2, 0.7, 0.1, 1)` da rendere canonici nei token.
-- [ ] Mapping stati Halo <-> SWARM da portare in API e componenti:
+- [x] Mapping stati Halo <-> SWARM da portare in API e componenti:
       Inner = orbital-blue lime, Close = signal-green purple,
       Orbit = platinum hairline, Nebula = absolute-black,
       Vibe attention = launch-amber magenta.
@@ -54,20 +56,22 @@ SWARM**.
 ### Fase A - Adozione SWARM design (1-2 settimane)
 
 - [x] `docs/design-system/swarm-v1.md` - brief canonico versionato nel repo.
-- [ ] `HaloApp/DesignSystem/Tokens.swift` - palette mono+activation,
+- [x] `HaloApp/DesignSystem/Tokens.swift` - palette mono+activation,
       spacing 4/8, radii, easing motion.
-- [ ] Sostituire `HaloTypography.swift` con i 4 font SWARM
+- [!] Sostituire `HaloTypography.swift` con i 4 font SWARM
       (bundle `.otf`, fallback system) e aggiornare la type scale.
-- [ ] Definire mapping stati:
+      Satoshi resta bloccato dai file licenziati non presenti nel repo.
+- [x] Definire mapping stati:
       Inner = orbital-blue lime, Close = signal-green purple,
       Orbit = platinum hairline, Nebula = absolute-black,
       Vibe attention = launch-amber magenta.
-- [ ] Refactor componenti chiave:
+- [x] Refactor componenti chiave:
       `SelfCenterView`, `BubbleView`, `OrbitalRing`, `MomentCard`,
       `PresenceBar`, `HaloTabBar`.
-- [ ] Sweep voce: sentence case, periodi come armi,
+- [x] Sweep voce: sentence case, periodi come armi,
       copy "Your people, not your audience" sulla welcome.
-- [ ] Lint hex letterali -> token.
+- [x] Lint hex letterali -> token.
+      Eccezioni rimaste: asset portrait/debug preview e parser `Color(hex:)`.
 
 ### Fase B - Gap prodotto HALO (3-4 settimane)
 

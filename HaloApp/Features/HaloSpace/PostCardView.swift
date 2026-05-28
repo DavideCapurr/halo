@@ -48,7 +48,7 @@ struct PostCardView: View {
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 16).padding(.vertical, 10)
       }
-      Divider().background(Color.white.opacity(0.05))
+      Divider().background(SwarmHalo.inkWhisper)
       ReactionBarView(
         viewerTier: viewerTier,
         aggregates: reactions,
@@ -58,10 +58,10 @@ struct PostCardView: View {
       )
     }
     .haloContentGlass(
-      in: RoundedRectangle(cornerRadius: 18),
-      stroke: isExpiringSoon ? MoodPalette.auraColor(.warm, l: 0.65) : HaloTheme.glassStrokeSoft
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard),
+      stroke: isExpiringSoon ? SwarmHalo.launchAmber.opacity(0.86) : HaloTheme.glassStrokeSoft
     )
-    .clipShape(RoundedRectangle(cornerRadius: 18))
+    .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
   }
 
   // MARK: - header (decay ring + age + mood tag)
@@ -70,7 +70,7 @@ struct PostCardView: View {
     HStack(spacing: 10) {
       ZStack {
         Circle()
-          .stroke(Color.white.opacity(0.10), lineWidth: 1.5)
+          .stroke(SwarmHalo.strokeRest, lineWidth: 1.5)
           .frame(width: 22, height: 22)
         Circle()
           .trim(from: 0, to: decay)
@@ -79,8 +79,8 @@ struct PostCardView: View {
           .rotationEffect(.degrees(-90))
           .frame(width: 22, height: 22)
         Image(systemName: kindIcon(post.kind))
-          .font(.system(size: 9, weight: .semibold))
-          .foregroundStyle(Color.white.opacity(0.85))
+          .font(HaloType.system(9, weight: .semibold))
+          .foregroundStyle(SwarmHalo.inkSecondary)
       }
 
       Text(ageLabel)
@@ -144,7 +144,7 @@ struct PostCardView: View {
           path.addLine(to: CGPoint(x: x + size.height, y: 0))
           x += step
         }
-        ctx.stroke(path, with: .color(.white), lineWidth: 0.5)
+        ctx.stroke(path, with: .color(SwarmHalo.ink.opacity(0.50)), lineWidth: 0.5)
       }
     }
     .frame(height: 220)
@@ -164,15 +164,15 @@ struct PostCardView: View {
       ZStack {
         Circle().fill(MoodPalette.auraColor(accentMood, l: 0.7))
         Image(systemName: "play.fill")
-          .font(.system(size: 12, weight: .bold))
-          .foregroundStyle(.white)
+          .font(HaloType.system(12, weight: .bold))
+          .foregroundStyle(SwarmHalo.background)
           .offset(x: 1)
       }
       .frame(width: 36, height: 36)
       HStack(spacing: 2) {
         ForEach(0..<24, id: \.self) { i in
           Capsule()
-            .fill(Color.white.opacity(0.18 + (Double(i) / 30) * 0.50))
+            .fill(SwarmHalo.ink.opacity(0.18 + (Double(i) / 30) * 0.50))
             .frame(width: 2.5, height: CGFloat(8 + abs(sin(Double(i) * 1.4)) * 18))
         }
       }

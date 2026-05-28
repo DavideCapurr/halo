@@ -15,16 +15,23 @@ struct DiscoveryView: View {
   var body: some View {
     ZStack {
       DeepSpaceBackground()
-      VStack(spacing: 14) {
+      VStack(spacing: SwarmHalo.s3) {
         topBar
         searchField
         ScrollView {
           LazyVStack(spacing: 8) {
             if !query.isEmpty {
-              header("RISULTATI")
+              header("risultati")
               ForEach(results, id: \.id) { p in row(p) }
+              if results.isEmpty && !isLoading {
+                SwarmEmptyState(
+                  title: "nessun segnale.",
+                  message: "cerca handle, artisti o account pubblici.",
+                  activation: .rest
+                )
+              }
             } else {
-              header("DA SCOPRIRE")
+              header("da scoprire")
               ForEach(trending, id: \.id) { p in row(p) }
             }
           }
@@ -34,7 +41,8 @@ struct DiscoveryView: View {
       }
       .padding(.top, 14)
       if isLoading {
-        ProgressView().tint(.white)
+        SwarmLoadingState(label: "sync discovery")
+          .padding(.horizontal, SwarmHalo.s4)
       }
     }
     .preferredColorScheme(.dark)
@@ -47,22 +55,14 @@ struct DiscoveryView: View {
   // MARK: - subviews
 
   private var topBar: some View {
-    HStack {
+    SwarmOperationalRail(title: "HALO / DISCOVERY", context: "public asteroids", activation: .operational) {
       Button(action: onClose) {
         Image(systemName: "xmark")
-          .font(.system(size: 14, weight: .semibold))
-          .foregroundStyle(.white.opacity(0.85))
-          .frame(width: 32, height: 32)
-          .background(.white.opacity(0.06), in: Circle())
+          .font(HaloType.system(14, weight: .semibold))
+          .foregroundStyle(SwarmHalo.inkSecondary)
+          .swarmIconFrame()
       }
       .buttonStyle(.plain)
-      Spacer()
-      Text("ESPLORA")
-        .font(HaloType.eyebrow(11))
-        .kerning(2.4)
-        .foregroundStyle(HaloInk.creamMute)
-      Spacer()
-      Color.clear.frame(width: 32, height: 32)
     }
     .padding(.horizontal, 18)
   }
@@ -71,22 +71,20 @@ struct DiscoveryView: View {
     HStack(spacing: 10) {
       Image(systemName: "magnifyingglass")
         .foregroundStyle(HaloInk.creamMute)
-      TextField("cerca artisti, brand, voci…", text: $query)
+      TextField("cerca artisti, brand, voci", text: $query)
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
         .foregroundStyle(HaloInk.cream)
         .font(HaloType.ui(14, weight: .regular))
     }
     .padding(.horizontal, 14).padding(.vertical, 12)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
+    .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
     .padding(.horizontal, 16)
   }
 
   private func header(_ text: String) -> some View {
     Text(text)
-      .font(HaloType.eyebrow(10))
-      .kerning(2.0)
-      .foregroundStyle(HaloInk.creamMute)
+      .haloEyebrow(HaloInk.creamMute, size: 8.5, tracking: 2.0)
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.top, 8)
       .padding(.bottom, 2)
@@ -105,7 +103,7 @@ struct DiscoveryView: View {
             .font(HaloType.serif(16, weight: .regular))
             .foregroundStyle(HaloInk.cream)
           Image(systemName: "checkmark.seal.fill")
-            .font(.system(size: 10))
+            .font(HaloType.system(10))
             .foregroundStyle(MoodPalette.auraColor(.electric, l: 0.85))
         }
         Text("@\(p.handle)")
@@ -125,7 +123,7 @@ struct DiscoveryView: View {
       .buttonStyle(.plain)
     }
     .padding(.horizontal, 12).padding(.vertical, 10)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
+    .swarmSurface(.card, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: on ? .rest : .operational)
   }
 
   // MARK: - actions

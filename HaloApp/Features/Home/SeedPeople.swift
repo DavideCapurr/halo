@@ -1,12 +1,12 @@
 import Foundation
 import HaloShared
 
-/// Modello "demo" leggero per popolare l'orbital field finché Auth + Realtime
-/// non sono pronti. Equivalente del PEOPLE array del prototipo design.
+/// Presentation node used by Orbit, Pulse, HaloSpace and widgets.
 ///
-/// `lastPostAt`/`hasActiveVibe`/`isMutual` alimentano le bolle vive (Phase 2)
-/// e la separazione mutuali ↔ asteroidi.
-struct DemoPerson: Identifiable, Hashable {
+/// The production UI should reason in terms of person nodes: identity,
+/// proximity, current vibe, activity and graph symmetry. Seed data below is
+/// only one source that can hydrate this shape.
+struct HaloPersonNode: Identifiable, Hashable {
   let id: String
   let handle: String
   let name: String
@@ -44,13 +44,57 @@ struct DemoPerson: Identifiable, Hashable {
     self.hasActiveVibe = hasActiveVibe
     self.isMutual = isMutual
   }
+
+  init(item: MomentItem) {
+    self.id = item.profile.id.uuidString
+    self.handle = item.profile.handle
+    self.name = item.profile.displayName
+    self.tier = item.viewerTier ?? .nebula
+    self.mood = item.vibe?.mood ?? item.lastPost?.mood ?? .chill
+    self.note = item.vibe?.note ?? item.lastPost?.caption ?? ""
+    self.hasNew = Date.now.timeIntervalSince(item.lastActivityAt) <= 30 * 60
+    self.lastPostAt = item.lastPost?.createdAt
+    self.hasActiveVibe = item.vibe != nil
+    self.isMutual = item.isMutual
+  }
+}
+
+struct HaloMomentPresentation: Identifiable, Hashable {
+  enum Kind: Hashable {
+    case vibe
+    case message
+    case photo
+    case text
+    case audio
+    case moodChange
+  }
+
+  let id: String
+  var person: HaloPersonNode
+  var kind: Kind
+  var title: String
+  var body: String
+  var createdAt: Date
+  var audience: FriendshipTier
+  var isMine: Bool
+
+  var isLive: Bool {
+    Date.now.timeIntervalSince(createdAt) <= 30 * 60
+  }
+}
+
+struct HaloScopePresentation: Identifiable, Hashable {
+  let id: String
+  let title: String
+  let subtitle: String
+  let visibleTiers: Set<FriendshipTier>
 }
 
 private func minutesAgo(_ m: Double) -> Date { Date.now.addingTimeInterval(-m * 60) }
 private func hoursAgo(_ h: Double) -> Date   { Date.now.addingTimeInterval(-h * 3600) }
 
 enum SeedPeople {
-  static let me = DemoPerson(
+  static let me = HaloPersonNode(
     id: "self",
     handle: "you",
     name: "tu",
@@ -63,7 +107,7 @@ enum SeedPeople {
     isMutual: true
   )
 
-  static let all: [DemoPerson] = [
+  static let all: [HaloPersonNode] = [
     // Inner (5)
     .init(id: "p01", handle: "gia",   name: "Giacomo",   tier: .inner, mood: .warm,     note: "in loggia, vieni?",        hasNew: true,  lastPostAt: minutesAgo(12), hasActiveVibe: true),
     .init(id: "p02", handle: "fra",   name: "Francesca", tier: .inner, mood: .soft,     note: "pioggia sul tetto",        hasNew: true,  lastPostAt: minutesAgo(48), hasActiveVibe: true),
@@ -100,8 +144,17 @@ enum SeedPeople {
     .init(id: "p29", handle: "eva",   name: "Eva",       tier: .orbit, mood: .blue,     note: "", hasNew: false, lastPostAt: hoursAgo(45), hasActiveVibe: false),
   ]
 
+  // Mutuali esplicitamente depriorizzati: amici reali che l'utente ha "buttato
+  // fuori" dai 4 anelli trascinandoli oltre il bordo. Restano nel grafo ma
+  // vivono nella cintura asteroidi con stile attenuato.
+  static let demoted: [HaloPersonNode] = [
+    .init(id: "d01", handle: "kev",  name: "Kevin",  tier: .asteroid, mood: .chill, note: "", hasNew: false, lastPostAt: hoursAgo(30), hasActiveVibe: false, isMutual: true),
+    .init(id: "d02", handle: "luna", name: "Luna",   tier: .asteroid, mood: .blue,  note: "", hasNew: false, lastPostAt: hoursAgo(70), hasActiveVibe: false, isMutual: true),
+    .init(id: "d03", handle: "rik",  name: "Riccardo", tier: .asteroid, mood: .lost, note: "", hasNew: false, lastPostAt: nil,        hasActiveVibe: false, isMutual: true),
+  ]
+
   // Asteroidi: account pubblici / artisti / brand seguiti in modo asimmetrico.
-  static let asteroids: [DemoPerson] = [
+  static let asteroids: [HaloPersonNode] = [
     .init(id: "a01", handle: "mura",   name: "Mura",       tier: .nebula, mood: .electric, note: "", hasNew: false, lastPostAt: hoursAgo(3),  hasActiveVibe: true,  isMutual: false),
     .init(id: "a02", handle: "noir",   name: "Noir",       tier: .nebula, mood: .wild,     note: "", hasNew: false, lastPostAt: hoursAgo(11), hasActiveVibe: true,  isMutual: false),
     .init(id: "a03", handle: "atlas",  name: "Atlas",      tier: .nebula, mood: .focused,  note: "", hasNew: false, lastPostAt: hoursAgo(22), hasActiveVibe: false, isMutual: false),

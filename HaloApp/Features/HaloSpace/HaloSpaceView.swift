@@ -6,14 +6,14 @@ import HaloShared
 /// Swipe orizzontale per navigare tra persone dello stesso tier (passate come `peers`).
 /// Stato empty con mood se non ha post attivi.
 struct HaloSpaceView: View {
-  let initialPerson: DemoPerson
+  let initialPerson: HaloPersonNode
   /// Persone dello stesso tier per il navigation swipe orizzontale.
-  let peers: [DemoPerson]
+  let peers: [HaloPersonNode]
   var onClose: () -> Void = {}
 
   @State private var index: Int
 
-  init(person: DemoPerson, peers: [DemoPerson], onClose: @escaping () -> Void = {}) {
+  init(person: HaloPersonNode, peers: [HaloPersonNode], onClose: @escaping () -> Void = {}) {
     self.initialPerson = person
     self.peers = peers.isEmpty ? [person] : peers
     self.onClose = onClose
@@ -21,7 +21,7 @@ struct HaloSpaceView: View {
     self._index = State(initialValue: i)
   }
 
-  private var current: DemoPerson { peers[index] }
+  private var current: HaloPersonNode { peers[index] }
 
   var body: some View {
     ZStack {
@@ -35,7 +35,7 @@ struct HaloSpaceView: View {
           }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-        .animation(.easeInOut(duration: 0.25), value: index)
+        .animation(SwarmHalo.easeSwarm(0.25), value: index)
       }
     }
     .preferredColorScheme(.dark)
@@ -47,19 +47,23 @@ struct HaloSpaceView: View {
     HStack {
       Button(action: onClose) {
         Image(systemName: "xmark")
-          .font(.system(size: 14, weight: .semibold))
-          .foregroundStyle(.white.opacity(0.85))
+          .font(HaloType.system(14, weight: .semibold))
+          .foregroundStyle(SwarmHalo.inkSecondary)
           .frame(width: 32, height: 32)
-          .background(.white.opacity(0.06), in: Circle())
+          .background(SwarmHalo.inkWhisper, in: Circle())
       }
       .buttonStyle(.plain)
       Spacer()
-      if peers.count > 1 {
-        HStack(spacing: 4) {
-          ForEach(0..<peers.count, id: \.self) { i in
-            Circle()
-              .fill(i == index ? Color.white.opacity(0.85) : Color.white.opacity(0.20))
-              .frame(width: 5, height: 5)
+      VStack(spacing: 5) {
+        Text("HALO / SPACE")
+          .haloEyebrow(current.tier.swarmHaloState.accent, size: 8, tracking: 2.2)
+        if peers.count > 1 {
+          HStack(spacing: 4) {
+            ForEach(0..<peers.count, id: \.self) { i in
+              Circle()
+                .fill(i == index ? SwarmHalo.ink.opacity(0.85) : SwarmHalo.ink.opacity(0.20))
+                .frame(width: 5, height: 5)
+            }
           }
         }
       }
@@ -73,7 +77,7 @@ struct HaloSpaceView: View {
 // MARK: - single page (header + post list)
 
 private struct HaloSpacePage: View {
-  let person: DemoPerson
+  let person: HaloPersonNode
   @State private var posts: [HaloPost] = []
   @State private var isLoading: Bool = true
 
@@ -81,11 +85,13 @@ private struct HaloSpacePage: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
         header
+        spaceLedger
         if isLoading {
-          ProgressView().tint(.white).padding(40).frame(maxWidth: .infinity)
+          ProgressView().tint(SwarmHalo.ink).padding(40).frame(maxWidth: .infinity)
         } else if posts.isEmpty {
           emptyState
         } else {
+          streamHeader
           ForEach(posts, id: \.id) { post in
             PostCardView(
               post: post,
@@ -106,7 +112,7 @@ private struct HaloSpacePage: View {
   // MARK: - header
 
   private var header: some View {
-    HStack(spacing: 16) {
+    VStack(spacing: 14) {
       ZStack {
         Circle()
           .fill(
@@ -117,18 +123,21 @@ private struct HaloSpacePage: View {
           )
           .frame(width: 130, height: 130)
         Circle()
-          .fill(MoodPalette.auraColor(person.mood, l: 0.72))
+          .fill(person.tier.swarmHaloState.ringFill)
           .frame(width: 96, height: 96)
-          .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 12)
-        PortraitView(personId: person.id, size: 88)
+          .overlay(Circle().strokeBorder(person.tier.swarmHaloState.stroke, lineWidth: 1))
+          .shadow(color: person.tier.swarmHaloState.glow, radius: 12)
+        PortraitView(personId: person.id, size: 88, grayscale: true)
           .background(HaloTheme.portraitBacking, in: Circle())
       }
       .frame(width: 130, height: 130)
 
-      VStack(alignment: .leading, spacing: 6) {
-        Text(person.name)
-          .font(HaloType.serif(28, weight: .regular))
+      VStack(spacing: 7) {
+        Text(person.name.lowercased())
+          .font(HaloType.serif(40, weight: .regular))
           .foregroundStyle(HaloInk.cream)
+          .lineLimit(1)
+          .minimumScaleFactor(0.70)
         HStack(spacing: 8) {
           Text("@\(person.handle)")
             .font(HaloType.ui(13, weight: .regular))
@@ -151,12 +160,16 @@ private struct HaloSpacePage: View {
                 .lineLimit(1)
             }
           }
-          .padding(.top, 2)
+          .padding(.horizontal, 12)
+          .padding(.vertical, 7)
+          .background(Capsule().fill(SwarmHalo.inkWhisper))
+          .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
         }
       }
-      Spacer(minLength: 0)
     }
-    .padding(.top, 6).padding(.bottom, 4)
+    .frame(maxWidth: .infinity)
+    .padding(.top, 10)
+    .padding(.bottom, 4)
   }
 
   private var tierBadge: some View {
@@ -164,38 +177,72 @@ private struct HaloSpacePage: View {
       .font(HaloType.eyebrow(9))
       .kerning(1.8)
       .textCase(.uppercase)
-      .foregroundStyle(HaloInk.creamLow)
+      .foregroundStyle(person.tier.swarmHaloState.accent)
       .padding(.horizontal, 7)
       .padding(.vertical, 2.5)
-      .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(person.mood, l: 0.50))
+      .haloGlass(in: Capsule(), tint: person.tier.swarmHaloState.accent.opacity(0.18))
+  }
+
+  private var spaceLedger: some View {
+    HStack(spacing: 0) {
+      ledgerCell("tier", person.tier.label)
+      ledgerDivider
+      ledgerCell("vibe", person.hasActiveVibe ? person.mood.rawValue : "rest")
+      ledgerDivider
+      ledgerCell("Moment", isLoading ? "--" : String(format: "%02d", posts.count))
+    }
+    .padding(.vertical, 12)
+    .background(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .fill(.ultraThinMaterial)
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    )
+  }
+
+  private func ledgerCell(_ label: String, _ value: String) -> some View {
+    VStack(spacing: 4) {
+      Text(value)
+        .font(HaloType.mono(13, weight: .semibold))
+        .kerning(0.8)
+        .foregroundStyle(label == "tier" ? person.tier.swarmHaloState.accent : HaloInk.cream)
+        .lineLimit(1)
+        .minimumScaleFactor(0.72)
+      Text(label)
+        .haloEyebrow(HaloInk.creamMute, size: 7.4, tracking: 1.7)
+    }
+    .frame(maxWidth: .infinity)
+  }
+
+  private var ledgerDivider: some View {
+    Rectangle()
+      .fill(HaloInk.creamLine)
+      .frame(width: 0.5, height: 26)
+  }
+
+  private var streamHeader: some View {
+    HStack(spacing: 10) {
+      Text("Moment")
+        .haloEyebrow(HaloInk.creamMute, size: 8.5, tracking: 2.0)
+      Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
+      Text("72H")
+        .font(HaloType.mono(8.5, weight: .medium))
+        .kerning(1.2)
+        .foregroundStyle(HaloInk.creamMute)
+    }
+    .padding(.top, 2)
   }
 
   // MARK: - empty state
 
   private var emptyState: some View {
-    VStack(spacing: 14) {
-      ZStack {
-        Circle()
-          .fill(
-            RadialGradient(
-              colors: [MoodPalette.auraRing(person.mood, alpha: 0.30), .clear],
-              center: .center, startRadius: 0, endRadius: 70
-            )
-          )
-          .frame(width: 130, height: 130)
-        Circle()
-          .strokeBorder(MoodPalette.auraColor(person.mood, l: 0.55).opacity(0.5), style: .init(lineWidth: 1, dash: [3, 4]))
-          .frame(width: 64, height: 64)
-      }
-      Text("halospace silenzioso.")
-        .font(HaloType.serif(22, weight: .regular))
-        .foregroundStyle(HaloInk.cream)
-      Text("nessun momento attivo nelle ultime 72h.")
-        .font(HaloType.ui(13, weight: .regular))
-        .foregroundStyle(HaloInk.creamLow)
-    }
-    .frame(maxWidth: .infinity)
-    .padding(.vertical, 32)
+    SwarmEmptyState(
+      title: "halo silenzioso.",
+      message: "nessun Moment attivo nelle ultime 72h.",
+      activation: .rest
+    )
   }
 
   // MARK: - load
@@ -214,7 +261,7 @@ private struct HaloSpacePage: View {
     posts = demoPosts(for: person)
   }
 
-  private func demoPosts(for p: DemoPerson) -> [HaloPost] {
+  private func demoPosts(for p: HaloPersonNode) -> [HaloPost] {
     guard let lastPostAt = p.lastPostAt else { return [] }
     let owner = UUID()
     var out: [HaloPost] = []

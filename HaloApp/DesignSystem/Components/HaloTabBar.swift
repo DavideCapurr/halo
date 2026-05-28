@@ -1,7 +1,7 @@
 import SwiftUI
 import HaloShared
 
-/// Pulse-style tab bar: glass surface, clear labels, one central compose action.
+/// SWARM command dock: navigation nodes plus one central Moment action.
 struct HaloTabBar: View {
   enum Tab: String, Hashable, CaseIterable {
     case orbit
@@ -12,7 +12,7 @@ struct HaloTabBar: View {
       switch self {
       case .orbit: return "Orbita"
       case .pulse: return "Pulse"
-      case .profile: return "Tu"
+      case .profile: return "Halo"
       }
     }
 
@@ -37,27 +37,10 @@ struct HaloTabBar: View {
       composeSlot
       tabSlot(.profile)
     }
-    .padding(.horizontal, 12)
-    .padding(.vertical, 8)
-    .background(
-      RoundedRectangle(cornerRadius: 24, style: .continuous)
-        .fill(.ultraThinMaterial)
-        .overlay(
-          RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .fill(
-              LinearGradient(
-                colors: [Color.white.opacity(0.04), .clear, Color.black.opacity(0.12)],
-                startPoint: .top,
-                endPoint: .bottom
-              )
-            )
-        )
-    )
-    .overlay(
-      RoundedRectangle(cornerRadius: 24, style: .continuous)
-        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
-    )
-    .shadow(color: .black.opacity(0.42), radius: 22, y: 12)
+    .padding(.horizontal, SwarmHalo.s3)
+    .padding(.vertical, SwarmHalo.s2)
+    .swarmSurface(.rail, in: Capsule())
+    .shadow(color: SwarmHalo.absoluteBlack.opacity(0.42), radius: 22, y: 12)
     .padding(.horizontal, 18)
   }
 
@@ -68,22 +51,22 @@ struct HaloTabBar: View {
     } label: {
       VStack(spacing: 4) {
         Image(systemName: tab.icon)
-          .font(.system(size: 15, weight: .medium))
+          .font(HaloType.system(15, weight: .medium))
         Text(tab.label)
           .font(HaloType.eyebrow(8.5))
           .kerning(1.6)
           .textCase(.uppercase)
       }
-      .foregroundStyle(isActive ? HaloInk.cream : HaloInk.creamMute)
+      .foregroundStyle(isActive ? activeRole(for: tab).color : SwarmHalo.inkMuted)
       .frame(maxWidth: .infinity)
       .frame(height: 44)
       .background(
         Capsule()
-          .fill(isActive ? HaloInk.creamWhisper : .clear)
+          .fill(isActive ? activeRole(for: tab).fill : .clear)
       )
       .overlay(
         Capsule()
-          .strokeBorder(isActive ? HaloInk.creamLine : .clear, lineWidth: 0.5)
+          .strokeBorder(isActive ? activeRole(for: tab).stroke : .clear, lineWidth: SwarmStroke.hairline)
       )
       .contentShape(Rectangle())
     }
@@ -96,17 +79,25 @@ struct HaloTabBar: View {
     Button(action: onCompose) {
       ZStack {
         Circle()
-          .fill(MoodPalette.auraColor(selfMood, l: 0.70))
-          .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.45), radius: 10)
+          .fill(SwarmActivationRole.attention.color)
+          .shadow(color: SwarmActivationRole.attention.glow, radius: 12)
         Image(systemName: "plus")
-          .font(.system(size: 18, weight: .bold))
-          .foregroundStyle(.white)
+          .font(HaloType.system(18, weight: .bold))
+          .foregroundStyle(SwarmHalo.background)
       }
       .frame(width: 46, height: 46)
       .contentShape(Circle())
     }
     .buttonStyle(.plain)
-    .accessibilityLabel("Pubblica")
+    .accessibilityLabel("Nuovo Moment")
+  }
+
+  private func activeRole(for tab: Tab) -> SwarmActivationRole {
+    switch tab {
+    case .orbit: return .connected
+    case .pulse: return .operational
+    case .profile: return .rest
+    }
   }
 }
 

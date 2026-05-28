@@ -8,7 +8,7 @@ struct DeepSpaceBackground: View {
 
   var body: some View {
     ZStack {
-      SwarmHalo.warmBlack
+      SwarmHalo.background
 
       // vignette (warm/cool shift in base al tema)
       RadialGradient(
@@ -38,17 +38,20 @@ struct DeepSpaceBackground: View {
 
   private var vignetteColors: [Color] {
     switch theme {
-    case .aurora:   return [Color(hex: "#050510"), Color(hex: "#020205"), SwarmHalo.absoluteBlack]
-    case .dusk:     return [Color(hex: "#0a0805"), Color(hex: "#050402"), SwarmHalo.absoluteBlack]
-    case .nocturne: return [Color(hex: "#0a0809"), Color(hex: "#050404"), SwarmHalo.absoluteBlack]
+    case .aurora:
+      return [SwarmHalo.platinum.opacity(0.030), SwarmHalo.platinum.opacity(0.010), SwarmHalo.absoluteBlack]
+    case .dusk:
+      return [SwarmHalo.platinum.opacity(0.026), SwarmHalo.platinum.opacity(0.010), SwarmHalo.absoluteBlack]
+    case .nocturne:
+      return [SwarmHalo.platinum.opacity(0.026), SwarmHalo.platinum.opacity(0.010), SwarmHalo.absoluteBlack]
     }
   }
 
   private var nebulaColor: Color {
     switch theme {
-    case .aurora:   return Color.fromOKLCH(l: 0.32, c: 0.05, h: 260, alpha: 0.12)
-    case .dusk:     return Color.fromOKLCH(l: 0.30, c: 0.04, h: 20,  alpha: 0.10)
-    case .nocturne: return Color.fromOKLCH(l: 0.28, c: 0.04, h: 220, alpha: 0.08)
+    case .aurora:   return SwarmHalo.platinum.opacity(0.055)
+    case .dusk:     return SwarmHalo.platinum.opacity(0.045)
+    case .nocturne: return SwarmHalo.platinum.opacity(0.035)
     }
   }
 }
@@ -97,9 +100,9 @@ private struct Starfield: View {
             let phase = sin((t / (4 + star.delay)) * .pi * 2 + star.delay)
             let twinkle = 0.7 + 0.3 * phase
             Circle()
-              .fill(Color.white.opacity(star.opacity * twinkle))
+              .fill(SwarmHalo.ink.opacity(star.opacity * twinkle))
               .frame(width: star.size, height: star.size)
-              .shadow(color: star.size > 1 ? .white.opacity(0.5) : .clear, radius: star.size * 2)
+              .shadow(color: star.size > 1 ? SwarmHalo.ink.opacity(0.5) : .clear, radius: star.size * 2)
               .position(x: star.x * geo.size.width, y: star.y * geo.size.height)
           }
         }

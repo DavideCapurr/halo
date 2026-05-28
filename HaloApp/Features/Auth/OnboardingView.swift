@@ -28,14 +28,14 @@ struct OnboardingView: View {
       DeepSpaceBackground()
       ScrollView {
         VStack(spacing: 22) {
-          eyebrow
+          manifesto
           avatarPicker
           handleField
           nameField
           if let err = errorMessage {
             Text(err)
               .font(HaloType.ui(12, weight: .regular))
-              .foregroundStyle(SwarmHalo.warmMagenta)
+              .foregroundStyle(SwarmHalo.launchAmber)
           }
           Spacer().frame(height: 12)
           ctaButton
@@ -45,7 +45,8 @@ struct OnboardingView: View {
         .padding(.bottom, 40)
       }
       if isWorking {
-        ProgressView().tint(.white)
+        SwarmLoadingState(label: "save profile")
+          .padding(.horizontal, SwarmHalo.s6)
       }
     }
     .preferredColorScheme(.dark)
@@ -53,15 +54,16 @@ struct OnboardingView: View {
 
   // MARK: - subviews
 
-  private var eyebrow: some View {
+  private var manifesto: some View {
     VStack(alignment: .leading, spacing: 6) {
-      Text("BENVENUTO IN HALO")
-        .font(HaloType.eyebrow(11))
-        .kerning(2.4)
-        .foregroundStyle(HaloInk.creamMute)
+      Text("HALO / IDENTITY")
+        .haloEyebrow(SwarmHalo.inkSecondary, size: 9, tracking: 2.2)
       Text("come ti chiami qui dentro.")
-        .font(HaloType.serif(28, weight: .regular))
-        .foregroundStyle(HaloInk.cream)
+        .font(HaloType.serif(34, weight: .regular))
+        .foregroundStyle(SwarmHalo.ink)
+      Text("handle pubblico. halo privato.")
+        .font(HaloType.ui(13, weight: .regular))
+        .foregroundStyle(SwarmHalo.inkSecondary)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }
@@ -81,11 +83,11 @@ struct OnboardingView: View {
             .background(HaloTheme.portraitBacking, in: Circle())
         }
         Image(systemName: "camera.fill")
-          .font(.system(size: 12, weight: .bold))
-          .foregroundStyle(.black)
+          .font(HaloType.system(12, weight: .bold))
+          .foregroundStyle(SwarmHalo.background)
           .frame(width: 32, height: 32)
-          .background(Color.white, in: Circle())
-          .overlay(Circle().strokeBorder(Color.black.opacity(0.4), lineWidth: 2))
+          .background(SwarmHalo.ink, in: Circle())
+          .overlay(Circle().strokeBorder(SwarmHalo.background.opacity(0.4), lineWidth: 2))
           .offset(x: 38, y: 38)
       }
     }
@@ -117,7 +119,7 @@ struct OnboardingView: View {
           }
       }
       .padding(.horizontal, 14).padding(.vertical, 12)
-      .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
+      .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
     }
   }
 
@@ -130,7 +132,7 @@ struct OnboardingView: View {
       TextField("come vuoi essere chiamato", text: $displayName)
         .foregroundStyle(HaloInk.cream)
         .padding(.horizontal, 14).padding(.vertical, 12)
-        .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
+        .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
     }
   }
 
@@ -141,18 +143,12 @@ struct OnboardingView: View {
     } label: {
       Text("inizia")
         .font(HaloType.ui(15, weight: .semibold))
-        .foregroundStyle(HaloInk.cream)
+        .foregroundStyle(SwarmHalo.background)
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(
-          LinearGradient(
-            colors: [MoodPalette.auraColor(.warm, l: 0.78), MoodPalette.auraColor(.warm, l: 0.55)],
-            startPoint: .top, endPoint: .bottom
-          ),
-          in: RoundedRectangle(cornerRadius: 14)
-        )
-        .shadow(color: MoodPalette.auraRing(.warm, alpha: 0.4), radius: 12, y: 4)
-        .haloGlass(in: RoundedRectangle(cornerRadius: 14), tint: MoodPalette.auraColor(.warm, l: 0.55), interactive: true)
+        .background(SwarmActivationRole.connected.color, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous).strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: SwarmStroke.standard))
+        .shadow(color: SwarmActivationRole.connected.glow, radius: 12, y: 4)
     }
     .buttonStyle(.plain)
     .disabled(disabled)

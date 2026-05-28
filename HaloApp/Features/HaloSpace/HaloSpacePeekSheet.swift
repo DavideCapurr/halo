@@ -8,12 +8,12 @@ import HaloShared
 ///  - 3 finte halo posts (foto / testo / audio)
 ///  - reaction bar con i 6 glyph custom
 struct HaloSpacePeekSheet: View {
-  let person: DemoPerson
+  let person: HaloPersonNode
   @State private var selectedReactions: Set<String> = []
 
   private let posts: [DemoPost]
 
-  init(person: DemoPerson) {
+  init(person: HaloPersonNode) {
     self.person = person
     self.posts = [
       DemoPost(id: 1, kind: .photo, caption: person.note.isEmpty ? "oggi così" : person.note, ago: "2h"),
@@ -57,10 +57,11 @@ struct HaloSpacePeekSheet: View {
           )
           .frame(width: 88, height: 88)
         Circle()
-          .fill(MoodPalette.auraColor(person.mood, l: 0.72))
+          .fill(person.tier.swarmHaloState.ringFill)
           .frame(width: 68, height: 68)
-          .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 9)
-        PortraitView(personId: person.id, size: 62)
+          .overlay(Circle().strokeBorder(person.tier.swarmHaloState.stroke, lineWidth: 0.8))
+          .shadow(color: person.tier.swarmHaloState.glow, radius: 9)
+        PortraitView(personId: person.id, size: 62, grayscale: true)
           .background(HaloTheme.portraitBacking, in: Circle())
       }
       .frame(width: 68, height: 68)
@@ -97,7 +98,7 @@ struct HaloSpacePeekSheet: View {
       Spacer(minLength: 0)
     }
     .padding(.horizontal, 14).padding(.vertical, 10)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: 14))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
     .padding(.horizontal, 20).padding(.bottom, 16)
   }
 
@@ -112,8 +113,8 @@ struct HaloSpacePeekSheet: View {
       }
       reactionsRow(for: post)
     }
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: 18))
-    .clipShape(RoundedRectangle(cornerRadius: 18))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
+    .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
   }
 
   private func photoBody(_ post: DemoPost) -> some View {
@@ -138,7 +139,7 @@ struct HaloSpacePeekSheet: View {
           path.addLine(to: CGPoint(x: x + size.height, y: 0))
           x += step
         }
-        ctx.stroke(path, with: .color(.white), lineWidth: 0.5)
+        ctx.stroke(path, with: .color(SwarmHalo.ink.opacity(0.50)), lineWidth: 0.5)
       }
       .frame(height: 160)
 
@@ -155,7 +156,7 @@ struct HaloSpacePeekSheet: View {
           .foregroundStyle(HaloInk.cream)
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 16).padding(.vertical, 10)
-          .background(Color.black.opacity(0.0))
+          .background(SwarmHalo.absoluteBlack.opacity(0.0))
           .offset(y: 50)
       }
     }
@@ -181,8 +182,8 @@ struct HaloSpacePeekSheet: View {
       ZStack {
         Circle().fill(MoodPalette.auraColor(person.mood, l: 0.7))
         Image(systemName: "play.fill")
-          .font(.system(size: 12, weight: .bold))
-          .foregroundStyle(.white)
+          .font(HaloType.system(12, weight: .bold))
+          .foregroundStyle(SwarmHalo.background)
           .offset(x: 1)
       }
       .frame(width: 38, height: 38)
@@ -192,7 +193,7 @@ struct HaloSpacePeekSheet: View {
         HStack(spacing: 2) {
           ForEach(0..<22, id: \.self) { i in
             Capsule()
-              .fill(Color.white.opacity(0.15 + (Double(i) / 28) * 0.4))
+              .fill(SwarmHalo.ink.opacity(0.15 + (Double(i) / 28) * 0.4))
               .frame(width: 3, height: CGFloat(7 + abs(sin(Double(i) * 1.4)) * 17))
           }
         }
@@ -219,18 +220,18 @@ struct HaloSpacePeekSheet: View {
           ReactionGlyph(
             kind: r,
             size: 18,
-            color: on ? MoodPalette.auraColor(person.mood, l: 0.85) : Color.white.opacity(0.45)
+            color: on ? MoodPalette.auraColor(person.mood, l: 0.85) : SwarmHalo.ink.opacity(0.45)
           )
           .frame(maxWidth: .infinity)
           .padding(.vertical, 8)
-          .background(on ? Color.white.opacity(0.08) : Color.clear, in: RoundedRectangle(cornerRadius: 10))
+          .background(on ? SwarmHalo.ink.opacity(0.08) : Color.clear, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
         }
         .buttonStyle(.plain)
       }
     }
     .padding(.horizontal, 10).padding(.vertical, 8)
     .overlay(alignment: .top) {
-      Rectangle().fill(Color.white.opacity(0.06)).frame(height: 0.5)
+      Rectangle().fill(SwarmHalo.inkWhisper).frame(height: 0.5)
     }
   }
 }
