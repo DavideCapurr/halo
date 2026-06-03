@@ -18,7 +18,8 @@ final class PostsService {
     mediaPath: String?,
     caption: String?,
     mood: Mood?,
-    minTier: FriendshipTier = .inner
+    minTier: FriendshipTier = .inner,
+    lifespan: PostLifespan = .standard
   ) async throws -> HaloPost {
     guard let userId = AuthService.shared.currentUserId() else {
       throw PostsError.notAuthenticated
@@ -29,7 +30,8 @@ final class PostsService {
       mediaPath: mediaPath,
       caption: caption,
       mood: mood,
-      minTier: minTier
+      minTier: minTier,
+      lifespan: lifespan
     )
     let inserted: HaloPost = try await client
       .from("halo_posts")
