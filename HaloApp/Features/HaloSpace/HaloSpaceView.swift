@@ -12,6 +12,8 @@ struct HaloSpaceView: View {
   var onClose: () -> Void = {}
 
   @State private var index: Int
+  @State private var inviteTarget: HaloPersonNode?
+  @State private var reportTarget: HaloPersonNode?
 
   init(person: HaloPersonNode, peers: [HaloPersonNode], onClose: @escaping () -> Void = {}) {
     self.initialPerson = person
@@ -39,6 +41,12 @@ struct HaloSpaceView: View {
       }
     }
     .preferredColorScheme(.dark)
+    .sheet(item: $inviteTarget) { person in
+      InnerInviteSheet(person: person)
+    }
+    .sheet(item: $reportTarget) { person in
+      ReportUserSheet(person: person)
+    }
   }
 
   // MARK: - top row (close + paginator dots)
@@ -68,7 +76,33 @@ struct HaloSpaceView: View {
         }
       }
       Spacer()
-      Color.clear.frame(width: 32, height: 32)
+      HStack(spacing: 8) {
+        Button {
+          inviteTarget = current
+        } label: {
+          Image(systemName: "person.badge.plus")
+            .font(HaloType.system(13, weight: .semibold))
+            .foregroundStyle(SwarmActivationRole.connected.color)
+            .frame(width: 32, height: 32)
+            .background(SwarmActivationRole.connected.color.opacity(0.12), in: Circle())
+            .overlay(Circle().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: 0.6))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Invita \(current.name) nel tuo Inner")
+
+        Button {
+          reportTarget = current
+        } label: {
+          Image(systemName: "exclamationmark.triangle")
+            .font(HaloType.system(13, weight: .semibold))
+            .foregroundStyle(SwarmHalo.launchAmber)
+            .frame(width: 32, height: 32)
+            .background(SwarmHalo.launchAmber.opacity(0.12), in: Circle())
+            .overlay(Circle().strokeBorder(SwarmHalo.launchAmber.opacity(0.32), lineWidth: 0.6))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Segnala \(current.name)")
+      }
     }
     .padding(.horizontal, 18).padding(.vertical, 12)
   }
@@ -80,6 +114,7 @@ private struct HaloSpacePage: View {
   let person: HaloPersonNode
   @State private var posts: [HaloPost] = []
   @State private var isLoading: Bool = true
+  @State private var lastError: String?
 
   var body: some View {
     ScrollView {
@@ -88,6 +123,8 @@ private struct HaloSpacePage: View {
         spaceLedger
         if isLoading {
           ProgressView().tint(SwarmHalo.ink).padding(40).frame(maxWidth: .infinity)
+        } else if let lastError {
+          errorState(lastError)
         } else if posts.isEmpty {
           emptyState
         } else {
@@ -247,42 +284,267 @@ private struct HaloSpacePage: View {
 
   // MARK: - load
 
-  /// Demo: prova a caricare post reali; in caso di errore (no auth) genera dei placeholder
-  /// derivati da `person` per popolare l'UI. Quando auth è attiva, sostituire con il fetch puro.
   @MainActor
   private func load() async {
     isLoading = true
+    lastError = nil
     defer { isLoading = false }
-    if let userUUID = UUID(uuidString: person.id),
-       let real = try? await PostsService.shared.posts(forUser: userUUID), !real.isEmpty {
-      posts = real
+    guard let userUUID = UUID(uuidString: person.id) else {
+      posts = []
       return
     }
-    posts = demoPosts(for: person)
+    do {
+      posts = try await PostsService.shared.posts(forUser: userUUID)
+    } catch {
+      posts = []
+      lastError = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a caricare questo HaloSpace."
+      )
+    }
   }
 
-  private func demoPosts(for p: HaloPersonNode) -> [HaloPost] {
-    guard let lastPostAt = p.lastPostAt else { return [] }
-    let owner = UUID()
-    var out: [HaloPost] = []
-    out.append(HaloPost(
-      userId: owner,
-      kind: .photo,
-      caption: p.note.isEmpty ? nil : p.note,
-      mood: p.mood,
-      minTier: .inner,
-      createdAt: lastPostAt,
-      expiresAt: lastPostAt.addingTimeInterval(72 * 3600)
-    ))
-    out.append(HaloPost(
-      userId: owner,
-      kind: .text,
-      caption: "qualcosa di non detto",
-      mood: p.mood,
-      minTier: .close,
-      createdAt: lastPostAt.addingTimeInterval(-6 * 3600),
-      expiresAt: lastPostAt.addingTimeInterval(66 * 3600)
-    ))
-    return out
+  private func errorState(_ message: String) -> some View {
+    SwarmEmptyState(
+      title: "non arriva il segnale.",
+      message: message,
+      activation: .attention
+    )
+  }
+}
+
+private struct ReportUserSheet: View {
+  @Environment(\.dismiss) private var dismiss
+
+  let person: HaloPersonNode
+
+  @State private var reason: ReportReason = .harassment
+  @State private var details: String = ""
+  @State private var blockAfterSubmit: Bool = true
+  @State private var isSubmitting: Bool = false
+  @State private var didSubmit: Bool = false
+  @State private var errorMessage: String?
+
+  var body: some View {
+    VStack(spacing: 0) {
+      topRail
+        .padding(.horizontal, 18)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
+
+      ScrollView {
+        VStack(alignment: .leading, spacing: 14) {
+          if didSubmit {
+            SwarmEmptyState(
+              title: "segnale ricevuto.",
+              message: blockAfterSubmit
+                ? "\(person.name) non sara piu nella tua orbita."
+                : "il report e stato inviato a Halo.",
+              activation: .connected
+            )
+          } else {
+            reasonSection
+            detailsSection
+            blockSection
+            if let errorMessage {
+              Text(errorMessage)
+                .font(HaloType.ui(12, weight: .regular))
+                .foregroundStyle(SwarmHalo.launchAmber)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .swarmSurface(
+                  .panel,
+                  in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
+                  activation: .attention
+                )
+            }
+          }
+        }
+        .padding(.horizontal, 18)
+        .padding(.bottom, 18)
+      }
+      .scrollIndicators(.hidden)
+
+      footer
+        .padding(.horizontal, 22)
+        .padding(.vertical, 18)
+    }
+    .background(haloSheetBackground())
+    .presentationDetents([.medium, .large])
+    .presentationDragIndicator(.visible)
+    .presentationCornerRadius(HaloTheme.sheetCornerRadius)
+    .presentationBackground(.clear)
+  }
+
+  private var topRail: some View {
+    HStack(spacing: 12) {
+      VStack(alignment: .leading, spacing: 3) {
+        Text("SAFETY / REPORT")
+          .haloEyebrow(SwarmHalo.launchAmber, size: 8.5, tracking: 2.3)
+        Text(person.name.lowercased())
+          .font(HaloType.serif(24, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+      }
+      Spacer()
+      Button(action: { dismiss() }) {
+        Image(systemName: "xmark")
+          .font(HaloType.system(12, weight: .semibold))
+          .foregroundStyle(HaloInk.creamLow)
+          .frame(width: 30, height: 30)
+          .background(Circle().fill(SwarmHalo.inkWhisper))
+          .overlay(Circle().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+      }
+      .buttonStyle(.plain)
+    }
+  }
+
+  private var reasonSection: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      sectionHeader("motivo")
+      LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 8) {
+        ForEach(ReportReason.allCases) { item in
+          Button {
+            reason = item
+            HapticEngine.selection()
+          } label: {
+            HStack(spacing: 8) {
+              Circle()
+                .fill(item == reason ? SwarmHalo.launchAmber : SwarmHalo.strokeRest)
+                .frame(width: 7, height: 7)
+              Text(item.label)
+                .font(HaloType.ui(13, weight: item == reason ? .semibold : .medium))
+                .foregroundStyle(item == reason ? HaloInk.cream : HaloInk.creamLow)
+                .lineLimit(2)
+                .minimumScaleFactor(0.78)
+              Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 11)
+            .swarmSurface(
+              .control,
+              in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
+              activation: item == reason ? .attention : .rest
+            )
+          }
+          .buttonStyle(.plain)
+        }
+      }
+    }
+  }
+
+  private var detailsSection: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      sectionHeader("dettagli")
+      TextField("aggiungi contesto per la review", text: $details, axis: .vertical)
+        .textFieldStyle(.plain)
+        .font(HaloType.ui(14, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
+        .lineLimit(4, reservesSpace: true)
+        .onChange(of: details) { _, newValue in
+          if newValue.count > 500 { details = String(newValue.prefix(500)) }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+      Text("\(details.count)/500")
+        .font(HaloType.mono(10, weight: .medium))
+        .foregroundStyle(HaloInk.creamMute)
+    }
+  }
+
+  private var blockSection: some View {
+    Toggle(isOn: $blockAfterSubmit) {
+      VStack(alignment: .leading, spacing: 3) {
+        Text("blocca e rimuovi")
+          .font(HaloType.ui(14, weight: .semibold))
+          .foregroundStyle(HaloInk.cream)
+        Text("non comparira piu nella tua orbita.")
+          .font(HaloType.ui(12, weight: .regular))
+          .foregroundStyle(HaloInk.creamMute)
+      }
+    }
+    .toggleStyle(.switch)
+    .tint(SwarmHalo.launchAmber)
+    .padding(.horizontal, 14)
+    .padding(.vertical, 12)
+    .swarmSurface(
+      .panel,
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
+      activation: blockAfterSubmit ? .attention : .rest
+    )
+  }
+
+  private var footer: some View {
+    HStack {
+      if didSubmit {
+        Spacer()
+        Button("chiudi") { dismiss() }
+          .font(HaloType.ui(15, weight: .semibold))
+          .buttonStyle(.plain)
+          .foregroundStyle(HaloInk.cream)
+      } else {
+        Button("annulla") { dismiss() }
+          .font(HaloType.ui(14, weight: .medium))
+          .buttonStyle(.plain)
+          .foregroundStyle(HaloInk.creamMute)
+        Spacer()
+        Button {
+          Task { await submit() }
+        } label: {
+          Text(isSubmitting ? "invio..." : "invia")
+            .font(HaloType.ui(15, weight: .semibold))
+            .foregroundStyle(HaloInk.cream)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 12)
+            .swarmSurface(
+              .control,
+              in: Capsule(),
+              activation: .attention
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(isSubmitting)
+      }
+    }
+  }
+
+  private func sectionHeader(_ text: String) -> some View {
+    HStack(spacing: 8) {
+      Text(text)
+        .haloEyebrow(HaloInk.creamMute, size: 8.5, tracking: 2.0)
+      Rectangle()
+        .fill(HaloInk.creamLine)
+        .frame(height: 0.5)
+    }
+  }
+
+  @MainActor
+  private func submit() async {
+    guard !isSubmitting else { return }
+    guard let userId = UUID(uuidString: person.id) else {
+      errorMessage = "Questo profilo non puo essere segnalato."
+      return
+    }
+
+    isSubmitting = true
+    errorMessage = nil
+    defer { isSubmitting = false }
+
+    do {
+      _ = try await ReportsService.shared.submit(
+        reportedUserId: userId,
+        reason: reason,
+        details: details
+      )
+      if blockAfterSubmit {
+        try await ReportsService.shared.block(userId)
+      }
+      didSubmit = true
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a inviare il report. Riprova."
+      )
+    }
   }
 }

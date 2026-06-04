@@ -138,7 +138,8 @@ final class FeedViewModel {
       let home = HomeViewModel()
       await home.load()
       let liveNodes = home.feedItems.map(HaloPersonNode.init(item:)).filter(\.isMutual)
-      self.people = liveNodes.isEmpty ? SeedPeople.all : liveNodes
+      self.people = liveNodes
+      self.lastError = home.lastError
       startRealtime()
     }
   }
@@ -178,7 +179,7 @@ final class FeedViewModel {
       .filter { $0.isMutual && scope.visibleTiers.contains($0.tier) }
       .sorted { lhs, rhs in
         if lhs.tier.rank != rhs.tier.rank { return lhs.tier.rank > rhs.tier.rank }
-        return (lhs.lastPostAt ?? .distantPast) > (rhs.lastPostAt ?? .distantPast)
+        return (lhs.lastActivityAt ?? .distantPast) > (rhs.lastActivityAt ?? .distantPast)
       }
   }
 
@@ -191,10 +192,10 @@ final class FeedViewModel {
   var adessoItems: [HaloPersonNode] {
     people
       .filter { p in
-        guard let t = p.lastPostAt else { return false }
+        guard let t = p.lastActivityAt else { return false }
         return Date.now.timeIntervalSince(t) <= 30 * 60
       }
-      .sorted { (a, b) in (a.lastPostAt ?? .distantPast) > (b.lastPostAt ?? .distantPast) }
+      .sorted { (a, b) in (a.lastActivityAt ?? .distantPast) > (b.lastActivityAt ?? .distantPast) }
   }
 
   /// Persone con vibe attiva, tier-sorted (Inner prima).
@@ -204,7 +205,7 @@ final class FeedViewModel {
       .filter(\.hasActiveVibe)
       .sorted { (a, b) in
         if a.tier.rank != b.tier.rank { return a.tier.rank > b.tier.rank }
-        return (a.lastPostAt ?? .distantPast) > (b.lastPostAt ?? .distantPast)
+        return (a.lastActivityAt ?? .distantPast) > (b.lastActivityAt ?? .distantPast)
       }
   }
 
@@ -215,8 +216,8 @@ final class FeedViewModel {
     return FeedSection.allCases.compactMap { section in
       guard let items = grouped[section], !items.isEmpty else { return nil }
       let sorted = items.sorted { (a, b) in
-        let ta = a.lastPostAt ?? (a.hasActiveVibe ? Date.now.addingTimeInterval(-3600) : .distantPast)
-        let tb = b.lastPostAt ?? (b.hasActiveVibe ? Date.now.addingTimeInterval(-3600) : .distantPast)
+        let ta = a.lastActivityAt ?? .distantPast
+        let tb = b.lastActivityAt ?? .distantPast
         return ta > tb
       }
       return (section, sorted)
@@ -244,7 +245,8 @@ final class FeedViewModel {
     let visibleLocalEvents = localEvents.filter { event in
       scope == .tutti || event.audience == .inner
     }
-    return (visibleLocalEvents + demoEvents(in: scope))
+    let sourceEvents = bootstrap == .seed ? demoEvents(in: scope) : liveEvents(in: scope)
+    return (visibleLocalEvents + sourceEvents)
       .sorted { lhs, rhs in lhs.createdAt > rhs.createdAt }
   }
 
@@ -359,6 +361,53 @@ final class FeedViewModel {
       }
 
       return events
+    }
+  }
+
+  private func liveEvents(in scope: PulseScope) -> [PulseEvent] {
+    pulsePeople(in: scope).flatMap { person -> [PulseEvent] in
+      var events: [PulseEvent] = []
+
+      if person.hasActiveVibe {
+        let text = person.note.isEmpty ? person.mood.rawValue : person.note
+        events.append(
+          PulseEvent(
+            id: "\(person.id)-live-vibe",
+            person: person,
+            kind: .vibe(text),
+            createdAt: person.lastVibeAt ?? person.lastActivityAt ?? Date.now,
+            audience: person.tier == .inner ? .inner : .tutti
+          )
+        )
+      }
+
+      if let lastPostAt = person.lastPostAt {
+        let caption = person.note.isEmpty ? "" : person.note
+        events.append(
+          PulseEvent(
+            id: "\(person.id)-live-post",
+            person: person,
+            kind: Self.eventKind(for: person.lastPostKind, caption: caption),
+            createdAt: lastPostAt,
+            audience: person.tier == .inner ? .inner : .tutti
+          )
+        )
+      }
+
+      return events
+    }
+  }
+
+  private static func eventKind(for postKind: PostKind?, caption: String) -> PulseEvent.Kind {
+    switch postKind {
+    case .photo:
+      return .photoPost(caption)
+    case .audio:
+      return .audioPost(caption.isEmpty ? "voice note" : caption)
+    case .text:
+      return .textPost(caption)
+    case nil:
+      return .textPost(caption)
     }
   }
 

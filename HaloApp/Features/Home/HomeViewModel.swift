@@ -39,9 +39,13 @@ final class HomeViewModel {
       // 1. follows del viewer + post visibili (RLS) in parallelo
       async let myFollowsTask = FollowsService.shared.myFollows()
       async let feedTask = PostsService.shared.feedPosts()
+      async let blockedTask = ReportsService.shared.blockedIds()
 
-      let myFollows = try await myFollowsTask
-      let feed = try await feedTask
+      let blockedIds = try await blockedTask
+      let rawFollows = try await myFollowsTask
+      let rawFeed = try await feedTask
+      let myFollows = rawFollows.filter { !blockedIds.contains($0.followeeId) }
+      let feed = rawFeed.filter { !blockedIds.contains($0.userId) }
       self.follows = myFollows
       self.posts = feed
 
@@ -50,7 +54,11 @@ final class HomeViewModel {
       let authorIds = feed.map(\.userId)
       let userIds = Array(Set(followeeIds + authorIds))
       guard !userIds.isEmpty else {
+        self.profiles = [:]
+        self.vibes = [:]
+        self.mutualIds = []
         self.feedItems = []
+        self.lastError = nil
         return
       }
 
@@ -97,7 +105,10 @@ final class HomeViewModel {
       // Aggiorna lo snapshot widget (App Group + reload timeline).
       try? WidgetSnapshotStore.refresh(from: items)
     } catch {
-      self.lastError = String(describing: error)
+      self.lastError = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a caricare l'orbita. Riprova."
+      )
     }
   }
 
