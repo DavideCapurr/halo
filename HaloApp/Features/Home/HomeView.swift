@@ -5,6 +5,7 @@ private enum HomeSystemTab: Hashable {
   case orbit
   case pulse
   case compose
+  case easy
   case status
   case profile
 }
@@ -22,6 +23,7 @@ struct HomeView: View {
   @State private var selectedTab: HomeSystemTab = .orbit
   @State private var lastContentTab: HomeSystemTab = .orbit
   @State private var showCompose: Bool = false
+  @State private var showEasyCompose: Bool = false
   @State private var showStories: Bool = false
   @State private var suppressOrbitHeaderVibeTapUntil: Date? = nil
   @State private var bubbleDrag: BubbleDragState? = nil
@@ -127,6 +129,13 @@ struct HomeView: View {
           Label("compose", systemImage: "plus.circle")
         }
 
+      Color.clear
+        .background(Self.orbitStoriesWarmBlack)
+        .tag(HomeSystemTab.easy)
+        .tabItem {
+          Label("easy", systemImage: "bolt.circle")
+        }
+
       StatoView(
         people: people,
         onTapPerson: { peek = $0 }
@@ -192,6 +201,29 @@ struct HomeView: View {
         onClose: { showCompose = false }
       )
     }
+    .sheet(isPresented: $showEasyCompose) {
+      EasyComposeView(
+        initialMood: me.mood,
+        onSend: { result in
+          // Demo locale: rifletti subito mood/nota nel proprio nodo.
+          me.mood = result.mood
+          me.note = result.note
+          // Backbone reale: easy post effimero (3h) verso gli Inner.
+          Task {
+            try? await PostsService.shared.post(
+              kind: .text,
+              mediaPath: nil,
+              caption: result.note.isEmpty ? nil : result.note,
+              mood: result.mood,
+              minTier: .inner,
+              lifespan: .easy
+            )
+          }
+          showEasyCompose = false
+        },
+        onClose: { showEasyCompose = false }
+      )
+    }
     .sheet(item: $pendingProposal) { proposal in
       TierConfirmationSheet(
         proposal: proposal,
@@ -221,6 +253,9 @@ struct HomeView: View {
     switch tab {
     case .compose:
       showCompose = true
+      selectedTab = lastContentTab
+    case .easy:
+      showEasyCompose = true
       selectedTab = lastContentTab
     case .orbit, .pulse, .status, .profile:
       lastContentTab = tab

@@ -13,6 +13,14 @@ public struct HaloPost: Codable, Identifiable, Hashable, Sendable {
 
   public var isAlive: Bool { expiresAt > .now }
 
+  /// Finestra totale di vita del post (`expires_at - created_at`).
+  public var totalLifespan: TimeInterval { expiresAt.timeIntervalSince(createdAt) }
+
+  /// `true` se è un post "easy" (vita corta, low-stakes). Derivato dalla
+  /// finestra di vita così non serve una colonna dedicata: i post easy hanno
+  /// un `expires_at` molto più vicino al `created_at`.
+  public var isEasy: Bool { totalLifespan <= PostLifespan.easy.duration + 60 }
+
   public init(
     id: UUID = UUID(),
     userId: UUID,
@@ -22,7 +30,8 @@ public struct HaloPost: Codable, Identifiable, Hashable, Sendable {
     mood: Mood? = nil,
     minTier: FriendshipTier = .inner,
     createdAt: Date = .now,
-    expiresAt: Date = .now.addingTimeInterval(72 * 3600)
+    expiresAt: Date? = nil,
+    lifespan: PostLifespan = .standard
   ) {
     self.id = id
     self.userId = userId
@@ -32,7 +41,7 @@ public struct HaloPost: Codable, Identifiable, Hashable, Sendable {
     self.mood = mood
     self.minTier = minTier
     self.createdAt = createdAt
-    self.expiresAt = expiresAt
+    self.expiresAt = expiresAt ?? createdAt.addingTimeInterval(lifespan.duration)
   }
 
   enum CodingKeys: String, CodingKey {

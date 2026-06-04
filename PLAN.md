@@ -42,6 +42,11 @@ SWARM**.
 
 ### Prodotto - HALO PDF da costruire sopra
 
+- [x] Post "easy" effimeri (3h, low-stakes): `PostLifespan` in `HaloShared`,
+      `PostsService.post(lifespan:)`, quick-compose `EasyComposeView` con tab
+      dedicata. Riduce la frizione del postare ("non resta lì per sempre").
+      Wiring feed/decay sui post easy resta da fare quando il Pulse passa da
+      seed a dati live.
 - [ ] Rings: Event / Club / Course / Founder in DB e UI.
 - [ ] Inner Invite formale con deep link e copy
       "Davide ti ha messo nel suo Inner".
