@@ -48,11 +48,15 @@ SWARM**.
       Wiring feed/decay sui post easy resta da fare quando il Pulse passa da
       seed a dati live.
 - [ ] Rings: Event / Club / Course / Founder in DB e UI.
-- [ ] Inner Invite formale con deep link e copy
-      "Davide ti ha messo nel suo Inner".
+- [x] Inner Invite formale con deep link: migration `invites` + RLS,
+      `InvitesService`, sheet creazione da HaloSpace e accettazione
+      `halo://invite/{token}` con copy "ti ha messo nel suo Inner".
 - [ ] Memory archive Halo+.
-- [ ] Verifica Bocconi `@studbocconi.it` + invite code path.
-- [ ] Report/block UI e tabella `reports`.
+- [x] Verifica Bocconi `@studbocconi.it` + founder invite code path:
+      migration `campuses`/`campus_verifications`, validazione RLS lato DB,
+      `CampusVerificationService` e `BocconiVerifyView` da profilo.
+- [x] Report/block safety MVP: migration `reports` + `blocks` con RLS,
+      `ReportsService`, sheet da HaloSpace e filtro Home sui profili bloccati.
 - [ ] Halo Events / Halo Clubs con billing Stripe oltre StoreKit.
 - [ ] Welcome / Manifesto + Choose-your-5 onboarding.
 
@@ -80,20 +84,20 @@ SWARM**.
 
 ### Fase B - Gap prodotto HALO (3-4 settimane)
 
-- [ ] Migrations: `campuses`, `rings`, `ring_members`, `invites`,
-      `event_checkins`, `reports`, `subscriptions`, `club_billing` + RLS.
-- [ ] Servizi: `RingsService`, `InvitesService`, `ReportsService`.
-- [ ] Schermate: `WelcomeManifestoView`, `BocconiVerifyView`,
-      `ChooseYourFiveView`, `EventRingView` (QR scan + join token),
+- [ ] Migrations: `rings`, `ring_members`,
+      `event_checkins`, `subscriptions`, `club_billing` + RLS.
+- [ ] Servizi: `RingsService`.
+- [ ] Schermate: `WelcomeManifestoView`, `ChooseYourFiveView`,
+      `EventRingView` (QR scan + join token),
       `ClubRingView`, `MemoryArchiveView`.
-- [ ] Deep link `halo://invite/{token}` + push notifications:
-      Inner invite, nuovo Moment, ring in scadenza.
+- [~] Deep link `halo://invite/{token}` cablato per accettazione Inner.
+      Push notifications: nuovo Moment, ring in scadenza.
 
 ### Fase C - Cold-start Bocconi (parallela a B)
 
 - [ ] Landing web statica + waitlist.
 - [ ] Reclutare offline 20 Founder Circles.
-- [ ] Verifica `@studbocconi.it` + `founder_invite` code path.
+- [x] Verifica `@studbocconi.it` + `founder_invite` code path.
 - [ ] QR Event Ring per orientation week.
 
 ### Fase D - Monetizzazione (mese 2)

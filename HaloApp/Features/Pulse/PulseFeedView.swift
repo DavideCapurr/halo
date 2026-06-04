@@ -31,20 +31,7 @@ struct PulseFeedView: View {
             .padding(.top, 14)
             .padding(.bottom, 12)
 
-          ForEach(vm.pulseEventGroups(in: scope)) { group in
-            momentSeparator(group)
-              .padding(.horizontal, 22)
-              .padding(.top, group.moment == .adesso ? 8 : 22)
-              .padding(.bottom, 10)
-
-            ForEach(group.events) { event in
-              PulseTimelineRow(event: event) {
-                PulseDropCard(event: event, onPersonTap: { onPersonTap(event.person) })
-              }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 3)
-            }
-          }
+          timelineContent
 
           Spacer().frame(height: 32)
         }
@@ -126,6 +113,49 @@ struct PulseFeedView: View {
         }
       }
       .padding(.horizontal, 22)
+    }
+  }
+
+  @ViewBuilder
+  private var timelineContent: some View {
+    let groups = vm.pulseEventGroups(in: scope)
+    if vm.isLoading && groups.isEmpty {
+      SwarmLoadingState(label: "carico il Pulse")
+        .padding(.horizontal, 22)
+        .padding(.top, 14)
+    } else if let lastError = vm.lastError {
+      SwarmEmptyState(
+        title: "pulse fuori portata.",
+        message: lastError,
+        activation: .attention
+      )
+      .padding(.horizontal, 22)
+      .padding(.top, 14)
+    } else if groups.isEmpty {
+      SwarmEmptyState(
+        title: "nessun Moment.",
+        message: scope == .inner
+          ? "quando il tuo Inner manda vibe o Moment, li trovi qui."
+          : "quando le tue orbite si muovono, il Pulse si accende.",
+        activation: .rest
+      )
+      .padding(.horizontal, 22)
+      .padding(.top, 14)
+    } else {
+      ForEach(groups) { group in
+        momentSeparator(group)
+          .padding(.horizontal, 22)
+          .padding(.top, group.moment == .adesso ? 8 : 22)
+          .padding(.bottom, 10)
+
+        ForEach(group.events) { event in
+          PulseTimelineRow(event: event) {
+            PulseDropCard(event: event, onPersonTap: { onPersonTap(event.person) })
+          }
+          .padding(.horizontal, 14)
+          .padding(.vertical, 3)
+        }
+      }
     }
   }
 

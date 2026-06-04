@@ -45,8 +45,7 @@ La UI principale e ancora in transizione da prototipo a prodotto live:
 - `ProfileView`, il vecchio `ComposePostView` e Halo Plus/StoreKit hanno
   ancora placeholder o TODO.
 - Dal brief strategico PDF mancano ancora pezzi MVP importanti:
-  verification/invite code, invite flow, Event Halo con QR/invite token,
-  report/block e analytics di attivazione.
+  Event Halo con QR/invite token, Memory Halo+ e analytics di attivazione.
 
 `PLAN.md` traccia il lavoro implementativo gia fatto e le scelte prese,
 ma va letto insieme al codice quando una checkbox riguarda wiring live o

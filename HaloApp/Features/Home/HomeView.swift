@@ -13,8 +13,9 @@ private enum HomeSystemTab: Hashable {
 /// Schermata principale con shell SWARM: campo full-bleed, rail operativa e
 /// command dock custom. Le sheet restano coordinate qui.
 struct HomeView: View {
-  @State private var me: HaloPersonNode = SeedPeople.me
-  @State private var people: [HaloPersonNode] = SeedPeople.all + SeedPeople.demoted + SeedPeople.asteroids
+  @Environment(AppState.self) private var state
+  @State private var me: HaloPersonNode = Self.emptySelfNode
+  @State private var people: [HaloPersonNode] = []
   @State private var vm = HomeViewModel()
   @State private var peek: HaloPersonNode? = nil
   @State private var showVibeSetter: Bool = false
@@ -31,11 +32,17 @@ struct HomeView: View {
   @State private var zoomDragStartLevel: ZoomLevel? = nil
   @State private var showZoomRail: Bool = false
   @State private var zoomRailHideTask: Task<Void, Never>? = nil
+  @State private var pendingInvite: PendingInvite?
 
   private struct BubbleDragState: Equatable {
     let personId: String
     var ghostTier: FriendshipTier
     var location: CGPoint
+  }
+
+  private struct PendingInvite: Identifiable, Equatable {
+    let token: String
+    var id: String { token }
   }
 
   private static let orbitCoordinateSpace = "halo.orbitReferenceField"
@@ -162,12 +169,12 @@ struct HomeView: View {
     .onChange(of: selectedTab) { _, newValue in
       handleSystemTabSelection(newValue)
     }
+    .onChange(of: state.route) { _, _ in
+      syncRoutePresentation()
+    }
     .task {
-      await vm.load()
-      let liveNodes = vm.feedItems.map(HaloPersonNode.init(item:))
-      if !liveNodes.isEmpty {
-        people = liveNodes
-      }
+      await refreshHomeFromBackend()
+      syncRoutePresentation()
     }
     .sheet(item: $peek) { person in
       HaloSpaceView(
@@ -181,9 +188,9 @@ struct HomeView: View {
         initialMood: me.mood,
         initialNote: me.note,
         onSave: { newMood, newNote in
-          me.mood = newMood
-          me.note = newNote
-          showVibeSetter = false
+          Task {
+            await saveCurrentVibe(mood: newMood, note: newNote)
+          }
         },
         onClose: { showVibeSetter = false }
       )
@@ -193,10 +200,9 @@ struct HomeView: View {
         tierCounts: tierCounts,
         initialMood: me.mood,
         onSend: { result in
-          // Demo: aggiorna la propria vibe; il post effettivo passerà da PostsService.post.
-          me.mood = result.mood
-          me.note = result.note
-          showCompose = false
+          Task {
+            await sendCompose(result)
+          }
         },
         onClose: { showCompose = false }
       )
@@ -205,21 +211,9 @@ struct HomeView: View {
       EasyComposeView(
         initialMood: me.mood,
         onSend: { result in
-          // Demo locale: rifletti subito mood/nota nel proprio nodo.
-          me.mood = result.mood
-          me.note = result.note
-          // Backbone reale: easy post effimero (3h) verso gli Inner.
           Task {
-            try? await PostsService.shared.post(
-              kind: .text,
-              mediaPath: nil,
-              caption: result.note.isEmpty ? nil : result.note,
-              mood: result.mood,
-              minTier: .inner,
-              lifespan: .easy
-            )
+            await sendEasyCompose(result)
           }
-          showEasyCompose = false
         },
         onClose: { showEasyCompose = false }
       )
@@ -235,6 +229,13 @@ struct HomeView: View {
         },
         onDecline: { pendingProposal = nil }
       )
+    }
+    .sheet(item: $pendingInvite, onDismiss: {
+      if case .invite = state.route {
+        state.route = .home
+      }
+    }) { pending in
+      InviteAcceptSheet(token: pending.token)
     }
     .fullScreenCover(isPresented: $showStories) {
       OrbitStoriesView(
@@ -268,6 +269,12 @@ struct HomeView: View {
     }
 
     showVibeSetter = true
+  }
+
+  private func syncRoutePresentation() {
+    if case .invite(let token) = state.route {
+      pendingInvite = PendingInvite(token: token)
+    }
   }
 
   private var orbitTab: some View {
@@ -562,6 +569,8 @@ struct HomeView: View {
         orbitReferenceSelfCenter(scale: scale * Self.orbitReferenceSelfMultiplier(for: fieldZoom))
           .position(x: center.x, y: center.y)
 
+        orbitReferenceStatusCard(center: center)
+
         VStack {
           Spacer()
         }
@@ -597,6 +606,37 @@ struct HomeView: View {
       .position(x: center.x, y: center.y)
       .shadow(color: active ? Self.orbitStoriesBronzeGlow : .clear, radius: 14)
       .allowsHitTesting(false)
+  }
+
+  @ViewBuilder
+  private func orbitReferenceStatusCard(center: CGPoint) -> some View {
+    if vm.isLoading && people.isEmpty {
+      SwarmLoadingState(label: "carico orbita")
+        .frame(width: 220)
+        .position(x: center.x, y: center.y + 112)
+        .transition(.opacity)
+        .allowsHitTesting(false)
+    } else if let lastError = vm.lastError {
+      SwarmEmptyState(
+        title: "orbita non raggiunta.",
+        message: lastError,
+        activation: .attention
+      )
+      .frame(width: 260)
+      .position(x: center.x, y: center.y + 130)
+      .transition(.opacity)
+      .allowsHitTesting(false)
+    } else if people.isEmpty {
+      SwarmEmptyState(
+        title: "orbita vuota.",
+        message: "aggiungi il tuo Inner per vedere vibe e Moment qui.",
+        activation: .rest
+      )
+      .frame(width: 260)
+      .position(x: center.x, y: center.y + 130)
+      .transition(.opacity)
+      .allowsHitTesting(false)
+    }
   }
 
   private func orbitReferenceBubble(
@@ -1195,19 +1235,150 @@ struct HomeView: View {
     }
   }
 
+  @MainActor
+  private func refreshHomeFromBackend() async {
+    hydrateCurrentProfile()
+    await vm.load()
+    people = vm.feedItems.map(HaloPersonNode.init(item:))
+  }
+
+  @MainActor
+  private func hydrateCurrentProfile() {
+    guard let profile = state.currentProfile else { return }
+    me = Self.selfNode(from: profile, fallback: me)
+  }
+
+  @MainActor
+  private func saveCurrentVibe(mood: Mood, note: String) async {
+    do {
+      let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+      _ = try await VibesService.shared.setCurrent(
+        mood: mood,
+        colorHex: mood.defaultHex,
+        note: trimmed.isEmpty ? nil : trimmed
+      )
+      me.mood = mood
+      me.note = trimmed
+      me.hasActiveVibe = true
+      me.lastVibeAt = .now
+      showVibeSetter = false
+      await refreshHomeFromBackend()
+    } catch {
+      vm.lastError = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a mandare la vibe. Riprova."
+      )
+    }
+  }
+
+  @MainActor
+  private func sendCompose(_ result: VibeFirstComposeView.ComposeResult) async {
+    do {
+      let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
+      _ = try await VibesService.shared.setCurrent(
+        mood: result.mood,
+        colorHex: result.mood.defaultHex,
+        note: trimmed.isEmpty ? nil : trimmed
+      )
+
+      if let postKind = Self.postKind(for: result.momento) {
+        _ = try await PostsService.shared.post(
+          kind: postKind,
+          mediaPath: nil,
+          caption: trimmed.isEmpty ? nil : trimmed,
+          mood: result.mood,
+          minTier: result.tier,
+          lifespan: .standard
+        )
+      }
+
+      me.mood = result.mood
+      me.note = trimmed
+      me.hasActiveVibe = true
+      me.lastVibeAt = .now
+      me.lastPostAt = result.momento == .salta ? me.lastPostAt : .now
+      me.lastPostKind = Self.postKind(for: result.momento)
+      showCompose = false
+      await refreshHomeFromBackend()
+    } catch {
+      vm.lastError = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a mandare il Moment. Riprova."
+      )
+    }
+  }
+
+  @MainActor
+  private func sendEasyCompose(_ result: EasyComposeView.Result) async {
+    do {
+      let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
+      _ = try await VibesService.shared.setCurrent(
+        mood: result.mood,
+        colorHex: result.mood.defaultHex,
+        note: trimmed.isEmpty ? nil : trimmed
+      )
+      _ = try await PostsService.shared.post(
+        kind: .text,
+        mediaPath: nil,
+        caption: trimmed.isEmpty ? nil : trimmed,
+        mood: result.mood,
+        minTier: .inner,
+        lifespan: .easy
+      )
+
+      me.mood = result.mood
+      me.note = trimmed
+      me.hasActiveVibe = true
+      me.lastVibeAt = .now
+      me.lastPostAt = .now
+      me.lastPostKind = .text
+      showEasyCompose = false
+      await refreshHomeFromBackend()
+    } catch {
+      vm.lastError = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a mandare l'easy Moment. Riprova."
+      )
+    }
+  }
+
   private var orbitReferenceSelfDisplayName: String {
     let displayName = me.name.trimmingCharacters(in: .whitespacesAndNewlines)
-    return displayName.localizedCaseInsensitiveCompare("tu") == .orderedSame
-      ? "davide"
-      : displayName.lowercased()
+    return displayName.isEmpty ? "tu" : displayName.lowercased()
   }
 
   private var orbitReferenceSelfMood: Mood {
-    me.mood == SeedPeople.me.mood ? .warm : me.mood
+    me.mood
   }
 
   private static func orbitReferenceMoodColor(_ mood: Mood, alpha: Double = 1) -> Color {
     HaloVisual.Aura.color(mood, alpha: alpha)
+  }
+
+  private static func selfNode(from profile: Profile, fallback: HaloPersonNode) -> HaloPersonNode {
+    HaloPersonNode(
+      id: profile.id.uuidString,
+      handle: profile.handle,
+      name: profile.displayName,
+      tier: .inner,
+      mood: fallback.mood,
+      note: fallback.note,
+      hasNew: fallback.hasNew,
+      lastPostAt: fallback.lastPostAt,
+      lastPostKind: fallback.lastPostKind,
+      lastVibeAt: fallback.lastVibeAt,
+      hasActiveVibe: fallback.hasActiveVibe,
+      isMutual: true
+    )
+  }
+
+  private static func postKind(for momento: VibeFirstComposeView.Momento) -> PostKind? {
+    switch momento {
+    case .foto: return .photo
+    case .testo: return .text
+    case .audio: return .audio
+    case .salta: return nil
+    }
   }
 
   private static func orbitStoriesBodyFont(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
@@ -1241,6 +1412,20 @@ struct HomeView: View {
   private static let orbitStoriesBronzeGlow = HaloVisual.Palette.bronzeGlow
   private static let orbitStoriesHeaderPillFill = HaloVisual.Palette.glassInkFill.opacity(HaloVisual.Orbita.headerPillFillOpacity)
   private static let orbitStoriesZoomRailFill = HaloVisual.Palette.glassInkFill.opacity(HaloVisual.Orbita.zoomRailFillOpacity)
+
+  private static let emptySelfNode = HaloPersonNode(
+    id: "self",
+    handle: "you",
+    name: "tu",
+    tier: .inner,
+    mood: .chill,
+    note: "",
+    hasNew: false,
+    lastPostAt: nil,
+    lastVibeAt: nil,
+    hasActiveVibe: false,
+    isMutual: true
+  )
 
   private static var orbitStoriesCardShape: RoundedRectangle {
     RoundedRectangle(cornerRadius: HaloVisual.Orbita.heroCardRadius, style: .continuous)

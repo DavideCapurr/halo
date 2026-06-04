@@ -12,6 +12,7 @@ struct ProfileView: View {
 
   @State private var showPlus: Bool = false
   @State private var showDiscovery: Bool = false
+  @State private var showBocconiVerify: Bool = false
 
   init(
     person: HaloPersonNode,
@@ -57,6 +58,7 @@ struct ProfileView: View {
     }
     .sheet(isPresented: $showPlus) { PlusUpsellView() }
     .sheet(isPresented: $showDiscovery) { DiscoveryView { showDiscovery = false } }
+    .sheet(isPresented: $showBocconiVerify) { BocconiVerifyView() }
   }
 
   private var rail: some View {
@@ -150,6 +152,9 @@ struct ProfileView: View {
       sectionHeader("command")
       profileCommand("manda una vibe", "waveform.path.ecg", role: .connected, action: onVibeTap)
       profileCommand("aggiungi un Moment", "plus", role: .attention, action: onComposeTap)
+      profileCommand("verifica Bocconi", "checkmark.seal", role: .connected) {
+        showBocconiVerify = true
+      }
       profileCommand("scopri account pubblici", "scope", role: .operational) {
         showDiscovery = true
       }

@@ -16,6 +16,10 @@ struct HaloPersonNode: Identifiable, Hashable {
   var hasNew: Bool
   /// Quanto fa è stato pubblicato l'ultimo post; nil se non ne ha pubblicati attivi.
   var lastPostAt: Date?
+  /// Tipo reale dell'ultimo Moment, quando arriva dal backend.
+  var lastPostKind: PostKind?
+  /// Timestamp della vibe attiva, quando arriva dal backend.
+  var lastVibeAt: Date?
   /// True se ha una vibe nelle ultime 24h.
   var hasActiveVibe: Bool
   /// True se entrambe le parti si seguono. Falso = asteroide.
@@ -30,6 +34,8 @@ struct HaloPersonNode: Identifiable, Hashable {
     note: String,
     hasNew: Bool,
     lastPostAt: Date? = nil,
+    lastPostKind: PostKind? = nil,
+    lastVibeAt: Date? = nil,
     hasActiveVibe: Bool = true,
     isMutual: Bool = true
   ) {
@@ -41,6 +47,8 @@ struct HaloPersonNode: Identifiable, Hashable {
     self.note = note
     self.hasNew = hasNew
     self.lastPostAt = lastPostAt
+    self.lastPostKind = lastPostKind
+    self.lastVibeAt = lastVibeAt
     self.hasActiveVibe = hasActiveVibe
     self.isMutual = isMutual
   }
@@ -54,8 +62,14 @@ struct HaloPersonNode: Identifiable, Hashable {
     self.note = item.vibe?.note ?? item.lastPost?.caption ?? ""
     self.hasNew = Date.now.timeIntervalSince(item.lastActivityAt) <= 30 * 60
     self.lastPostAt = item.lastPost?.createdAt
+    self.lastPostKind = item.lastPost?.kind
+    self.lastVibeAt = item.vibe?.createdAt
     self.hasActiveVibe = item.vibe != nil
     self.isMutual = item.isMutual
+  }
+
+  var lastActivityAt: Date? {
+    [lastPostAt, lastVibeAt].compactMap { $0 }.max()
   }
 }
 
