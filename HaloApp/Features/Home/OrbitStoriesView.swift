@@ -465,33 +465,11 @@ private struct StoryPhotoCanvas: View {
     GeometryReader { proxy in
       let size = proxy.size
       ZStack {
-        LinearGradient(
-          colors: [
-            MoodPalette.auraColor(story.mood, l: 0.58).opacity(0.62),
-            SwarmHalo.absoluteBlack
-          ],
-          startPoint: .topLeading,
-          endPoint: .bottomTrailing
-        )
-
-        ForEach(0..<3, id: \.self) { i in
-          let spec = story.orbSpec(i)
-          Circle()
-            .fill(
-              RadialGradient(
-                colors: [
-                  MoodPalette.auraColor(story.mood, l: 0.70 - Double(i) * 0.06).opacity(0.42),
-                  .clear
-                ],
-                center: .center,
-                startRadius: 0,
-                endRadius: spec.radius
-              )
-            )
-            .frame(width: spec.radius * 2, height: spec.radius * 2)
-            .blur(radius: 14)
-            .position(x: size.width * spec.x, y: size.height * spec.y)
+        StorageImageView(path: story.mediaPath) {
+          photoPlaceholder(size: size)
         }
+        .frame(width: size.width, height: size.height)
+        .clipped()
 
         RadialGradient(
           colors: [.clear, Color.black.opacity(0.62)],
@@ -499,6 +477,38 @@ private struct StoryPhotoCanvas: View {
           startRadius: min(size.width, size.height) * 0.26,
           endRadius: max(size.width, size.height) * 0.74
         )
+      }
+    }
+  }
+
+  private func photoPlaceholder(size: CGSize) -> some View {
+    ZStack {
+      LinearGradient(
+        colors: [
+          MoodPalette.auraColor(story.mood, l: 0.58).opacity(0.62),
+          SwarmHalo.absoluteBlack
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+      )
+
+      ForEach(0..<3, id: \.self) { i in
+        let spec = story.orbSpec(i)
+        Circle()
+          .fill(
+            RadialGradient(
+              colors: [
+                MoodPalette.auraColor(story.mood, l: 0.70 - Double(i) * 0.06).opacity(0.42),
+                .clear
+              ],
+              center: .center,
+              startRadius: 0,
+              endRadius: spec.radius
+            )
+          )
+          .frame(width: spec.radius * 2, height: spec.radius * 2)
+          .blur(radius: 14)
+          .position(x: size.width * spec.x, y: size.height * spec.y)
       }
     }
   }
@@ -546,13 +556,16 @@ private struct StoryAudioCard: View {
       )
 
       VStack(spacing: 28) {
-        Image(systemName: "play.fill")
-          .font(HaloType.system(24, weight: .bold))
-          .foregroundStyle(SwarmHalo.ink)
-          .frame(width: 78, height: 78)
-          .background(MoodPalette.auraColor(story.mood, l: 0.55).opacity(0.22), in: Circle())
-          .overlay(Circle().strokeBorder(MoodPalette.auraColor(story.mood, l: 0.74).opacity(0.58), lineWidth: 0.8))
-          .shadow(color: MoodPalette.auraRing(story.mood, alpha: 0.42), radius: 28)
+        StorageAudioPlaybackButton(
+          path: story.mediaPath,
+          accentMood: story.mood,
+          size: 78,
+          iconSize: 24,
+          foregroundColor: SwarmHalo.ink,
+          fillOpacity: 0.22,
+          showsBorder: true
+        )
+        .shadow(color: MoodPalette.auraRing(story.mood, alpha: 0.42), radius: 28)
 
         HStack(alignment: .center, spacing: 3) {
           ForEach(0..<44, id: \.self) { i in

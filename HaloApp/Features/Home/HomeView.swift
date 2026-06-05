@@ -10,6 +10,14 @@ private enum HomeSystemTab: Hashable {
   case profile
 }
 
+private enum ComposeMediaUploadError: LocalizedError {
+  case missingMedia
+
+  var errorDescription: String? {
+    "Aggiungi il media prima di mandare il Moment."
+  }
+}
+
 /// Schermata principale con shell SWARM: campo full-bleed, rail operativa e
 /// command dock custom. Le sheet restano coordinate qui.
 struct HomeView: View {
@@ -1275,16 +1283,20 @@ struct HomeView: View {
   private func sendCompose(_ result: VibeFirstComposeView.ComposeResult) async {
     do {
       let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
+      let postKind = Self.postKind(for: result.momento)
+      let mediaPath = try await uploadComposeMedia(result.media, for: postKind)
+      var insertedPost: HaloPost?
+
       _ = try await VibesService.shared.setCurrent(
         mood: result.mood,
         colorHex: result.mood.defaultHex,
         note: trimmed.isEmpty ? nil : trimmed
       )
 
-      if let postKind = Self.postKind(for: result.momento) {
-        _ = try await PostsService.shared.post(
+      if let postKind {
+        insertedPost = try await PostsService.shared.post(
           kind: postKind,
-          mediaPath: nil,
+          mediaPath: mediaPath,
           caption: trimmed.isEmpty ? nil : trimmed,
           mood: result.mood,
           minTier: result.tier,
@@ -1296,8 +1308,14 @@ struct HomeView: View {
       me.note = trimmed
       me.hasActiveVibe = true
       me.lastVibeAt = .now
-      me.lastPostAt = result.momento == .salta ? me.lastPostAt : .now
-      me.lastPostKind = Self.postKind(for: result.momento)
+      if let insertedPost {
+        me.lastPostAt = insertedPost.createdAt
+        me.lastPostId = insertedPost.id
+        me.lastPostKind = insertedPost.kind
+        me.lastPostCaption = insertedPost.caption
+        me.lastPostMediaPath = insertedPost.mediaPath
+        me.lastPostExpiresAt = insertedPost.expiresAt
+      }
       showCompose = false
       await refreshHomeFromBackend()
     } catch {
@@ -1305,6 +1323,30 @@ struct HomeView: View {
         error,
         fallback: "Non riesco a mandare il Moment. Riprova."
       )
+    }
+  }
+
+  private func uploadComposeMedia(
+    _ media: VibeFirstComposeView.MediaPayload?,
+    for postKind: PostKind?
+  ) async throws -> String? {
+    guard let postKind else { return nil }
+
+    switch (postKind, media) {
+    case (.photo, .data(let data, let contentType)),
+         (.audio, .data(let data, let contentType)):
+      return try await StorageService.shared.uploadPostMedia(data: data, contentType: contentType)
+
+    case (.photo, .file(let url, let contentType)),
+         (.audio, .file(let url, let contentType)):
+      let data = try Data(contentsOf: url)
+      return try await StorageService.shared.uploadPostMedia(data: data, contentType: contentType)
+
+    case (.text, _):
+      return nil
+
+    case (.photo, nil), (.audio, nil):
+      throw ComposeMediaUploadError.missingMedia
     }
   }
 

@@ -1,4 +1,7 @@
+import Foundation
+import PhotosUI
 import SwiftUI
+import UniformTypeIdentifiers
 import UIKit
 import HaloShared
 
@@ -17,11 +20,17 @@ struct VibeFirstComposeView: View {
   var onClose: () -> Void = {}
 
   /// Output di ritorno della compose.
+  enum MediaPayload {
+    case data(Data, contentType: String)
+    case file(URL, contentType: String)
+  }
+
   struct ComposeResult {
     var mood: Mood
     var note: String
     var momento: Momento
     var tier: FriendshipTier
+    var media: MediaPayload?
   }
 
   @State private var step: Step = .mood
@@ -29,6 +38,14 @@ struct VibeFirstComposeView: View {
   @State private var note: String = ""
   @State private var momento: Momento = .salta
   @State private var tier: FriendshipTier = .inner
+  @State private var selectedPhotoItem: PhotosPickerItem?
+  @State private var selectedPhotoData: Data?
+  @State private var selectedPhotoContentType: String = "image/jpeg"
+  @State private var selectedPhotoPreview: UIImage?
+  @State private var isLoadingPhoto: Bool = false
+  @State private var photoError: String?
+  @State private var audioFileURL: URL?
+  @State private var audioDuration: TimeInterval?
 
   init(tierCounts: [FriendshipTier: Int],
        initialMood: Mood = .chill,
@@ -280,7 +297,11 @@ struct VibeFirstComposeView: View {
         .foregroundStyle(HaloInk.creamLow)
 
       momentoOptions
-      if momento == .testo {
+      if momento == .foto {
+        photoPickerPanel
+      } else if momento == .audio {
+        audioRecorderPanel
+      } else if momento == .testo {
         TextField("scrivi qui qualcosa…", text: $note, axis: .vertical)
           .textFieldStyle(.plain)
           .font(HaloType.serif(17, weight: .regular))
@@ -304,7 +325,7 @@ struct VibeFirstComposeView: View {
       ForEach(items, id: \.0) { (kind, label, icon) in
         let on = momento == kind
         Button {
-          momento = kind
+          selectMomento(kind)
           UISelectionFeedbackGenerator().selectionChanged()
         } label: {
           HStack(spacing: 10) {
@@ -321,6 +342,106 @@ struct VibeFirstComposeView: View {
           .haloGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput), tint: on ? MoodPalette.auraColor(mood, l: 0.55) : nil, interactive: true)
         }
         .buttonStyle(.plain)
+      }
+    }
+  }
+
+  private var photoPickerPanel: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) {
+        HStack(spacing: 10) {
+          Image(systemName: "photo.on.rectangle")
+            .font(HaloType.system(16, weight: .semibold))
+            .foregroundStyle(SwarmHalo.ink)
+            .frame(width: 30, height: 30)
+            .background(MoodPalette.auraColor(mood, l: 0.58).opacity(0.24), in: Circle())
+
+          VStack(alignment: .leading, spacing: 2) {
+            Text(selectedPhotoData == nil ? "scegli una foto" : "foto pronta")
+              .font(HaloType.ui(14, weight: .semibold))
+              .foregroundStyle(HaloInk.cream)
+            Text(isLoadingPhoto ? "carico..." : selectedPhotoData == nil ? "dal rullino" : selectedPhotoContentType)
+              .font(HaloType.ui(11, weight: .regular))
+              .foregroundStyle(HaloInk.creamMute)
+          }
+
+          Spacer()
+
+          Text(selectedPhotoData == nil ? "scegli" : "cambia")
+            .font(HaloType.ui(12, weight: .semibold))
+            .foregroundStyle(HaloInk.creamLow)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+      }
+      .buttonStyle(.plain)
+      .onChange(of: selectedPhotoItem) { _, newItem in
+        Task {
+          await loadSelectedPhoto(newItem)
+        }
+      }
+
+      if let selectedPhotoPreview {
+        Image(uiImage: selectedPhotoPreview)
+          .resizable()
+          .scaledToFill()
+          .frame(height: 180)
+          .frame(maxWidth: .infinity)
+          .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
+          .overlay(
+            RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous)
+              .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+          )
+      }
+
+      if let photoError {
+        Text(photoError)
+          .font(HaloType.ui(12, weight: .medium))
+          .foregroundStyle(SwarmHalo.launchAmber)
+      }
+    }
+  }
+
+  @ViewBuilder
+  private var audioRecorderPanel: some View {
+    if let audioFileURL {
+      HStack(spacing: 12) {
+        ZStack {
+          Circle()
+            .fill(MoodPalette.auraColor(mood, l: 0.70))
+          Image(systemName: "waveform")
+            .font(HaloType.system(14, weight: .bold))
+            .foregroundStyle(SwarmHalo.background)
+        }
+        .frame(width: 38, height: 38)
+
+        VStack(alignment: .leading, spacing: 2) {
+          Text("audio pronto")
+            .font(HaloType.ui(14, weight: .semibold))
+            .foregroundStyle(HaloInk.cream)
+          Text(audioDurationText(audioDuration) + " · " + audioFileURL.lastPathComponent)
+            .font(HaloType.ui(11, weight: .regular))
+            .foregroundStyle(HaloInk.creamMute)
+            .lineLimit(1)
+        }
+
+        Spacer()
+
+        Button("rifai") {
+          clearAudioSelection()
+        }
+        .buttonStyle(.plain)
+        .font(HaloType.ui(13, weight: .semibold))
+        .foregroundStyle(HaloInk.creamLow)
+      }
+      .padding(.horizontal, 14)
+      .padding(.vertical, 12)
+      .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+    } else {
+      AudioRecorderView { url, duration in
+        audioFileURL = url
+        audioDuration = duration
       }
     }
   }
@@ -424,9 +545,10 @@ struct VibeFirstComposeView: View {
       }
       Spacer()
       Button {
+        guard footerEnabled else { return }
         if step == .tier { send() } else { advance() }
       } label: {
-        Text(step == .tier ? "manda" : "avanti")
+        Text(footerTitle)
           .font(HaloType.ui(15, weight: .semibold))
           .foregroundStyle(HaloInk.cream)
           .padding(.horizontal, 22).padding(.vertical, 12)
@@ -441,6 +563,8 @@ struct VibeFirstComposeView: View {
           .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(mood, l: 0.55), interactive: true)
       }
       .buttonStyle(.plain)
+      .disabled(!footerEnabled)
+      .opacity(footerEnabled ? 1 : 0.46)
     }
   }
 
@@ -461,6 +585,7 @@ struct VibeFirstComposeView: View {
   }
 
   private func advance() {
+    guard step != .momento || selectedMomentIsReady else { return }
     let next = min(step.rawValue + 1, Step.tier.rawValue)
     step = Step(rawValue: next) ?? step
   }
@@ -471,7 +596,101 @@ struct VibeFirstComposeView: View {
   }
 
   private func send() {
-    onSend(.init(mood: mood, note: note, momento: momento, tier: tier))
+    guard selectedMomentIsReady else { return }
+    onSend(.init(mood: mood, note: note, momento: momento, tier: tier, media: mediaPayload))
+  }
+
+  private var footerEnabled: Bool {
+    if step == .tier { return selectedMomentIsReady }
+    if step == .momento { return selectedMomentIsReady }
+    return true
+  }
+
+  private var footerTitle: String {
+    if step == .tier { return "manda" }
+    if step == .momento, isLoadingPhoto { return "carico..." }
+    return "avanti"
+  }
+
+  private var selectedMomentIsReady: Bool {
+    switch momento {
+    case .foto:
+      return selectedPhotoData != nil
+    case .audio:
+      return audioFileURL != nil
+    case .testo, .salta:
+      return true
+    }
+  }
+
+  private var mediaPayload: MediaPayload? {
+    switch momento {
+    case .foto:
+      guard let selectedPhotoData else { return nil }
+      return .data(selectedPhotoData, contentType: selectedPhotoContentType)
+    case .audio:
+      guard let audioFileURL else { return nil }
+      return .file(audioFileURL, contentType: "audio/m4a")
+    case .testo, .salta:
+      return nil
+    }
+  }
+
+  private func selectMomento(_ kind: Momento) {
+    guard momento != kind else { return }
+    momento = kind
+    if kind != .foto { clearPhotoSelection() }
+    if kind != .audio { clearAudioSelection() }
+  }
+
+  @MainActor
+  private func loadSelectedPhoto(_ item: PhotosPickerItem?) async {
+    photoError = nil
+    guard let item else {
+      clearPhotoSelection()
+      return
+    }
+
+    isLoadingPhoto = true
+    defer { isLoadingPhoto = false }
+
+    do {
+      guard let data = try await item.loadTransferable(type: Data.self) else {
+        selectedPhotoData = nil
+        selectedPhotoPreview = nil
+        photoError = "Foto non disponibile."
+        return
+      }
+
+      selectedPhotoData = data
+      selectedPhotoContentType = item.supportedContentTypes
+        .first(where: { $0.conforms(to: .image) })?
+        .preferredMIMEType ?? "image/jpeg"
+      selectedPhotoPreview = UIImage(data: data)
+    } catch {
+      selectedPhotoData = nil
+      selectedPhotoPreview = nil
+      photoError = "Non riesco a leggere questa foto."
+    }
+  }
+
+  private func clearPhotoSelection() {
+    selectedPhotoItem = nil
+    selectedPhotoData = nil
+    selectedPhotoContentType = "image/jpeg"
+    selectedPhotoPreview = nil
+    isLoadingPhoto = false
+    photoError = nil
+  }
+
+  private func clearAudioSelection() {
+    audioFileURL = nil
+    audioDuration = nil
+  }
+
+  private func audioDurationText(_ duration: TimeInterval?) -> String {
+    let total = max(0, Int(duration ?? 0))
+    return String(format: "%01d:%02d", total / 60, total % 60)
   }
 }
 

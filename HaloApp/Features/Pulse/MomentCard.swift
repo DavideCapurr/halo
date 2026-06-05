@@ -260,13 +260,9 @@ struct MomentCard: View {
 
   private func photoPreview(_ p: PostPreview) -> some View {
     ZStack(alignment: .bottomLeading) {
-      LinearGradient(
-        colors: [
-          MoodPalette.auraColor(person.mood, l: 0.50),
-          MoodPalette.auraColor(person.mood, l: 0.25),
-        ],
-        startPoint: .topLeading, endPoint: .bottomTrailing
-      )
+      StorageImageView(path: p.mediaPath) {
+        photoPreviewPlaceholder
+      }
       if !p.caption.isEmpty {
         Text(p.caption)
           .font(HaloType.serif(13, weight: .regular))
@@ -289,6 +285,17 @@ struct MomentCard: View {
     .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
   }
 
+  private var photoPreviewPlaceholder: some View {
+    LinearGradient(
+      colors: [
+        MoodPalette.auraColor(person.mood, l: 0.50),
+        MoodPalette.auraColor(person.mood, l: 0.25),
+      ],
+      startPoint: .topLeading,
+      endPoint: .bottomTrailing
+    )
+  }
+
   private func textPreview(_ p: PostPreview) -> some View {
     Text(p.caption)
       .font(HaloType.ui(13, weight: .regular))
@@ -301,14 +308,13 @@ struct MomentCard: View {
 
   private func audioPreview(_ p: PostPreview) -> some View {
     HStack(spacing: 10) {
-      ZStack {
-        Circle().fill(MoodPalette.auraColor(person.mood, l: 0.7))
-        Image(systemName: "play.fill")
-          .font(HaloType.system(10, weight: .bold))
-          .foregroundStyle(SwarmHalo.background)
-          .offset(x: 1)
-      }
-      .frame(width: 28, height: 28)
+      StorageAudioPlaybackButton(
+        path: p.mediaPath,
+        accentMood: person.mood,
+        size: 28,
+        iconSize: 10,
+        foregroundColor: SwarmHalo.background
+      )
       HStack(spacing: 2) {
         ForEach(0..<18, id: \.self) { i in
           Capsule()

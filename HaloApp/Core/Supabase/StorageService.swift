@@ -9,8 +9,8 @@ final class StorageService {
 
   enum StorageError: Error { case notAuthenticated, invalidContentType }
 
-  static let avatarsBucket = "halo-avatars"
-  static let mediaBucket   = "halo-media"
+  nonisolated static let avatarsBucket = "halo-avatars"
+  nonisolated static let mediaBucket   = "halo-media"
 
   private var client: SupabaseClient { SupabaseClientProvider.shared }
 

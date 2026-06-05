@@ -127,6 +127,16 @@ struct PostCardView: View {
 
   private var photoBody: some View {
     ZStack(alignment: .bottomLeading) {
+      StorageImageView(path: post.mediaPath) {
+        photoPlaceholder
+      }
+    }
+    .frame(height: 220)
+    .clipped()
+  }
+
+  private var photoPlaceholder: some View {
+    ZStack {
       LinearGradient(
         colors: [
           MoodPalette.auraColor(accentMood, l: 0.50),
@@ -147,7 +157,6 @@ struct PostCardView: View {
         ctx.stroke(path, with: .color(SwarmHalo.ink.opacity(0.50)), lineWidth: 0.5)
       }
     }
-    .frame(height: 220)
   }
 
   private var textBody: some View {
@@ -161,14 +170,7 @@ struct PostCardView: View {
 
   private var audioBody: some View {
     HStack(spacing: 12) {
-      ZStack {
-        Circle().fill(MoodPalette.auraColor(accentMood, l: 0.7))
-        Image(systemName: "play.fill")
-          .font(HaloType.system(12, weight: .bold))
-          .foregroundStyle(SwarmHalo.background)
-          .offset(x: 1)
-      }
-      .frame(width: 36, height: 36)
+      StorageAudioPlaybackButton(path: post.mediaPath, accentMood: accentMood)
       HStack(spacing: 2) {
         ForEach(0..<24, id: \.self) { i in
           Capsule()
