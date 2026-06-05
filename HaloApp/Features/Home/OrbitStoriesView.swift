@@ -20,6 +20,7 @@ struct OrbitStoriesView: View {
   @State private var didLongPress: Bool = false
   @State private var pressTask: Task<Void, Never>?
   @State private var reactions: [String: Set<ReactionKind>] = [:]
+  @State private var reactionError: String?
 
   private var stories: [OrbitStory] {
     let realStories = OrbitStory.from(items: items)
@@ -298,10 +299,19 @@ struct OrbitStoriesView: View {
       .buttonStyle(.plain)
       .accessibilityLabel("Rispondi a \(story.name)")
 
-      HStack(spacing: 4) {
-        ForEach(ReactionKind.allCases, id: \.self) { kind in
-          reactionButton(kind, story: story)
+      if story.postId != nil {
+        HStack(spacing: 4) {
+          ForEach(ReactionKind.allCases, id: \.self) { kind in
+            reactionButton(kind, story: story)
+          }
         }
+      }
+
+      if let reactionError {
+        Text(reactionError)
+          .font(HaloType.ui(11, weight: .medium))
+          .foregroundStyle(SwarmActivationRole.attention.color)
+          .lineLimit(2)
       }
     }
   }
@@ -335,13 +345,37 @@ struct OrbitStoriesView: View {
   }
 
   private func toggle(_ kind: ReactionKind, for story: OrbitStory) {
+    guard let postId = story.postId else { return }
     var selected = reactions[story.id, default: []]
-    if selected.contains(kind) {
+    let wasSelected = selected.contains(kind)
+    if wasSelected {
       selected.remove(kind)
     } else {
       selected.insert(kind)
     }
     reactions[story.id] = selected
+    reactionError = nil
+
+    Task {
+      do {
+        if wasSelected {
+          try await ReactionsService.shared.unreact(to: postId, kind: kind)
+        } else {
+          try await ReactionsService.shared.react(to: postId, with: kind)
+        }
+      } catch {
+        await MainActor.run {
+          var reverted = reactions[story.id, default: []]
+          if wasSelected {
+            reverted.insert(kind)
+          } else {
+            reverted.remove(kind)
+          }
+          reactions[story.id] = reverted
+          reactionError = SupabaseErrorMessage.describe(error, fallback: "Reazione non inviata.")
+        }
+      }
+    }
   }
 
   private func storyGesture(width: CGFloat) -> some Gesture {
@@ -485,7 +519,7 @@ private struct StoryTextCard: View {
         endRadius: 420
       )
 
-      Text("\"\(story.bodyText)\"")
+      Text(story.bodyText.isEmpty ? "moment" : "\"\(story.bodyText)\"")
         .font(HaloType.serif(30, weight: .regular))
         .italic()
         .foregroundStyle(SwarmHalo.ink)
@@ -530,7 +564,7 @@ private struct StoryAudioCard: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 36)
 
-        Text("0:\(String(format: "%02d", story.audioDuration)) · vocale")
+        Text(story.mediaPath == nil ? "vocale" : "audio")
           .font(HaloType.mono(11, weight: .medium))
           .kerning(1.6)
           .foregroundStyle(SwarmHalo.inkSecondary)
@@ -600,9 +634,10 @@ private struct OrbitStory: Identifiable, Hashable {
   let activityAt: Date
   let kind: OrbitStoryKind
   let seed: UInt32
+  let postId: UUID?
+  let mediaPath: String?
   let caption: String?
   let bodyText: String
-  let audioDuration: Int
 
   var relativeAge: String {
     let minutes = max(0, Int(Date.now.timeIntervalSince(activityAt) / 60))
@@ -623,7 +658,8 @@ private struct OrbitStory: Identifiable, Hashable {
       .compactMap { item in
         let mood = item.vibe?.mood ?? item.lastPost?.mood ?? .chill
         let note = item.vibe?.note ?? item.lastPost?.caption ?? ""
-        let kind = item.lastPost.map { OrbitStoryKind(postKind: $0.kind) } ?? .vibe
+        let post = item.lastPost
+        let kind = post.map { OrbitStoryKind(postKind: $0.kind) } ?? .vibe
         let seed = stableHash(item.profile.id.uuidString)
         return OrbitStory(
           id: item.id.uuidString,
@@ -636,9 +672,10 @@ private struct OrbitStory: Identifiable, Hashable {
           activityAt: item.lastActivityAt,
           kind: kind,
           seed: seed,
-          caption: kind == .photo ? photoCaption(note: note, seed: seed) : nil,
-          bodyText: textBody(seed: seed),
-          audioDuration: 14 + Int(seed % 38)
+          postId: post?.id,
+          mediaPath: post?.mediaPath,
+          caption: kind == .photo ? post?.caption : nil,
+          bodyText: post?.caption ?? note
         )
       }
       .sortedForStories()
@@ -649,8 +686,7 @@ private struct OrbitStory: Identifiable, Hashable {
       .filter { $0.isMutual && $0.tier != .asteroid && $0.hasActiveVibe }
       .map { person in
         let seed = stableHash(person.id)
-        let hasPost = person.lastPostAt != nil
-        let kind = hasPost ? deterministicKind(seed: seed) : OrbitStoryKind.vibe
+        let kind = person.lastPostKind.map { OrbitStoryKind(postKind: $0) } ?? .vibe
         return OrbitStory(
           id: person.id,
           personId: person.id,
@@ -662,9 +698,10 @@ private struct OrbitStory: Identifiable, Hashable {
           activityAt: person.lastPostAt ?? .now,
           kind: kind,
           seed: seed,
-          caption: kind == .photo ? photoCaption(note: person.note, seed: seed) : nil,
-          bodyText: textBody(seed: seed),
-          audioDuration: 14 + Int(seed % 38)
+          postId: person.lastPostId,
+          mediaPath: person.lastPostMediaPath,
+          caption: kind == .photo ? person.lastPostCaption : nil,
+          bodyText: person.lastPostCaption ?? person.note
         )
       }
       .sortedForStories()
@@ -680,37 +717,6 @@ private struct OrbitStory: Identifiable, Hashable {
 
   func waveHeight(at index: Int) -> Int {
     6 + Int(Self.stableHash("\(id):\(index)") % 38)
-  }
-
-  private static func deterministicKind(seed: UInt32) -> OrbitStoryKind {
-    let value = seed % 100
-    if value < 58 { return .photo }
-    if value < 74 { return .text }
-    if value < 84 { return .audio }
-    return .vibe
-  }
-
-  private static func photoCaption(note: String, seed: UInt32) -> String {
-    if !note.isEmpty { return note }
-    let captions = [
-      "finestra gialla, biblio rosa.",
-      "pioggia, secondo piano.",
-      "il portico alle 19.",
-      "caffe velocissimo prima di econometria.",
-      "sole dietro l'aula 4.",
-      "la mia meta di citta stasera."
-    ]
-    return captions[Int(seed % UInt32(captions.count))]
-  }
-
-  private static func textBody(seed: UInt32) -> String {
-    let texts = [
-      "tre ore a fissare la stessa pagina. niente cambia.",
-      "oggi l'aula 4 sembra un altro pianeta.",
-      "una playlist che gira da troppo. mando link a chi vuole.",
-      "sotto il portico. ci vediamo qui."
-    ]
-    return texts[Int(seed % UInt32(texts.count))]
   }
 
   private static func stableHash(_ string: String) -> UInt32 {

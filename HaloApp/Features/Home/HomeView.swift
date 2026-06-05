@@ -967,23 +967,23 @@ struct HomeView: View {
   }
 
   private func orbitReferencePeople(for tier: FriendshipTier, limit: Int) -> [HaloPersonNode] {
-    let order = Self.orbitReferenceHandleOrder(for: tier)
-    let indexed = mutuals.enumerated().filter { $0.element.tier == tier }
-
     return Array(
-      indexed
-        .sorted { lhs, rhs in
-          let leftHandle = lhs.element.handle.lowercased()
-          let rightHandle = rhs.element.handle.lowercased()
-          let leftOrder = order.firstIndex(of: leftHandle) ?? Int.max
-          let rightOrder = order.firstIndex(of: rightHandle) ?? Int.max
-
-          if leftOrder != rightOrder { return leftOrder < rightOrder }
-          return lhs.offset < rhs.offset
-        }
+      mutuals
+        .filter { $0.tier == tier }
+        .sorted(by: orbitReferenceBubbleSort)
         .prefix(limit)
-        .map(\.element)
     )
+  }
+
+  private func orbitReferenceBubbleSort(_ lhs: HaloPersonNode, _ rhs: HaloPersonNode) -> Bool {
+    if lhs.hasNew != rhs.hasNew { return lhs.hasNew && !rhs.hasNew }
+    if lhs.hasActiveVibe != rhs.hasActiveVibe { return lhs.hasActiveVibe && !rhs.hasActiveVibe }
+
+    let lhsActivity = lhs.lastActivityAt ?? .distantPast
+    let rhsActivity = rhs.lastActivityAt ?? .distantPast
+    if lhsActivity != rhsActivity { return lhsActivity > rhsActivity }
+
+    return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
   }
 
   private func orbitReferencePosition(
@@ -1383,21 +1383,6 @@ struct HomeView: View {
 
   private static func orbitStoriesBodyFont(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
     HaloVisual.Typography.inter(size, weight: weight)
-  }
-
-  private static func orbitReferenceHandleOrder(for tier: FriendshipTier) -> [String] {
-    switch tier {
-    case .inner:
-      return ["gia", "fra", "teo", "chia"]
-    case .close:
-      return ["ale", "lor", "bene", "miri", "jun", "nico", "svet", "tom", "vale"]
-    case .orbit:
-      return ["ste", "rocco", "ire", "carla", "rah", "fede", "marz", "seb"]
-    case .nebula:
-      return []
-    case .asteroid:
-      return []
-    }
   }
 
   private static let orbitStoriesCream = HaloVisual.Palette.cream

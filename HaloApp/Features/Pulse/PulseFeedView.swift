@@ -150,7 +150,13 @@ struct PulseFeedView: View {
 
         ForEach(group.events) { event in
           PulseTimelineRow(event: event) {
-            PulseDropCard(event: event, onPersonTap: { onPersonTap(event.person) })
+            PulseDropCard(
+              event: event,
+              onPersonTap: { onPersonTap(event.person) },
+              onReact: { kind in
+                Task { await vm.react(to: event, with: kind) }
+              }
+            )
           }
           .padding(.horizontal, 14)
           .padding(.vertical, 3)
@@ -246,7 +252,7 @@ struct PulseFeedView: View {
   private func publishDraft() {
     let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !text.isEmpty else { return }
-    vm.addLocalMessage(text, audience: scope)
+    Task { await vm.publishMessage(text, audience: scope) }
     draft = ""
     withAnimation(SwarmHalo.easeSwarm(0.18)) {
       isDraftOpen = false
@@ -260,11 +266,12 @@ struct PulseFeedView: View {
         isDraftOpen = true
       }
     case .photo:
-      vm.addLocalPlaceholder(.photoPost("appena successo"), audience: scope)
+      Task { await vm.publishQuickDrop(.photo, audience: scope) }
     case .audio:
-      vm.addLocalPlaceholder(.audioPost("voice note · 0:14"), audience: scope)
+      Task { await vm.publishQuickDrop(.audio, audience: scope) }
     case .vibe:
-      vm.addLocalPlaceholder(.vibe(draft.isEmpty ? "sono qui" : draft), audience: scope)
+      let text = draft
+      Task { await vm.publishQuickDrop(.vibe, audience: scope, note: text) }
       draft = ""
       isDraftOpen = false
     }
@@ -380,6 +387,7 @@ private struct PulseTimelineRow<Content: View>: View {
 private struct PulseDropCard: View {
   let event: PulseEvent
   var onPersonTap: () -> Void = {}
+  var onReact: (ReactionKind) -> Void = { _ in }
 
   var body: some View {
     switch event.kind {
@@ -584,7 +592,7 @@ private struct PulseDropCard: View {
       }
 
       Spacer()
-      Text(caption.contains("0:") ? caption : "0:14")
+      Text(caption.isEmpty ? "audio" : caption)
         .font(HaloType.mono(9, weight: .medium))
         .kerning(0.4)
         .foregroundStyle(HaloInk.creamMute)
@@ -602,8 +610,11 @@ private struct PulseDropCard: View {
 
   private var actionRow: some View {
     HStack(spacing: 8) {
-      actionChip("whisper", icon: "paperplane")
-      actionChip("eco", icon: "wave.3.right")
+      if event.person.lastPostId != nil {
+        ForEach(ReactionKind.allCases, id: \.self) { kind in
+          reactionChip(kind)
+        }
+      }
       Spacer()
       if event.isLive {
         Text("live")
@@ -612,20 +623,48 @@ private struct PulseDropCard: View {
     }
   }
 
-  private func actionChip(_ label: String, icon: String) -> some View {
-    HStack(spacing: 5) {
-      Image(systemName: icon)
-        .font(HaloType.system(9, weight: .medium))
-      Text(label)
-        .font(HaloType.mono(8.5, weight: .medium))
-        .kerning(0.5)
-        .textCase(.uppercase)
+  private func reactionChip(_ kind: ReactionKind) -> some View {
+    let tally = event.person.lastPostReactionTallies.first(where: { $0.kind == kind })
+
+    return Button {
+      onReact(kind)
+    } label: {
+      HStack(spacing: 5) {
+        ReactionGlyph(kind: kind, size: 13, color: tally == nil ? HaloInk.creamMute : SwarmHalo.inkSecondary)
+        reactionLabel(tally)
+      }
+      .foregroundStyle(HaloInk.creamLow)
+      .padding(.horizontal, 7)
+      .padding(.vertical, 5)
+      .background(Capsule().fill(HaloInk.creamWhisper))
+      .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
     }
-    .foregroundStyle(HaloInk.creamLow)
-    .padding(.horizontal, 8)
-    .padding(.vertical, 4)
-    .background(Capsule().fill(HaloInk.creamWhisper))
-    .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+    .buttonStyle(.plain)
+  }
+
+  @ViewBuilder
+  private func reactionLabel(_ tally: HaloReactionTally?) -> some View {
+    if let tally, tally.count > 0 {
+      if event.person.tier == .inner || event.person.tier == .close,
+         let labels = tally.actorLabels,
+         !labels.isEmpty {
+        Text(labels.prefix(2).map { "@\($0)" }.joined(separator: " "))
+          .font(HaloType.ui(9, weight: .medium))
+          .foregroundStyle(HaloInk.creamMute)
+          .lineLimit(1)
+        if tally.count > 2 {
+          Text("+\(tally.count - 2)")
+            .font(HaloType.mono(9, weight: .medium))
+            .foregroundStyle(HaloInk.creamMute)
+        }
+      } else {
+        Text("\(tally.count)")
+          .font(HaloType.mono(9, weight: .medium))
+          .foregroundStyle(HaloInk.creamMute)
+      }
+    } else {
+      Color.clear.frame(width: 1, height: 9)
+    }
   }
 
   private var systemEvent: some View {

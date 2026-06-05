@@ -13,7 +13,7 @@ struct MomentCard: View {
   let person: HaloPersonNode
   /// Tap sull'intera card (apre HaloSpace).
   var onTap: () -> Void = {}
-  /// Tap su una reazione (no-op nel demo).
+  /// Tap su una reazione.
   var onReact: (ReactionKind) -> Void = { _ in }
 
   /// Reazioni "live" che pingano transitoriamente sulla card. Aggiungere un
@@ -183,32 +183,39 @@ struct MomentCard: View {
   // MARK: - post inline + decay
 
   /// Tipo + caption di anteprima per il post inline. nil = non mostrare slot.
-  /// Demo: usa `note` come caption e una `Kind` derivata dall'id (per varietà).
   private struct PostPreview {
-    enum Kind { case photo, text, audio }
+    enum Kind {
+      case photo, text, audio
+
+      init(_ kind: PostKind) {
+        switch kind {
+        case .photo: self = .photo
+        case .text: self = .text
+        case .audio: self = .audio
+        }
+      }
+    }
+
     let kind: Kind
     let caption: String
+    let mediaPath: String?
   }
 
   private var postPreview: PostPreview? {
     guard person.lastPostAt != nil else { return nil }
-    // Deterministico per persona: distribuzione 50% testo, 35% foto, 15% audio
-    var h: UInt32 = 5381
-    for u in person.id.unicodeScalars { h = h &* 33 &+ u.value }
-    let bucket = h % 100
-    let kind: PostPreview.Kind = (bucket < 35) ? .photo : (bucket < 85) ? .text : .audio
-    let caption = person.note.isEmpty
-      ? (kind == .text ? "qualcosa di non detto" : "")
-      : person.note
-    return PostPreview(kind: kind, caption: caption)
+    let kind = PostPreview.Kind(person.lastPostKind ?? .text)
+    let caption = person.lastPostCaption ?? ""
+    return PostPreview(kind: kind, caption: caption, mediaPath: person.lastPostMediaPath)
   }
 
-  /// Decay 0..1 del ring intorno al post: 1 = appena postato, 0 = ≥ 72h.
+  /// Decay 0..1 del ring intorno al post: 1 = appena postato, 0 = scaduto.
   private var postDecay: Double {
-    guard let t = person.lastPostAt else { return 0 }
-    let age = Date.now.timeIntervalSince(t)
-    let window: TimeInterval = 72 * 3600
-    return min(max((window - age) / window, 0), 1)
+    guard let createdAt = person.lastPostAt else { return 0 }
+    let expiresAt = person.lastPostExpiresAt ?? createdAt.addingTimeInterval(72 * 3600)
+    let total = expiresAt.timeIntervalSince(createdAt)
+    let remaining = expiresAt.timeIntervalSince(Date.now)
+    guard total > 0 else { return 0 }
+    return min(max(remaining / total, 0), 1)
   }
 
   private func postWithDecayRing(_ preview: PostPreview) -> some View {
@@ -268,6 +275,14 @@ struct MomentCard: View {
           .background(SwarmHalo.absoluteBlack.opacity(0.25))
           .clipShape(Capsule())
           .padding(8)
+      } else if p.mediaPath != nil {
+        Text("foto")
+          .haloEyebrow(HaloInk.creamMute, size: 7.5, tracking: 1.5)
+          .padding(.horizontal, 10)
+          .padding(.vertical, 6)
+          .background(SwarmHalo.absoluteBlack.opacity(0.22))
+          .clipShape(Capsule())
+          .padding(8)
       }
     }
     .frame(height: 96)
@@ -294,7 +309,6 @@ struct MomentCard: View {
           .offset(x: 1)
       }
       .frame(width: 28, height: 28)
-      // pseudo-waveform statica
       HStack(spacing: 2) {
         ForEach(0..<18, id: \.self) { i in
           Capsule()
@@ -304,6 +318,12 @@ struct MomentCard: View {
       }
       .frame(height: 22)
       Spacer(minLength: 0)
+      if !p.caption.isEmpty {
+        Text(p.caption)
+          .font(HaloType.ui(10, weight: .medium))
+          .foregroundStyle(HaloInk.creamMute)
+          .lineLimit(1)
+      }
     }
     .padding(.horizontal, 12).padding(.vertical, 8)
     .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
@@ -311,21 +331,9 @@ struct MomentCard: View {
 
   // MARK: - reactions (tier-aware)
 
-  /// Conteggio finto deterministico per kind (bridge demo finché Reactions
-  /// non è cablato live). Per `inner`/`close` mostriamo `actors` (initials),
-  /// per `orbit`/`nebula` solo il count aggregato come da spec UX.
-  private var reactionTallies: [(ReactionKind, Int, [String])] {
-    var h: UInt32 = 1009
-    for u in person.id.unicodeScalars { h = h &* 17 &+ u.value }
-    let pool = ["g", "f", "t", "c", "l", "a", "n", "b", "j", "v"]
-    var out: [(ReactionKind, Int, [String])] = []
-    for (i, kind) in ReactionKind.allCases.enumerated() {
-      let n = Int((h >> UInt32(i)) & 0b111) // 0…7
-      guard n > 0 else { continue }
-      let actors = (0..<min(n, 3)).map { pool[Int(((h >> UInt32(i + $0))) % 10)] }
-      out.append((kind, n, actors))
-    }
-    return out
+  /// Aggregati reali del post corrente. Vuoto = nessuna reazione da mostrare.
+  private var reactionTallies: [HaloReactionTally] {
+    person.lastPostReactionTallies
   }
 
   private var canSeeActors: Bool {
@@ -334,23 +342,23 @@ struct MomentCard: View {
 
   private var reactionsRow: some View {
     HStack(spacing: 10) {
-      ForEach(reactionTallies, id: \.0) { (kind, count, actors) in
+      ForEach(reactionTallies, id: \.kind) { tally in
         Button {
-          onReact(kind)
+          onReact(tally.kind)
         } label: {
           HStack(spacing: 5) {
-            ReactionGlyph(kind: kind, size: 14, color: SwarmHalo.inkSecondary)
-            if canSeeActors {
-              Text(actors.prefix(2).map { "@\($0)" }.joined(separator: " "))
+            ReactionGlyph(kind: tally.kind, size: 14, color: SwarmHalo.inkSecondary)
+            if canSeeActors, let labels = tally.actorLabels, !labels.isEmpty {
+              Text(labels.prefix(2).map { "@\($0)" }.joined(separator: " "))
                 .font(HaloType.ui(10, weight: .medium))
                 .foregroundStyle(HaloInk.creamMute)
-              if count > 2 {
-                Text("+\(count - 2)")
+              if tally.count > 2 {
+                Text("+\(tally.count - 2)")
                   .font(HaloType.mono(10, weight: .medium))
                   .foregroundStyle(HaloInk.creamMute)
               }
             } else {
-              Text("\(count)")
+              Text("\(tally.count)")
                 .font(HaloType.mono(10, weight: .medium))
                 .foregroundStyle(HaloInk.creamMute)
             }
@@ -366,11 +374,10 @@ struct MomentCard: View {
 
   // MARK: - warning border (post in scadenza < 2h)
 
-  /// Tempo residuo prima della scadenza (post live 72h dal `lastPostAt`).
+  /// Tempo residuo prima della scadenza del post.
   private var hoursUntilExpiry: Double? {
     guard let t = person.lastPostAt else { return nil }
-    let age = Date.now.timeIntervalSince(t)
-    let remaining = 72 * 3600 - age
+    let remaining = (person.lastPostExpiresAt ?? t.addingTimeInterval(72 * 3600)).timeIntervalSince(Date.now)
     return remaining > 0 ? remaining / 3600 : nil
   }
 

@@ -112,14 +112,18 @@ final class FeedViewModel {
 
   // Stato di base
   private let bootstrap: Bootstrap
+  private let home = HomeViewModel()
   var people: [HaloPersonNode] = []
   var localEvents: [PulseEvent] = []
   var isLoading: Bool = false
+  var isPublishing: Bool = false
   var lastError: String?
 
   // Realtime: in `.live` ci si sottoscrive a FeedRealtime; in `.seed` resta nil.
   private let realtime = FeedRealtime()
   private var realtimeTask: Task<Void, Never>?
+  private var actorLabelCache: [UUID: String] = [:]
+  private var appliedReactionKeys: Set<String> = []
 
   init(bootstrap: Bootstrap = .live) {
     self.bootstrap = bootstrap
@@ -135,28 +139,22 @@ final class FeedViewModel {
       // Mutuali in feed; gli asteroidi non finiscono nelle sezioni Inner/Close/Orbit/Nebula.
       self.people = SeedPeople.all
     case .live:
-      let home = HomeViewModel()
       await home.load()
-      let liveNodes = home.feedItems.map(HaloPersonNode.init(item:)).filter(\.isMutual)
+      let liveNodes = await presentationNodes(from: home.feedItems.filter(\.isMutual))
       self.people = liveNodes
       self.lastError = home.lastError
       startRealtime()
     }
   }
 
-  /// Sottoscrivi i cambi live e re-load del feed quando arriva un evento.
+  /// Sottoscrive i cambi live e applica patch mirate al feed corrente.
   private func startRealtime() {
+    guard bootstrap == .live else { return }
     realtimeTask?.cancel()
     realtimeTask = Task { @MainActor [weak self] in
       guard let self else { return }
       for await event in self.realtime.subscribe() {
-        // Strategia minimale: marca lastError nil e ricarica.
-        // Quando MomentItem reali sostituiscono i seed, qui verrà fatto un
-        // upsert mirato (single-event) invece del re-fetch completo.
-        switch event {
-        case .newPost, .newVibe, .newReaction:
-          await self.load()
-        }
+        await self.applyRealtime(event)
       }
     }
   }
@@ -270,42 +268,133 @@ final class FeedViewModel {
     pulseEvents(in: scope).filter(\.isLive).count
   }
 
-  func addLocalMessage(_ text: String, audience: PulseScope = .inner, mood: Mood = SeedPeople.me.mood) {
+  func publishMessage(_ text: String, audience: PulseScope = .inner, mood: Mood = SeedPeople.me.mood) async {
     let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return }
-    var me = SeedPeople.me
+
+    isPublishing = true
+    defer { isPublishing = false }
+
+    var me = await currentViewerNode(mood: mood, note: trimmed)
     me.mood = mood
     me.note = trimmed
     me.lastPostAt = .now
+    me.lastPostKind = .text
+    me.lastPostCaption = trimmed
     me.hasActiveVibe = true
+
+    let localId = "local-message-\(UUID().uuidString)"
     localEvents.insert(
-      PulseEvent(
-        id: "local-message-\(UUID().uuidString)",
-        person: me,
-        kind: .message(trimmed),
-        createdAt: .now,
-        isMine: true,
-        audience: audience
-      ),
+      PulseEvent(id: localId, person: me, kind: .message(trimmed), createdAt: .now, isMine: true, audience: audience),
       at: 0
     )
+
+    do {
+      let post = try await PostsService.shared.post(
+        kind: .text,
+        mediaPath: nil,
+        caption: trimmed,
+        mood: mood,
+        minTier: audience.minTier
+      )
+      if let index = localEvents.firstIndex(where: { $0.id == localId }) {
+        localEvents[index].person.apply(post: post)
+        localEvents[index].kind = .textPost(trimmed)
+        localEvents[index].createdAt = post.createdAt
+      }
+      await applyPost(post)
+      lastError = nil
+    } catch {
+      localEvents.removeAll { $0.id == localId }
+      lastError = SupabaseErrorMessage.describe(error, fallback: "Non riesco a mandare il Moment. Riprova.")
+    }
   }
 
-  func addLocalPlaceholder(_ kind: PulseEvent.Kind, audience: PulseScope = .inner) {
-    var me = SeedPeople.me
-    me.lastPostAt = .now
+  func publishQuickDrop(_ type: PulseDropKind, audience: PulseScope = .inner, mood: Mood = SeedPeople.me.mood, note: String = "") async {
+    isPublishing = true
+    defer { isPublishing = false }
+
+    let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+    var me = await currentViewerNode(mood: mood, note: trimmed)
+    me.mood = mood
+    me.note = trimmed
     me.hasActiveVibe = true
-    localEvents.insert(
-      PulseEvent(
-        id: "local-\(UUID().uuidString)",
-        person: me,
-        kind: kind,
-        createdAt: .now,
-        isMine: true,
-        audience: audience
-      ),
-      at: 0
-    )
+
+    let localId = "local-\(UUID().uuidString)"
+
+    do {
+      switch type {
+      case .vibe:
+        let vibe = try await VibesService.shared.setCurrent(
+          mood: mood,
+          colorHex: mood.defaultHex,
+          note: trimmed.isEmpty ? nil : trimmed
+        )
+        me.apply(vibe: vibe)
+        localEvents.insert(
+          PulseEvent(
+            id: localId,
+            person: me,
+            kind: .vibe(trimmed.isEmpty ? mood.rawValue : trimmed),
+            createdAt: vibe.createdAt,
+            isMine: true,
+            audience: audience
+          ),
+          at: 0
+        )
+        await applyVibe(vibe)
+
+      case .photo:
+        let post = try await PostsService.shared.post(
+          kind: .photo,
+          mediaPath: nil,
+          caption: trimmed.isEmpty ? nil : trimmed,
+          mood: mood,
+          minTier: audience.minTier
+        )
+        me.apply(post: post)
+        localEvents.insert(
+          PulseEvent(id: localId, person: me, kind: .photoPost(post.caption ?? ""), createdAt: post.createdAt, isMine: true, audience: audience),
+          at: 0
+        )
+        await applyPost(post)
+
+      case .audio:
+        let post = try await PostsService.shared.post(
+          kind: .audio,
+          mediaPath: nil,
+          caption: trimmed.isEmpty ? nil : trimmed,
+          mood: mood,
+          minTier: audience.minTier
+        )
+        me.apply(post: post)
+        localEvents.insert(
+          PulseEvent(id: localId, person: me, kind: .audioPost(post.caption ?? ""), createdAt: post.createdAt, isMine: true, audience: audience),
+          at: 0
+        )
+        await applyPost(post)
+      }
+      lastError = nil
+    } catch {
+      localEvents.removeAll { $0.id == localId }
+      lastError = SupabaseErrorMessage.describe(error, fallback: "Non riesco a mandare il drop. Riprova.")
+    }
+  }
+
+  func react(to event: PulseEvent, with kind: ReactionKind) async {
+    guard let postId = event.person.lastPostId else { return }
+    do {
+      let actorId = AuthService.shared.currentUserId()
+      try await ReactionsService.shared.react(to: postId, with: kind)
+      if let actorId {
+        await applyReaction(Reaction(postId: postId, actorId: actorId, kind: kind))
+      } else {
+        await refreshReactionTallies(for: postId)
+      }
+      lastError = nil
+    } catch {
+      lastError = SupabaseErrorMessage.describe(error, fallback: "Non riesco a mandare la reazione. Riprova.")
+    }
   }
 
   private func demoEvents(in scope: PulseScope) -> [PulseEvent] {
@@ -330,12 +419,12 @@ final class FeedViewModel {
       }
 
       if let lastPostAt = person.lastPostAt {
-        let caption = person.note.isEmpty ? fallbackCaption(for: person) : person.note
+        let caption = person.lastPostCaption ?? person.note
         let postKind: PulseEvent.Kind
         switch bucket(for: person.id, salt: "post-kind") % 3 {
         case 0: postKind = .photoPost(caption)
         case 1: postKind = .textPost(caption)
-        default: postKind = .audioPost(caption.isEmpty ? "voice note · 14s" : caption)
+        default: postKind = .audioPost(caption)
         }
         events.append(
           PulseEvent(
@@ -382,10 +471,10 @@ final class FeedViewModel {
       }
 
       if let lastPostAt = person.lastPostAt {
-        let caption = person.note.isEmpty ? "" : person.note
+        let caption = person.lastPostCaption ?? ""
         events.append(
           PulseEvent(
-            id: "\(person.id)-live-post",
+            id: person.lastPostId?.uuidString ?? "\(person.id)-live-post",
             person: person,
             kind: Self.eventKind(for: person.lastPostKind, caption: caption),
             createdAt: lastPostAt,
@@ -403,7 +492,7 @@ final class FeedViewModel {
     case .photo:
       return .photoPost(caption)
     case .audio:
-      return .audioPost(caption.isEmpty ? "voice note" : caption)
+      return .audioPost(caption)
     case .text:
       return .textPost(caption)
     case nil:
@@ -426,16 +515,283 @@ final class FeedViewModel {
     return h
   }
 
-  private func fallbackCaption(for person: HaloPersonNode) -> String {
-    switch person.mood {
-    case .warm: return "luce calda, poco rumore"
-    case .focused: return "ancora sui libri"
-    case .wild: return "fuori tra poco"
-    case .chill: return "serata bassa"
-    case .electric: return "volume alto"
-    case .blue: return "aria strana"
-    case .soft: return "casa e silenzio"
-    case .lost: return "non so bene dove sono"
+}
+
+enum PulseDropKind {
+  case photo
+  case audio
+  case vibe
+}
+
+private extension PulseScope {
+  var minTier: FriendshipTier {
+    switch self {
+    case .inner: return .inner
+    case .tutti: return .orbit
+    }
+  }
+}
+
+private extension FeedViewModel {
+  func presentationNodes(from items: [MomentItem]) async -> [HaloPersonNode] {
+    var nodes: [HaloPersonNode] = []
+    for item in items {
+      var node = HaloPersonNode(item: item)
+      if let post = item.lastPost {
+        node.lastPostReactionTallies = await reactionTallies(for: post, viewerTier: node.tier)
+      }
+      nodes.append(node)
+    }
+    return nodes
+  }
+
+  func applyRealtime(_ event: FeedRealtime.Event) async {
+    switch event {
+    case .newPost(let post):
+      await applyPost(post)
+    case .newVibe(let vibe):
+      await applyVibe(vibe)
+    case .newReaction(let reaction):
+      await applyReaction(reaction)
+    }
+  }
+
+  func applyPost(_ post: HaloPost) async {
+    guard post.isAlive else { return }
+
+    if let index = people.firstIndex(where: { $0.id == post.userId.uuidString }) {
+      let current = people[index].lastPostAt ?? .distantPast
+      guard post.createdAt >= current else { return }
+      people[index].apply(post: post)
+      people[index].lastPostReactionTallies = await reactionTallies(for: post, viewerTier: people[index].tier)
+      sortPeople()
+      refreshLocalEvents(for: post.userId, post: post)
+      return
+    }
+
+    if let node = await hydratePersonNode(userId: post.userId, overridingPost: post) {
+      people.append(node)
+      sortPeople()
+    }
+  }
+
+  func applyVibe(_ vibe: Vibe) async {
+    guard vibe.isActive else { return }
+
+    if let index = people.firstIndex(where: { $0.id == vibe.userId.uuidString }) {
+      people[index].apply(vibe: vibe)
+      sortPeople()
+      refreshLocalEvents(for: vibe.userId, vibe: vibe)
+      return
+    }
+
+    if let node = await hydratePersonNode(userId: vibe.userId, overridingVibe: vibe) {
+      people.append(node)
+      sortPeople()
+    }
+  }
+
+  func applyReaction(_ reaction: Reaction) async {
+    let reactionKey = "\(reaction.postId.uuidString)|\(reaction.actorId.uuidString)|\(reaction.kind.rawValue)"
+    guard appliedReactionKeys.insert(reactionKey).inserted else { return }
+
+    let label = await actorLabel(for: reaction.actorId)
+
+    if let index = people.firstIndex(where: { $0.lastPostId == reaction.postId }) {
+      people[index].addReaction(kind: reaction.kind, actorLabel: people[index].canExposeReactionActors ? label : nil)
+    }
+
+    for index in localEvents.indices where localEvents[index].person.lastPostId == reaction.postId {
+      localEvents[index].person.addReaction(
+        kind: reaction.kind,
+        actorLabel: localEvents[index].person.canExposeReactionActors ? label : nil
+      )
+    }
+  }
+
+  func refreshReactionTallies(for postId: UUID) async {
+    if let index = people.firstIndex(where: { $0.lastPostId == postId }) {
+      people[index].lastPostReactionTallies = await reactionTallies(forPostId: postId, viewerTier: people[index].tier)
+    }
+    for index in localEvents.indices where localEvents[index].person.lastPostId == postId {
+      localEvents[index].person.lastPostReactionTallies = await reactionTallies(
+        forPostId: postId,
+        viewerTier: localEvents[index].person.tier
+      )
+    }
+  }
+
+  func hydratePersonNode(userId: UUID, overridingPost: HaloPost? = nil, overridingVibe: Vibe? = nil) async -> HaloPersonNode? {
+    do {
+      if try await ReportsService.shared.blockedIds().contains(userId) { return nil }
+
+      let profile = try await ProfilesService.shared.profile(id: userId)
+      let follows = try await FollowsService.shared.myFollows()
+      let mutuals = try await FollowsService.shared.mutualSet(among: [userId])
+      guard mutuals.contains(userId) else { return nil }
+
+      let tier = follows.first(where: { $0.followeeId == userId })?.tier
+      let vibe: Vibe?
+      if let overridingVibe {
+        vibe = overridingVibe
+      } else {
+        vibe = try await VibesService.shared.current(for: userId)
+      }
+      let post: HaloPost?
+      if let overridingPost {
+        post = overridingPost
+      } else {
+        let latestPosts = try await PostsService.shared.posts(forUser: userId)
+        post = latestPosts.first
+      }
+
+      var node = HaloPersonNode(
+        item: MomentItem(
+          profile: profile,
+          viewerTier: tier,
+          vibe: vibe,
+          lastPost: post,
+          isMutual: true
+        )
+      )
+      if let post {
+        node.lastPostReactionTallies = await reactionTallies(for: post, viewerTier: node.tier)
+      }
+      return node
+    } catch {
+      return nil
+    }
+  }
+
+  func currentViewerNode(mood: Mood, note: String) async -> HaloPersonNode {
+    guard let userId = AuthService.shared.currentUserId(),
+          let profile = try? await ProfilesService.shared.profile(id: userId) else {
+      return SeedPeople.me
+    }
+    return HaloPersonNode(
+      id: userId.uuidString,
+      handle: profile.handle,
+      name: profile.displayName,
+      tier: .inner,
+      mood: mood,
+      note: note,
+      hasNew: true,
+      hasActiveVibe: true,
+      isMutual: true
+    )
+  }
+
+  func reactionTallies(for post: HaloPost, viewerTier: FriendshipTier) async -> [HaloReactionTally] {
+    await reactionTallies(forPostId: post.id, viewerTier: viewerTier)
+  }
+
+  func reactionTallies(forPostId postId: UUID, viewerTier: FriendshipTier) async -> [HaloReactionTally] {
+    do {
+      let aggregates = try await ReactionsService.shared.reactions(for: postId, viewerTier: viewerTier)
+      var tallies: [HaloReactionTally] = []
+      for aggregate in aggregates {
+        let labels = await actorLabels(for: aggregate.actors)
+        tallies.append(HaloReactionTally(kind: aggregate.kind, count: aggregate.count, actorLabels: labels))
+      }
+      return tallies.sortedByReactionKind()
+    } catch {
+      return []
+    }
+  }
+
+  func actorLabels(for actorIds: [UUID]?) async -> [String]? {
+    guard let actorIds else { return nil }
+    var labels: [String] = []
+    for actorId in actorIds.prefix(3) {
+      labels.append(await actorLabel(for: actorId))
+    }
+    return labels
+  }
+
+  func actorLabel(for actorId: UUID) async -> String {
+    if let cached = actorLabelCache[actorId] { return cached }
+    if let profile = try? await ProfilesService.shared.profile(id: actorId) {
+      actorLabelCache[actorId] = profile.handle
+      return profile.handle
+    }
+    let fallback = String(actorId.uuidString.prefix(4)).lowercased()
+    actorLabelCache[actorId] = fallback
+    return fallback
+  }
+
+  func sortPeople() {
+    people.sort { lhs, rhs in
+      if lhs.tier.rank != rhs.tier.rank { return lhs.tier.rank > rhs.tier.rank }
+      return (lhs.lastActivityAt ?? .distantPast) > (rhs.lastActivityAt ?? .distantPast)
+    }
+  }
+
+  func refreshLocalEvents(for userId: UUID, post: HaloPost) {
+    for index in localEvents.indices where localEvents[index].person.id == userId.uuidString {
+      localEvents[index].person.apply(post: post)
+    }
+  }
+
+  func refreshLocalEvents(for userId: UUID, vibe: Vibe) {
+    for index in localEvents.indices where localEvents[index].person.id == userId.uuidString {
+      localEvents[index].person.apply(vibe: vibe)
+    }
+  }
+}
+
+private extension HaloPersonNode {
+  var canExposeReactionActors: Bool {
+    tier == .inner || tier == .close
+  }
+
+  mutating func apply(post: HaloPost) {
+    lastPostAt = post.createdAt
+    lastPostId = post.id
+    lastPostKind = post.kind
+    lastPostCaption = post.caption
+    lastPostMediaPath = post.mediaPath
+    lastPostExpiresAt = post.expiresAt
+    lastPostReactionTallies = []
+    hasNew = Date.now.timeIntervalSince(post.createdAt) <= 30 * 60
+    if !hasActiveVibe {
+      note = post.caption ?? ""
+      mood = post.mood ?? mood
+    }
+  }
+
+  mutating func apply(vibe: Vibe) {
+    mood = vibe.mood
+    note = vibe.note ?? ""
+    hasActiveVibe = true
+    lastVibeAt = vibe.createdAt
+    hasNew = Date.now.timeIntervalSince(vibe.createdAt) <= 30 * 60
+  }
+
+  mutating func addReaction(kind: ReactionKind, actorLabel: String?) {
+    if let index = lastPostReactionTallies.firstIndex(where: { $0.kind == kind }) {
+      lastPostReactionTallies[index].count += 1
+      if let actorLabel {
+        var labels = lastPostReactionTallies[index].actorLabels ?? []
+        if !labels.contains(actorLabel) {
+          labels.append(actorLabel)
+        }
+        lastPostReactionTallies[index].actorLabels = Array(labels.prefix(3))
+      }
+    } else {
+      lastPostReactionTallies.append(
+        HaloReactionTally(kind: kind, count: 1, actorLabels: actorLabel.map { [$0] })
+      )
+    }
+    lastPostReactionTallies = lastPostReactionTallies.sortedByReactionKind()
+  }
+}
+
+private extension Array where Element == HaloReactionTally {
+  func sortedByReactionKind() -> [HaloReactionTally] {
+    sorted { lhs, rhs in
+      let left = ReactionKind.allCases.firstIndex(of: lhs.kind) ?? 0
+      let right = ReactionKind.allCases.firstIndex(of: rhs.kind) ?? 0
+      return left < right
     }
   }
 }

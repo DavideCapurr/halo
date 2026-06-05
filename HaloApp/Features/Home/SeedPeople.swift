@@ -1,6 +1,12 @@
 import Foundation
 import HaloShared
 
+struct HaloReactionTally: Hashable {
+  let kind: ReactionKind
+  var count: Int
+  var actorLabels: [String]?
+}
+
 /// Presentation node used by Orbit, Pulse, HaloSpace and widgets.
 ///
 /// The production UI should reason in terms of person nodes: identity,
@@ -16,8 +22,18 @@ struct HaloPersonNode: Identifiable, Hashable {
   var hasNew: Bool
   /// Quanto fa è stato pubblicato l'ultimo post; nil se non ne ha pubblicati attivi.
   var lastPostAt: Date?
+  /// Id reale dell'ultimo Moment, usato per reazioni e realtime.
+  var lastPostId: UUID?
   /// Tipo reale dell'ultimo Moment, quando arriva dal backend.
   var lastPostKind: PostKind?
+  /// Caption reale dell'ultimo Moment; separata dalla vibe note.
+  var lastPostCaption: String?
+  /// Path storage del media reale, se il Moment lo ha.
+  var lastPostMediaPath: String?
+  /// Scadenza reale del Moment.
+  var lastPostExpiresAt: Date?
+  /// Aggregati reali di reazioni per l'ultimo Moment.
+  var lastPostReactionTallies: [HaloReactionTally]
   /// Timestamp della vibe attiva, quando arriva dal backend.
   var lastVibeAt: Date?
   /// True se ha una vibe nelle ultime 24h.
@@ -34,7 +50,12 @@ struct HaloPersonNode: Identifiable, Hashable {
     note: String,
     hasNew: Bool,
     lastPostAt: Date? = nil,
+    lastPostId: UUID? = nil,
     lastPostKind: PostKind? = nil,
+    lastPostCaption: String? = nil,
+    lastPostMediaPath: String? = nil,
+    lastPostExpiresAt: Date? = nil,
+    lastPostReactionTallies: [HaloReactionTally] = [],
     lastVibeAt: Date? = nil,
     hasActiveVibe: Bool = true,
     isMutual: Bool = true
@@ -47,7 +68,12 @@ struct HaloPersonNode: Identifiable, Hashable {
     self.note = note
     self.hasNew = hasNew
     self.lastPostAt = lastPostAt
+    self.lastPostId = lastPostId
     self.lastPostKind = lastPostKind
+    self.lastPostCaption = lastPostCaption
+    self.lastPostMediaPath = lastPostMediaPath
+    self.lastPostExpiresAt = lastPostExpiresAt
+    self.lastPostReactionTallies = lastPostReactionTallies
     self.lastVibeAt = lastVibeAt
     self.hasActiveVibe = hasActiveVibe
     self.isMutual = isMutual
@@ -62,7 +88,12 @@ struct HaloPersonNode: Identifiable, Hashable {
     self.note = item.vibe?.note ?? item.lastPost?.caption ?? ""
     self.hasNew = Date.now.timeIntervalSince(item.lastActivityAt) <= 30 * 60
     self.lastPostAt = item.lastPost?.createdAt
+    self.lastPostId = item.lastPost?.id
     self.lastPostKind = item.lastPost?.kind
+    self.lastPostCaption = item.lastPost?.caption
+    self.lastPostMediaPath = item.lastPost?.mediaPath
+    self.lastPostExpiresAt = item.lastPost?.expiresAt
+    self.lastPostReactionTallies = []
     self.lastVibeAt = item.vibe?.createdAt
     self.hasActiveVibe = item.vibe != nil
     self.isMutual = item.isMutual

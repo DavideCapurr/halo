@@ -36,20 +36,24 @@ La fase attiva e **Fase A - Adozione SWARM design**:
 
 ### Stato da non confondere con "finito"
 
-La UI principale e ancora in transizione da prototipo a prodotto live:
+La UI principale e ancora in transizione da prototipo a prodotto live, ma il
+gap demo/live del feed Home/Pulse e stato chiuso:
 
-- `HomeView` e `Pulse` usano ancora `SeedPeople`/eventi demo in vari punti.
-- `FeedViewModel` ha il ramo `.live`, ma oggi ricarica ancora seed data.
-- `HomeViewModel` compone gia `MomentItem` reali da Supabase, ma non e
-  ancora la sorgente della home visibile.
+- `HomeView` e `Pulse` usano `HomeViewModel.feedItems`/`MomentItem` reali come
+  sorgente visibile; `SeedPeople` resta per preview e bootstrap `.seed`.
+- `FeedViewModel` in `.live` idrata post e reazioni reali, poi applica patch
+  realtime mirate per post, vibe e reazioni invece di ricaricare tutto.
+- `MomentCard` e le card Pulse leggono `PostKind`, caption, scadenza e
+  aggregati reazione dal backend; le anteprime/reazioni deterministiche sono
+  limitate al percorso seed/preview.
 - `ProfileView`, il vecchio `ComposePostView` e Halo Plus/StoreKit hanno
   ancora placeholder o TODO.
 - Dal brief strategico PDF mancano ancora pezzi MVP importanti:
   Event Halo con QR/invite token, Memory Halo+ e analytics di attivazione.
 
 `PLAN.md` traccia il lavoro implementativo gia fatto e le scelte prese,
-ma va letto insieme al codice quando una checkbox riguarda wiring live o
-surface ancora demo.
+ma va letto insieme al codice quando una checkbox riguarda feature ancora
+placeholder fuori dal feed.
 
 ## Prossimo slice consigliato
 
@@ -61,8 +65,8 @@ Partire da Fase A:
 3. Definire il mapping stati Halo/SWARM e rifare i componenti chiave
    dell'orbita e del Pulse sopra quei token.
 
-Il wiring live di Orbit/Pulse e i gap prodotto del PDF restano visibili,
-ma il piano corrente li affronta dopo il riallineamento design.
+I gap prodotto del PDF restano visibili, ma il wiring live di Orbit/Pulse non
+e piu il blocco principale del feed.
 
 ## Setup dev
 
