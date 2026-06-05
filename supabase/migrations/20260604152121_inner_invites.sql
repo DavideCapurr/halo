@@ -4,7 +4,7 @@
 
 create table if not exists public.invites (
   id          uuid primary key default gen_random_uuid(),
-  token       text not null unique default encode(gen_random_bytes(16), 'hex'),
+  token       text not null unique default encode(extensions.gen_random_bytes(16), 'hex'),
   inviter_id  uuid not null references public.profiles(id) on delete cascade,
   invitee_id  uuid not null references public.profiles(id) on delete cascade,
   tier        friendship_tier not null default 'inner',
