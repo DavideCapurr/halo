@@ -49,4 +49,17 @@ final class FriendshipTierTests: XCTestCase {
     }
     XCTAssertEqual(parsed, id)
   }
+
+  func testRingDeepLinks() {
+    let id = UUID()
+    guard case .ring(let parsed) = DeepLink(url: DeepLink.ring(id: id).url!) else {
+      return XCTFail("failed to parse ring deep link")
+    }
+    XCTAssertEqual(parsed, id)
+
+    guard case .ringJoin(let token) = DeepLink(url: DeepLink.ringJoin(token: "ringtoken").url!) else {
+      return XCTFail("failed to parse ring join deep link")
+    }
+    XCTAssertEqual(token, "ringtoken")
+  }
 }

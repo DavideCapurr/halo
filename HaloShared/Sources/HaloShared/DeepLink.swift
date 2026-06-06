@@ -7,6 +7,8 @@ public enum DeepLink {
   case haloSpace(userId: UUID)
   case invite(token: String)
   case memory
+  case ring(id: UUID)
+  case ringJoin(token: String)
   case report(userId: UUID)
 
   public static let scheme = "halo"
@@ -19,6 +21,10 @@ public enum DeepLink {
       return URL(string: "\(Self.scheme)://invite/\(token)")
     case .memory:
       return URL(string: "\(Self.scheme)://memory")
+    case .ring(let id):
+      return URL(string: "\(Self.scheme)://ring/\(id.uuidString)")
+    case .ringJoin(let token):
+      return URL(string: "\(Self.scheme)://ring/join/\(token)")
     case .report(let id):
       return URL(string: "\(Self.scheme)://report/\(id.uuidString)")
     }
@@ -38,6 +44,16 @@ public enum DeepLink {
     if url.host == "memory" {
       self = .memory
       return
+    }
+    if url.host == "ring" {
+      if components.first == "join", let token = components.dropFirst().first, !token.isEmpty {
+        self = .ringJoin(token: token)
+        return
+      }
+      if let last = components.last, let id = UUID(uuidString: last) {
+        self = .ring(id: id)
+        return
+      }
     }
     if url.host == "report", let last = components.last, let id = UUID(uuidString: last) {
       self = .report(userId: id)

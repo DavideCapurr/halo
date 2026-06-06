@@ -17,70 +17,57 @@ struct SignInView: View {
 
   var body: some View {
     ZStack {
-      DeepSpaceBackground()
-      VStack(spacing: SwarmHalo.s6) {
-        Spacer()
-        VStack(alignment: .leading, spacing: SwarmHalo.s3) {
-          Text("Halo")
-            .font(HaloType.serifUpright(64, weight: .medium))
-            .foregroundStyle(SwarmHalo.ink)
-          Text("Le tue persone. Non un pubblico.")
-            .font(HaloType.serif(32, weight: .regular))
-            .foregroundStyle(SwarmHalo.ink)
-            .fixedSize(horizontal: false, vertical: true)
-          Text("presenza, non performance.")
-            .haloEyebrow(SwarmHalo.inkSecondary, size: 9, tracking: 2.0)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, SwarmHalo.s6)
-        Spacer()
-
-        SignInWithAppleButton(
-          onRequest: { request in
-            prepareAppleRequest(request)
-          },
-          onCompletion: { result in
-            handleApple(result)
-          }
-        )
-        .signInWithAppleButtonStyle(.white)
-        .frame(height: 52)
-        .padding(.horizontal, 24)
-
-        Button {
-          showEmail.toggle()
-        } label: {
-          Text(showEmail ? "nascondi email" : "entra con email")
-            .foregroundStyle(HaloInk.creamMute)
-            .font(HaloType.ui(14, weight: .medium))
-            .swarmChip()
-        }
-
-        if showEmail {
-          emailBlock
-            .padding(.horizontal, 24)
-            .transition(.opacity.combined(with: .move(edge: .bottom)))
-        }
-
-        if let err = errorMessage {
-          Text(err)
-            .font(HaloType.ui(12, weight: .regular))
-            .foregroundStyle(SwarmHalo.launchAmber)
-            .padding(.horizontal, 24)
-        }
-
-        Spacer().frame(height: 24)
+      WelcomeManifestoView {
+        signInControls
       }
-      .animation(.easeInOut(duration: 0.25), value: showEmail)
+
       if isWorking {
-      SwarmLoadingState(label: "auth")
-        .padding(.horizontal, SwarmHalo.s6)
+        SwarmLoadingState(label: "auth")
+          .padding(.horizontal, SwarmHalo.s6)
       }
     }
     .preferredColorScheme(.dark)
+    .animation(.easeInOut(duration: 0.25), value: showEmail)
   }
 
   // MARK: - email block
+
+  private var signInControls: some View {
+    VStack(spacing: SwarmHalo.s3) {
+      SignInWithAppleButton(
+        onRequest: { request in
+          prepareAppleRequest(request)
+        },
+        onCompletion: { result in
+          handleApple(result)
+        }
+      )
+      .signInWithAppleButtonStyle(.white)
+      .frame(height: 52)
+
+      Button {
+        showEmail.toggle()
+      } label: {
+        Text(showEmail ? "nascondi email" : "entra con email")
+          .foregroundStyle(HaloInk.creamMute)
+          .font(HaloType.ui(14, weight: .medium))
+          .swarmChip()
+      }
+      .buttonStyle(.plain)
+
+      if showEmail {
+        emailBlock
+          .transition(.opacity.combined(with: .move(edge: .bottom)))
+      }
+
+      if let err = errorMessage {
+        Text(err)
+          .font(HaloType.ui(12, weight: .regular))
+          .foregroundStyle(SwarmHalo.launchAmber)
+          .multilineTextAlignment(.center)
+      }
+    }
+  }
 
   @ViewBuilder
   private var emailBlock: some View {

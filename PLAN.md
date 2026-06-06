@@ -47,18 +47,18 @@ SWARM**.
       dedicata. Riduce la frizione del postare ("non resta lì per sempre").
       Wiring feed/decay sui post easy resta da fare quando il Pulse passa da
       seed a dati live.
-- [ ] Rings: Event / Club / Course / Founder in DB e UI.
+- [x] Rings: Event / Club / Course / Founder in DB e UI.
 - [x] Inner Invite formale con deep link: migration `invites` + RLS,
       `InvitesService`, sheet creazione da HaloSpace e accettazione
       `halo://invite/{token}` con copy "ti ha messo nel suo Inner".
-- [ ] Memory archive Halo+.
+- [x] Memory archive Halo+.
 - [x] Verifica Bocconi `@studbocconi.it` + founder invite code path:
       migration `campuses`/`campus_verifications`, validazione RLS lato DB,
       `CampusVerificationService` e `BocconiVerifyView` da profilo.
 - [x] Report/block safety MVP: migration `reports` + `blocks` con RLS,
       `ReportsService`, sheet da HaloSpace e filtro Home sui profili bloccati.
 - [ ] Halo Events / Halo Clubs con billing Stripe oltre StoreKit.
-- [ ] Welcome / Manifesto + Choose-your-5 onboarding.
+- [x] Welcome / Manifesto + Choose-your-5 onboarding.
 
 ## Roadmap operativa A-E
 
@@ -84,10 +84,10 @@ SWARM**.
 
 ### Fase B - Gap prodotto HALO (3-4 settimane)
 
-- [ ] Migrations: `rings`, `ring_members`,
+- [x] Migrations: `rings`, `ring_members`,
       `event_checkins`, `subscriptions`, `club_billing` + RLS.
-- [ ] Servizi: `RingsService`.
-- [ ] Schermate: `WelcomeManifestoView`, `ChooseYourFiveView`,
+- [x] Servizi: `RingsService`.
+- [x] Schermate: `WelcomeManifestoView`, `ChooseYourFiveView`,
       `EventRingView` (QR scan + join token),
       `ClubRingView`, `MemoryArchiveView`.
 - [~] Deep link `halo://invite/{token}` cablato per accettazione Inner.

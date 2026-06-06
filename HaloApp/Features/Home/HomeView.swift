@@ -41,6 +41,9 @@ struct HomeView: View {
   @State private var showZoomRail: Bool = false
   @State private var zoomRailHideTask: Task<Void, Never>? = nil
   @State private var pendingInvite: PendingInvite?
+  @State private var pendingRing: PendingRing?
+  @State private var showMemoryArchive: Bool = false
+  @State private var showPlusFromRoute: Bool = false
 
   private struct BubbleDragState: Equatable {
     let personId: String
@@ -51,6 +54,15 @@ struct HomeView: View {
   private struct PendingInvite: Identifiable, Equatable {
     let token: String
     var id: String { token }
+  }
+
+  private struct PendingRing: Identifiable, Equatable {
+    let ringId: UUID?
+    let token: String?
+
+    var id: String {
+      ringId?.uuidString ?? token ?? "event-ring"
+    }
   }
 
   private static let orbitCoordinateSpace = "halo.orbitReferenceField"
@@ -245,6 +257,29 @@ struct HomeView: View {
     }) { pending in
       InviteAcceptSheet(token: pending.token)
     }
+    .sheet(item: $pendingRing, onDismiss: {
+      if case .ring = state.route {
+        state.route = .home
+      }
+      if case .ringJoin = state.route {
+        state.route = .home
+      }
+    }) { pending in
+      EventRingView(ringId: pending.ringId, joinToken: pending.token)
+    }
+    .sheet(isPresented: $showMemoryArchive, onDismiss: {
+      if case .memory = state.route {
+        state.route = .home
+      }
+    }) {
+      MemoryArchiveView(hasPlus: state.currentProfile?.hasPlus ?? false) {
+        showMemoryArchive = false
+        showPlusFromRoute = true
+      }
+    }
+    .sheet(isPresented: $showPlusFromRoute) {
+      PlusUpsellView()
+    }
     .fullScreenCover(isPresented: $showStories) {
       OrbitStoriesView(
         items: vm.mutualItems,
@@ -282,6 +317,15 @@ struct HomeView: View {
   private func syncRoutePresentation() {
     if case .invite(let token) = state.route {
       pendingInvite = PendingInvite(token: token)
+    }
+    if case .memory = state.route {
+      showMemoryArchive = true
+    }
+    if case .ring(let id) = state.route {
+      pendingRing = PendingRing(ringId: id, token: nil)
+    }
+    if case .ringJoin(let token) = state.route {
+      pendingRing = PendingRing(ringId: nil, token: token)
     }
   }
 

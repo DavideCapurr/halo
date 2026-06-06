@@ -109,6 +109,26 @@ final class FollowsService {
       .value
   }
 
+  /// Vero quando l'utente ha gia almeno un Inner confermato o una proposta
+  /// Inner pendente. Per il cold start basta che il Choose-your-5 sia partito.
+  func hasStartedInnerCircle() async throws -> Bool {
+    let follows = try await myFollows()
+    return follows.contains { follow in
+      follow.tier == .inner || follow.proposedTier == .inner
+    }
+  }
+
+  /// Usa la semantica onboarding: crea la follow se manca e propone Inner.
+  /// Se la follow esiste gia, la proposta resta comunque l'operazione utile.
+  func addInitialInnerCandidate(_ userId: UUID) async throws {
+    do {
+      _ = try await follow(userId)
+    } catch {
+      // Una follow esistente e accettabile: aggiorniamo comunque la proposta.
+    }
+    try await proposeTier(.inner, for: userId)
+  }
+
   /// Vero se esiste una follow nei due versi tra il viewer e `userId`.
   /// Usato dall'orbital field per separare bolle "vere" dagli asteroidi.
   func isMutual(with userId: UUID) async throws -> Bool {
