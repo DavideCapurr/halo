@@ -55,6 +55,12 @@
 		BCF8F88427FF2272E80F8544 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D6C6F10A0B93506351AB718 /* StorageService.swift */; };
 		C14CC64A435506D6A1090CE2 /* InitialInnerCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2410598D92A3A5BF37A9D272 /* InitialInnerCircleView.swift */; };
 		C711E890AA11BB22CC33DD44 /* InvitesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C711E890AA11BB22CC33DD45 /* InvitesService.swift */; };
+		B10000000000000000000011 /* RingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* RingsService.swift */; };
+		B10000000000000000000012 /* EventRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000022 /* EventRingView.swift */; };
+		B10000000000000000000013 /* ClubRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* ClubRingView.swift */; };
+		B10000000000000000000014 /* MemoryArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* MemoryArchiveView.swift */; };
+		B10000000000000000000015 /* WelcomeManifestoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000025 /* WelcomeManifestoView.swift */; };
+		B10000000000000000000016 /* ChooseYourFiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000026 /* ChooseYourFiveView.swift */; };
 		C3BFC0CFBF335F829B29EBD3 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C068CF3C029287339064B62 /* OnboardingView.swift */; };
 		C6A80CF60E65CD265C9EF769 /* DeepSpaceBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3A359887F8BB79CE25DEA0 /* DeepSpaceBackground.swift */; };
 		C78E2869D9E3A96D1DDBC7F6 /* HaloShared in Frameworks */ = {isa = PBXBuildFile; productRef = 7ACAF70CCC9F65EFE9A704F6 /* HaloShared */; };
@@ -166,6 +172,12 @@
 		BFCC51CDA4582BC1CA19C823 /* PortraitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortraitView.swift; sourceTree = "<group>"; };
 		C5680FDE7DFDD17D18996C5C /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
 		C711E890AA11BB22CC33DD45 /* InvitesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitesService.swift; sourceTree = "<group>"; };
+		B10000000000000000000021 /* RingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingsService.swift; sourceTree = "<group>"; };
+		B10000000000000000000022 /* EventRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRingView.swift; sourceTree = "<group>"; };
+		B10000000000000000000023 /* ClubRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubRingView.swift; sourceTree = "<group>"; };
+		B10000000000000000000024 /* MemoryArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryArchiveView.swift; sourceTree = "<group>"; };
+		B10000000000000000000025 /* WelcomeManifestoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeManifestoView.swift; sourceTree = "<group>"; };
+		B10000000000000000000026 /* ChooseYourFiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseYourFiveView.swift; sourceTree = "<group>"; };
 		C669663C5BBC6DEAC925B046 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		C9A3BA733F12EEB5C02DDA4B /* ZoomLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomLevel.swift; sourceTree = "<group>"; };
 		CBBF159C391B639968EDDA4A /* StandByWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByWidget.swift; sourceTree = "<group>"; };
@@ -291,6 +303,7 @@
 				44AA5A1450AC8C2E86EA3B08 /* ProfilesService.swift */,
 				311D43E12E167F42ABCC02D8 /* ReactionsService.swift */,
 				E4A1B2C3D4E5F60718293A4C /* ReportsService.swift */,
+				B10000000000000000000021 /* RingsService.swift */,
 				0D6C6F10A0B93506351AB718 /* StorageService.swift */,
 				C5680FDE7DFDD17D18996C5C /* SupabaseClient.swift */,
 				A6058812E162F28D87C32A9D /* VibesService.swift */,
@@ -362,6 +375,7 @@
 				D259969BF6006F57056C3EAA /* Plus */,
 				554831F241AD3DB0FBCF2812 /* Profile */,
 				F47F708BE48A7207EA6D705E /* Pulse */,
+				B10000000000000000000031 /* Rings */,
 				5A7B0C8D419E5B4A82F1C0A2 /* Stato */,
 			);
 			path = Features;
@@ -428,9 +442,19 @@
 		D259969BF6006F57056C3EAA /* Plus */ = {
 			isa = PBXGroup;
 			children = (
+				B10000000000000000000024 /* MemoryArchiveView.swift */,
 				8024E8C710BB6866369C0380 /* PlusUpsellView.swift */,
 			);
 			path = Plus;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000031 /* Rings */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000023 /* ClubRingView.swift */,
+				B10000000000000000000022 /* EventRingView.swift */,
+			);
+			path = Rings;
 			sourceTree = "<group>";
 		};
 		D34A6C2B6E9F8136717333AC /* Widget */ = {
@@ -469,9 +493,11 @@
 			isa = PBXGroup;
 			children = (
 				2EBC0A11223344556677889A /* BocconiVerifyView.swift */,
+				B10000000000000000000026 /* ChooseYourFiveView.swift */,
 				2410598D92A3A5BF37A9D272 /* InitialInnerCircleView.swift */,
 				8C068CF3C029287339064B62 /* OnboardingView.swift */,
 				ECD2AC664A6AA49C2DC6BBF5 /* SignInView.swift */,
+				B10000000000000000000025 /* WelcomeManifestoView.swift */,
 			);
 			path = Auth;
 			sourceTree = "<group>";
@@ -621,6 +647,7 @@
 				2EBC0A112233445566778899 /* BocconiVerifyView.swift in Sources */,
 				57625BFD8C86B08A1CBCB178 /* AuthService.swift in Sources */,
 				89A6203B06472FB1E7FA9EF0 /* BottomBarView.swift in Sources */,
+				B10000000000000000000016 /* ChooseYourFiveView.swift in Sources */,
 				E9562EF3214C2BE76676404B /* ComposePostView.swift in Sources */,
 				C6A80CF60E65CD265C9EF769 /* DeepSpaceBackground.swift in Sources */,
 				4B6322AC9F824D35A654C663 /* DiscoveryView.swift in Sources */,
@@ -642,6 +669,9 @@
 				5A7B0C8D419E5B4A82F1C0A0 /* StatoView.swift in Sources */,
 				C14CC64A435506D6A1090CE2 /* InitialInnerCircleView.swift in Sources */,
 				C711E890AA11BB22CC33DD44 /* InvitesService.swift in Sources */,
+				B10000000000000000000012 /* EventRingView.swift in Sources */,
+				B10000000000000000000013 /* ClubRingView.swift in Sources */,
+				B10000000000000000000014 /* MemoryArchiveView.swift in Sources */,
 				EF347D20906247AA4DDF1FD1 /* MomentCard.swift in Sources */,
 				ACBECEA15F6BB2D8D319D999 /* MoodPalette.swift in Sources */,
 				C3BFC0CFBF335F829B29EBD3 /* OnboardingView.swift in Sources */,
@@ -657,6 +687,7 @@
 				58F8D1897F2B02F67231A0AB /* ReactionGlyph.swift in Sources */,
 				F6BC61C10B8441E38707EB7E /* ReactionsService.swift in Sources */,
 				E4A1B2C3D4E5F60718293A4B /* ReportsService.swift in Sources */,
+				B10000000000000000000011 /* RingsService.swift in Sources */,
 				D6F820063C823DDF33318232 /* RootView.swift in Sources */,
 				5614C6B175278AA769AA4265 /* SeedPeople.swift in Sources */,
 				DC8147B901A23590AC524D1F /* SignInView.swift in Sources */,
@@ -671,6 +702,7 @@
 				FD9F235A1DBA40EBA85A7EB7 /* VibeFirstComposeView.swift in Sources */,
 				EA51C0FACE111111EA51C0FA /* EasyComposeView.swift in Sources */,
 				3AEC73BA411EC4C6901B5004 /* VibeSetterView.swift in Sources */,
+				B10000000000000000000015 /* WelcomeManifestoView.swift in Sources */,
 				F92E56C5A69B65C887CB0863 /* VibesService.swift in Sources */,
 				33A951EAF4D9245DD5E56245 /* WidgetSnapshotStore.swift in Sources */,
 			);

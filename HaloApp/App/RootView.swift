@@ -22,9 +22,9 @@ struct RootView: View {
         }
         .transition(.opacity)
       case .initialCircle:
-        InitialInnerCircleView(
+        ChooseYourFiveView(
           onDone: { state.didFinishInitialCircle() },
-          onSkip: { state.didFinishInitialCircle() }
+          onSkip: { state.didSkipInitialCircle() }
         )
         .transition(.opacity)
       case .ready:

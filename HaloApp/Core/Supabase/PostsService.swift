@@ -89,6 +89,24 @@ final class PostsService {
       return lhs.createdAt > rhs.createdAt
     }
   }
+
+  /// Archivio privato Halo+: post dell'utente corrente che hanno gia superato
+  /// `expires_at`. La RLS consente solo all'autore di riaprirli.
+  func memoryArchive(limit: Int = 80) async throws -> [HaloPost] {
+    guard let me = AuthService.shared.currentUserId() else {
+      throw PostsError.notAuthenticated
+    }
+
+    return try await client
+      .from("halo_posts")
+      .select()
+      .eq("user_id", value: me)
+      .lte("expires_at", value: Date.now.iso8601String)
+      .order("created_at", ascending: false)
+      .limit(limit)
+      .execute()
+      .value
+  }
 }
 
 private extension Date {

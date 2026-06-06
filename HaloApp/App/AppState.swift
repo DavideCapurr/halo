@@ -11,10 +11,12 @@ final class AppState {
     case profile(userId: UUID)
     case invite(token: String)
     case memory
+    case ring(id: UUID)
+    case ringJoin(token: String)
     case report(userId: UUID)
   }
 
-  enum Phase {
+  enum Phase: Equatable {
     case launching     // verifica sessione iniziale
     case signedOut     // SignInView
     case onboarding    // handle / display / avatar
@@ -29,6 +31,8 @@ final class AppState {
 
   var isAuthenticated: Bool { currentProfile != nil }
 
+  private let initialCircleSkipPrefix = "halo.initialCircleSkipped."
+
   // MARK: - Bootstrap
 
   /// Ripristina lo stato della sessione all'avvio dell'app.
@@ -42,7 +46,7 @@ final class AppState {
       do {
         let p = try await ProfilesService.shared.currentProfile()
         currentProfile = p
-        phase = .ready
+        await routeAfterAuthenticatedProfile(p)
       } catch ProfilesService.ProfilesError.notFound {
         phase = .onboarding
       } catch {
@@ -62,26 +66,29 @@ final class AppState {
   func didSignIn(_ profile: Profile) {
     launchErrorMessage = nil
     currentProfile = profile
-    // Se manca handle/displayName "veri" siamo ancora in onboarding.
-    if profile.handle.hasPrefix("halo_") || profile.displayName == "Halo" {
+    if profileNeedsOnboarding(profile) {
       phase = .onboarding
     } else {
-      phase = initialCircleNeeded ? .initialCircle : .ready
+      phase = .launching
+      Task { await routeAfterAuthenticatedProfile(profile) }
     }
   }
-
-  /// Heuristica: se il profilo è appena stato creato e non ha follow Inner,
-  /// passa per `InitialInnerCircleView`. Per ora lasciamo l'utente decidere
-  /// se passarci tramite skip esplicito; default = no.
-  var initialCircleNeeded: Bool { false }
 
   func didFinishOnboarding(_ profile: Profile) {
     launchErrorMessage = nil
     currentProfile = profile
-    phase = initialCircleNeeded ? .initialCircle : .ready
+    phase = .launching
+    Task { await routeAfterAuthenticatedProfile(profile) }
   }
 
   func didFinishInitialCircle() {
+    phase = .ready
+  }
+
+  func didSkipInitialCircle() {
+    if let profileId = currentProfile?.id {
+      UserDefaults.standard.set(true, forKey: initialCircleSkipKey(for: profileId))
+    }
     phase = .ready
   }
 
@@ -102,8 +109,47 @@ final class AppState {
       route = .invite(token: token)
     case .memory:
       route = .memory
+    case .ring(let id):
+      route = .ring(id: id)
+    case .ringJoin(let token):
+      route = .ringJoin(token: token)
     case .report(let userId):
       route = .report(userId: userId)
     }
+  }
+
+  // MARK: - Phase routing
+
+  private func routeAfterAuthenticatedProfile(_ profile: Profile) async {
+    currentProfile = profile
+
+    if profileNeedsOnboarding(profile) {
+      phase = .onboarding
+      return
+    }
+
+    phase = await initialCircleNeeded(for: profile) ? .initialCircle : .ready
+  }
+
+  private func profileNeedsOnboarding(_ profile: Profile) -> Bool {
+    profile.handle.hasPrefix("halo_") || profile.displayName == "Halo"
+  }
+
+  /// Serve quando l'utente non ha ancora scelto/proposto nessuno per Inner e
+  /// non ha saltato esplicitamente il passaggio su questo device.
+  private func initialCircleNeeded(for profile: Profile) async -> Bool {
+    guard !UserDefaults.standard.bool(forKey: initialCircleSkipKey(for: profile.id)) else {
+      return false
+    }
+
+    do {
+      return try await !FollowsService.shared.hasStartedInnerCircle()
+    } catch {
+      return false
+    }
+  }
+
+  private func initialCircleSkipKey(for profileId: UUID) -> String {
+    "\(initialCircleSkipPrefix)\(profileId.uuidString.lowercased())"
   }
 }

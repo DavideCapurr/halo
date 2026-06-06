@@ -5,6 +5,8 @@ import HaloShared
 /// surfaces visible as real SWARM command objects even while backend work is
 /// staged for later phases.
 struct ProfileView: View {
+  @Environment(AppState.self) private var state
+
   let person: HaloPersonNode
   var tierCounts: [FriendshipTier: Int] = [:]
   var onVibeTap: () -> Void = {}
@@ -13,6 +15,9 @@ struct ProfileView: View {
   @State private var showPlus: Bool = false
   @State private var showDiscovery: Bool = false
   @State private var showBocconiVerify: Bool = false
+  @State private var showEventRings: Bool = false
+  @State private var showClubRings: Bool = false
+  @State private var showMemory: Bool = false
 
   init(
     person: HaloPersonNode,
@@ -59,6 +64,16 @@ struct ProfileView: View {
     .sheet(isPresented: $showPlus) { PlusUpsellView() }
     .sheet(isPresented: $showDiscovery) { DiscoveryView { showDiscovery = false } }
     .sheet(isPresented: $showBocconiVerify) { BocconiVerifyView() }
+    .sheet(isPresented: $showEventRings) { EventRingView() }
+    .sheet(isPresented: $showClubRings) { ClubRingView() }
+    .sheet(isPresented: $showMemory) {
+      MemoryArchiveView(hasPlus: state.currentProfile?.hasPlus ?? false) {
+        showMemory = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+          showPlus = true
+        }
+      }
+    }
   }
 
   private var rail: some View {
@@ -155,6 +170,12 @@ struct ProfileView: View {
       profileCommand("verifica Bocconi", "checkmark.seal", role: .connected) {
         showBocconiVerify = true
       }
+      profileCommand("Event Ring", "qrcode.viewfinder", role: .attention) {
+        showEventRings = true
+      }
+      profileCommand("Club e corsi", "person.3.sequence", role: .operational) {
+        showClubRings = true
+      }
       profileCommand("scopri account pubblici", "scope", role: .operational) {
         showDiscovery = true
       }
@@ -172,6 +193,9 @@ struct ProfileView: View {
       HStack {
         SwarmMetricTile(label: "frammenti", value: "00", activation: .rest, active: false)
         Spacer()
+        SwarmCommandButton(label: "Memory", icon: "archivebox", activation: .attention) {
+          showMemory = true
+        }
         SwarmCommandButton(label: "Halo Plus", icon: "sparkles", activation: .attention) {
           showPlus = true
         }

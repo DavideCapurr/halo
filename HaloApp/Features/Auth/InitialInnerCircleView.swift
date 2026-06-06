@@ -14,6 +14,7 @@ struct InitialInnerCircleView: View {
   @State private var picked: [Profile] = []
   @State private var isSearching: Bool = false
   @State private var isWorking: Bool = false
+  @State private var errorMessage: String?
 
   private let maxInner = 5
 
@@ -26,6 +27,12 @@ struct InitialInnerCircleView: View {
         pickedRow
         resultsList
         Spacer(minLength: 0)
+        if let errorMessage {
+          Text(errorMessage)
+            .font(HaloType.ui(12, weight: .regular))
+            .foregroundStyle(SwarmHalo.launchAmber)
+            .multilineTextAlignment(.center)
+        }
         ctaRow
       }
       .padding(.horizontal, 22)
@@ -183,6 +190,7 @@ struct InitialInnerCircleView: View {
   }
 
   private func toggle(_ p: Profile) {
+    errorMessage = nil
     if let i = picked.firstIndex(where: { $0.id == p.id }) {
       picked.remove(at: i)
     } else if picked.count < maxInner {
@@ -202,11 +210,23 @@ struct InitialInnerCircleView: View {
 
   @MainActor
   private func confirm() async {
-    isWorking = true; defer { isWorking = false }
-    for p in picked {
-      _ = try? await FollowsService.shared.follow(p.id)
-      try? await FollowsService.shared.proposeTier(.inner, for: p.id)
+    guard !picked.isEmpty else {
+      onSkip()
+      return
     }
-    onDone()
+
+    isWorking = true; defer { isWorking = false }
+    errorMessage = nil
+    do {
+      for p in picked {
+        try await FollowsService.shared.addInitialInnerCandidate(p.id)
+      }
+      onDone()
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco ad aggiungere il tuo Inner. Riprova."
+      )
+    }
   }
 }
