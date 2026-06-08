@@ -42,6 +42,7 @@ struct HomeView: View {
   @State private var zoomRailHideTask: Task<Void, Never>? = nil
   @State private var pendingInvite: PendingInvite?
   @State private var pendingRing: PendingRing?
+  @State private var pendingCampaign: PendingCampaign?
   @State private var showMemoryArchive: Bool = false
   @State private var showPlusFromRoute: Bool = false
 
@@ -62,6 +63,15 @@ struct HomeView: View {
 
     var id: String {
       ringId?.uuidString ?? token ?? "event-ring"
+    }
+  }
+
+  private struct PendingCampaign: Identifiable, Equatable {
+    let campaignId: UUID?
+    let slug: String?
+
+    var id: String {
+      campaignId?.uuidString ?? slug ?? "campaign"
     }
   }
 
@@ -267,6 +277,20 @@ struct HomeView: View {
     }) { pending in
       EventRingView(ringId: pending.ringId, joinToken: pending.token)
     }
+    .sheet(item: $pendingCampaign, onDismiss: {
+      if case .campaign = state.route {
+        state.route = .home
+      }
+      if case .campaignContribute = state.route {
+        state.route = .home
+      }
+    }) { pending in
+      if let id = pending.campaignId {
+        CampaignDetailView(campaignId: id)
+      } else if let slug = pending.slug {
+        CampaignDetailView(contributeSlug: slug)
+      }
+    }
     .sheet(isPresented: $showMemoryArchive, onDismiss: {
       if case .memory = state.route {
         state.route = .home
@@ -326,6 +350,12 @@ struct HomeView: View {
     }
     if case .ringJoin(let token) = state.route {
       pendingRing = PendingRing(ringId: nil, token: token)
+    }
+    if case .campaign(let id) = state.route {
+      pendingCampaign = PendingCampaign(campaignId: id, slug: nil)
+    }
+    if case .campaignContribute(let slug) = state.route {
+      pendingCampaign = PendingCampaign(campaignId: nil, slug: slug)
     }
   }
 

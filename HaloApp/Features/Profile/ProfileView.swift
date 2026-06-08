@@ -17,6 +17,7 @@ struct ProfileView: View {
   @State private var showBocconiVerify: Bool = false
   @State private var showEventRings: Bool = false
   @State private var showClubRings: Bool = false
+  @State private var showCampaigns: Bool = false
   @State private var showMemory: Bool = false
 
   init(
@@ -66,6 +67,7 @@ struct ProfileView: View {
     .sheet(isPresented: $showBocconiVerify) { BocconiVerifyView() }
     .sheet(isPresented: $showEventRings) { EventRingView() }
     .sheet(isPresented: $showClubRings) { ClubRingView() }
+    .sheet(isPresented: $showCampaigns) { CampaignsListView() }
     .sheet(isPresented: $showMemory) {
       MemoryArchiveView(hasPlus: state.currentProfile?.hasPlus ?? false) {
         showMemory = false
@@ -175,6 +177,9 @@ struct ProfileView: View {
       }
       profileCommand("Club e corsi", "person.3.sequence", role: .operational) {
         showClubRings = true
+      }
+      profileCommand("Campagne", "flag.checkered", role: .operational) {
+        showCampaigns = true
       }
       profileCommand("scopri account pubblici", "scope", role: .operational) {
         showDiscovery = true
