@@ -34,6 +34,7 @@
 		77E86FE9BCF7AFD97D227452 /* ReactionBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 971B8FCC8D69F506B559440D /* ReactionBarView.swift */; };
 		7C8B07C526DF4EF3B712A1E2 /* TimeOfDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A64D3653A44288924B64E7 /* TimeOfDay.swift */; };
 		8410A859D05FA2D347B673ED /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 22C5F11DE43A60B63C9E5E6B /* Supabase */; };
+		B10000000000000000000073 /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = B10000000000000000000072 /* StripePaymentSheet */; };
 		876C025F38DF4A57F0B87B38 /* HaloTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3836A2723C6326F6DDE66E9 /* HaloTheme.swift */; };
 		89A6203B06472FB1E7FA9EF0 /* BottomBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F19C3296B85B41B832FB82C /* BottomBarView.swift */; };
 		8A23A9C7C9B1F4BBB26EC6B2 /* LockscreenWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A30A8ACF8B2ED88DA4FAAD6 /* LockscreenWidget.swift */; };
@@ -65,6 +66,8 @@
 		B10000000000000000000042 /* CampaignsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000052 /* CampaignsListView.swift */; };
 		B10000000000000000000043 /* CampaignCreateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000053 /* CampaignCreateSheet.swift */; };
 		B10000000000000000000044 /* CampaignDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000054 /* CampaignDetailView.swift */; };
+		B10000000000000000000045 /* CampaignPaymentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000055 /* CampaignPaymentService.swift */; };
+		B10000000000000000000046 /* CampaignDonateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000056 /* CampaignDonateSheet.swift */; };
 		C3BFC0CFBF335F829B29EBD3 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C068CF3C029287339064B62 /* OnboardingView.swift */; };
 		C6A80CF60E65CD265C9EF769 /* DeepSpaceBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3A359887F8BB79CE25DEA0 /* DeepSpaceBackground.swift */; };
 		C78E2869D9E3A96D1DDBC7F6 /* HaloShared in Frameworks */ = {isa = PBXBuildFile; productRef = 7ACAF70CCC9F65EFE9A704F6 /* HaloShared */; };
@@ -186,6 +189,8 @@
 		B10000000000000000000052 /* CampaignsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignsListView.swift; sourceTree = "<group>"; };
 		B10000000000000000000053 /* CampaignCreateSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCreateSheet.swift; sourceTree = "<group>"; };
 		B10000000000000000000054 /* CampaignDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignDetailView.swift; sourceTree = "<group>"; };
+		B10000000000000000000055 /* CampaignPaymentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignPaymentService.swift; sourceTree = "<group>"; };
+		B10000000000000000000056 /* CampaignDonateSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignDonateSheet.swift; sourceTree = "<group>"; };
 		C669663C5BBC6DEAC925B046 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		C9A3BA733F12EEB5C02DDA4B /* ZoomLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomLevel.swift; sourceTree = "<group>"; };
 		CBBF159C391B639968EDDA4A /* StandByWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByWidget.swift; sourceTree = "<group>"; };
@@ -223,6 +228,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8410A859D05FA2D347B673ED /* Supabase in Frameworks */,
+				B10000000000000000000073 /* StripePaymentSheet in Frameworks */,
 				0B40EF8971971598AC792F16 /* HaloShared in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -463,6 +469,8 @@
 			children = (
 				B10000000000000000000053 /* CampaignCreateSheet.swift */,
 				B10000000000000000000054 /* CampaignDetailView.swift */,
+				B10000000000000000000056 /* CampaignDonateSheet.swift */,
+				B10000000000000000000055 /* CampaignPaymentService.swift */,
 				B10000000000000000000052 /* CampaignsListView.swift */,
 			);
 			path = Campaigns;
@@ -578,6 +586,7 @@
 			name = HaloApp;
 			packageProductDependencies = (
 				22C5F11DE43A60B63C9E5E6B /* Supabase */,
+				B10000000000000000000072 /* StripePaymentSheet */,
 				75A04FDE4CC667832BB0DA70 /* HaloShared */,
 			);
 			productName = HaloApp;
@@ -631,6 +640,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				31C98A4169DE0A2DC073903E /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				B10000000000000000000071 /* XCRemoteSwiftPackageReference "stripe-ios" */,
 				997ACB4164694089B5AEDF34 /* XCLocalSwiftPackageReference "HaloShared" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -696,6 +706,8 @@
 				B10000000000000000000042 /* CampaignsListView.swift in Sources */,
 				B10000000000000000000043 /* CampaignCreateSheet.swift in Sources */,
 				B10000000000000000000044 /* CampaignDetailView.swift in Sources */,
+				B10000000000000000000045 /* CampaignPaymentService.swift in Sources */,
+				B10000000000000000000046 /* CampaignDonateSheet.swift in Sources */,
 				EF347D20906247AA4DDF1FD1 /* MomentCard.swift in Sources */,
 				ACBECEA15F6BB2D8D319D999 /* MoodPalette.swift in Sources */,
 				C3BFC0CFBF335F829B29EBD3 /* OnboardingView.swift in Sources */,
@@ -1006,6 +1018,14 @@
 				minimumVersion = 2.5.0;
 			};
 		};
+		B10000000000000000000071 /* XCRemoteSwiftPackageReference "stripe-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stripe/stripe-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1013,6 +1033,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 31C98A4169DE0A2DC073903E /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		B10000000000000000000072 /* StripePaymentSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B10000000000000000000071 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentSheet;
 		};
 		75A04FDE4CC667832BB0DA70 /* HaloShared */ = {
 			isa = XCSwiftPackageProductDependency;

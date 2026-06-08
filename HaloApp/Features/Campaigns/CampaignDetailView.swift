@@ -9,6 +9,9 @@ struct CampaignDetailView: View {
   @Environment(\.dismiss) private var dismiss
 
   @State private var vm = CampaignDetailViewModel()
+  @State private var showDonate = false
+  @State private var isOnboarding = false
+  @Environment(\.openURL) private var openURL
 
   private let source: Source
 
@@ -33,6 +36,7 @@ struct CampaignDetailView: View {
           } else if vm.hasContent {
             header
             progressPanel
+            if vm.needsOnboarding { onboardingBanner }
             actions
             feedback
             supportersPanel
@@ -54,6 +58,38 @@ struct CampaignDetailView: View {
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
     .presentationBackground(.clear)
     .task { await bootstrap() }
+    .sheet(isPresented: $showDonate) {
+      if let donatable = vm.donatableCampaign {
+        CampaignDonateSheet(campaign: donatable) {
+          Task { await vm.refreshAfterDonation() }
+        }
+      }
+    }
+  }
+
+  private var onboardingBanner: some View {
+    VStack(alignment: .leading, spacing: SwarmHalo.s3) {
+      Text("collega i pagamenti per ricevere le donazioni. I fondi arrivano diretti sul tuo conto Stripe — Halo non li tocca.")
+        .font(HaloType.ui(13, weight: .regular))
+        .foregroundStyle(SwarmHalo.inkSecondary)
+        .fixedSize(horizontal: false, vertical: true)
+      SwarmCommandButton(
+        label: isOnboarding ? "apro" : "collega pagamenti",
+        icon: "creditcard",
+        activation: .attention,
+        isProminent: true
+      ) {
+        Task {
+          isOnboarding = true
+          defer { isOnboarding = false }
+          if let url = await vm.startOnboarding() { openURL(url) }
+        }
+      }
+      .disabled(isOnboarding)
+      .opacity(isOnboarding ? 0.6 : 1)
+    }
+    .padding(SwarmHalo.s4)
+    .swarmSurface(.card, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: .attention)
   }
 
   private var rail: some View {
@@ -124,9 +160,9 @@ struct CampaignDetailView: View {
 
   private var actions: some View {
     HStack(spacing: SwarmHalo.s3) {
-      if vm.isCollecting {
+      if vm.isCollecting && !vm.needsOnboarding {
         SwarmCommandButton(label: "dona", icon: "heart.fill", activation: .operational, isProminent: true) {
-          vm.tappedDonate()
+          showDonate = true
         }
       }
 
@@ -231,6 +267,7 @@ final class CampaignDetailViewModel {
   var publicCampaign: PublicCampaign?
   var contributions: [CampaignContribution] = []
   var supporters: [PublicSupporter] = []
+  var connect: CampaignsService.ConnectStatus?
   var isLoading = false
   var statusMessage: String?
   var errorMessage: String?
@@ -274,6 +311,31 @@ final class CampaignDetailViewModel {
     if let campaign { return campaign.contributeDeepLink }
     if let entrySlug { return DeepLink.campaignContribute(slug: entrySlug).url }
     return nil
+  }
+
+  /// Creator hasn't finished Stripe onboarding, so the campaign can't receive yet.
+  var needsOnboarding: Bool {
+    isCreator && (connect?.chargesEnabled != true)
+  }
+
+  /// Campaign suitable to hand to the donate flow (synthesized from the public
+  /// projection when the full row isn't visible to this viewer).
+  var donatableCampaign: Campaign? {
+    if let campaign { return campaign }
+    guard let p = publicCampaign else { return nil }
+    return Campaign(
+      id: p.id,
+      creatorId: UUID(),
+      title: p.title,
+      description: p.description,
+      goalCents: p.goalCents,
+      currency: p.currency,
+      raisedCents: p.raisedCents,
+      supporterCount: p.supporterCount,
+      status: p.status,
+      publicSlug: entrySlug ?? "",
+      expiresAt: p.expiresAt
+    )
   }
 
   var statusLine: String {
@@ -322,6 +384,7 @@ final class CampaignDetailViewModel {
     self.campaign = campaign
     self.entrySlug = campaign.publicSlug
     await loadContributions(for: campaign.id)
+    await loadConnect()
   }
 
   func start(id: UUID) async {
@@ -345,6 +408,7 @@ final class CampaignDetailViewModel {
           campaign = full
           entrySlug = full.publicSlug
           await loadContributions(for: full.id)
+          await loadConnect()
         } else {
           supporters = (try? await CampaignsService.shared.publicSupporters(slug: slug)) ?? []
         }
@@ -362,6 +426,7 @@ final class CampaignDetailViewModel {
       campaign = full
       entrySlug = full.publicSlug
       await loadContributions(for: id)
+      await loadConnect()
     } catch {
       errorMessage = SupabaseErrorMessage.describe(error, fallback: "Non riesco a caricare la campagna.")
     }
@@ -371,9 +436,28 @@ final class CampaignDetailViewModel {
     contributions = (try? await CampaignsService.shared.contributions(for: id)) ?? []
   }
 
-  func tappedDonate() {
+  private func loadConnect() async {
+    guard isCreator else { return }
+    connect = try? await CampaignsService.shared.connectStatus()
+  }
+
+  /// Begin Stripe Connect onboarding; returns the hosted URL to open.
+  func startOnboarding() async -> URL? {
     errorMessage = nil
-    statusMessage = "le donazioni reali (Apple Pay, un tap) arrivano con l'integrazione Stripe nella prossima fase."
+    do {
+      return try await CampaignsService.shared.startConnectOnboarding()
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(error, fallback: "Onboarding non riuscito.")
+      return nil
+    }
+  }
+
+  /// Refresh after a donation completes (totals settle once the webhook lands).
+  func refreshAfterDonation() async {
+    statusMessage = "grazie! il totale si aggiorna appena Stripe conferma."
+    if let id = campaign?.id {
+      await reload(id: id)
+    }
   }
 
   func close() async {

@@ -64,6 +64,40 @@ final class CampaignsService {
     }
   }
 
+  /// Stripe Connect onboarding status for the current creator.
+  struct ConnectStatus: Codable, Sendable {
+    let stripeAccountId: String
+    let chargesEnabled: Bool
+    let payoutsEnabled: Bool
+    let detailsSubmitted: Bool
+
+    enum CodingKeys: String, CodingKey {
+      case stripeAccountId = "stripe_account_id"
+      case chargesEnabled = "charges_enabled"
+      case payoutsEnabled = "payouts_enabled"
+      case detailsSubmitted = "details_submitted"
+    }
+  }
+
+  /// Everything PaymentSheet needs for a direct-charge donation.
+  struct PaymentParams: Decodable, Sendable {
+    let clientSecret: String
+    let publishableKey: String
+    let connectedAccountId: String
+    let paymentIntentId: String
+  }
+
+  private struct OnboardResponse: Decodable { let url: URL }
+
+  private struct PaymentRequestBody: Encodable {
+    let campaignId: UUID
+    let amountCents: Int
+    let displayName: String?
+    let message: String?
+    let isAnonymous: Bool
+    let idempotencyKey: String
+  }
+
   private var client: SupabaseClient { SupabaseClientProvider.shared }
 
   /// Campaigns created by the current user.
@@ -183,6 +217,54 @@ final class CampaignsService {
       .single()
       .execute()
       .value
+  }
+
+  // MARK: - Stripe Connect + payments
+
+  /// Connect onboarding status for the current user, or nil if never started.
+  func connectStatus() async throws -> ConnectStatus? {
+    guard let me = AuthService.shared.currentUserId() else { return nil }
+    let rows: [ConnectStatus] = try await client
+      .from("stripe_accounts")
+      .select("stripe_account_id, charges_enabled, payouts_enabled, details_submitted")
+      .eq("user_id", value: me)
+      .limit(1)
+      .execute()
+      .value
+    return rows.first
+  }
+
+  /// Creates/reuses the creator's connected account and returns the Stripe-hosted
+  /// onboarding URL to open in a browser.
+  func startConnectOnboarding() async throws -> URL {
+    let resp: OnboardResponse = try await client.functions.invoke(
+      "campaign-connect-onboard",
+      options: FunctionInvokeOptions()
+    )
+    return resp.url
+  }
+
+  /// Creates a PaymentIntent (direct charge on the creator's account, with Halo's
+  /// application fee) and a pending contribution. Returns PaymentSheet params.
+  func createPaymentIntent(
+    campaignId: UUID,
+    amountCents: Int,
+    displayName: String?,
+    message: String?,
+    isAnonymous: Bool
+  ) async throws -> PaymentParams {
+    let body = PaymentRequestBody(
+      campaignId: campaignId,
+      amountCents: amountCents,
+      displayName: displayName,
+      message: cleanOptional(message),
+      isAnonymous: isAnonymous,
+      idempotencyKey: UUID().uuidString
+    )
+    return try await client.functions.invoke(
+      "campaign-create-payment",
+      options: FunctionInvokeOptions(body: body)
+    )
   }
 
   private func cleanOptional(_ value: String?) -> String? {
