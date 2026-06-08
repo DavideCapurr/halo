@@ -13,6 +13,8 @@ final class AppState {
     case memory
     case ring(id: UUID)
     case ringJoin(token: String)
+    case campaign(id: UUID)
+    case campaignContribute(slug: String)
     case report(userId: UUID)
   }
 
@@ -113,6 +115,10 @@ final class AppState {
       route = .ring(id: id)
     case .ringJoin(let token):
       route = .ringJoin(token: token)
+    case .campaign(let id):
+      route = .campaign(id: id)
+    case .campaignContribute(let slug):
+      route = .campaignContribute(slug: slug)
     case .report(let userId):
       route = .report(userId: userId)
     }

@@ -9,6 +9,8 @@ public enum DeepLink {
   case memory
   case ring(id: UUID)
   case ringJoin(token: String)
+  case campaign(id: UUID)
+  case campaignContribute(slug: String)
   case report(userId: UUID)
 
   public static let scheme = "halo"
@@ -25,6 +27,10 @@ public enum DeepLink {
       return URL(string: "\(Self.scheme)://ring/\(id.uuidString)")
     case .ringJoin(let token):
       return URL(string: "\(Self.scheme)://ring/join/\(token)")
+    case .campaign(let id):
+      return URL(string: "\(Self.scheme)://campaign/\(id.uuidString)")
+    case .campaignContribute(let slug):
+      return URL(string: "\(Self.scheme)://campaign/c/\(slug)")
     case .report(let id):
       return URL(string: "\(Self.scheme)://report/\(id.uuidString)")
     }
@@ -52,6 +58,16 @@ public enum DeepLink {
       }
       if let last = components.last, let id = UUID(uuidString: last) {
         self = .ring(id: id)
+        return
+      }
+    }
+    if url.host == "campaign" {
+      if components.first == "c", let slug = components.dropFirst().first, !slug.isEmpty {
+        self = .campaignContribute(slug: slug)
+        return
+      }
+      if let last = components.last, let id = UUID(uuidString: last) {
+        self = .campaign(id: id)
         return
       }
     }
