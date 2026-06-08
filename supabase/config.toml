@@ -61,3 +61,12 @@ policy = "oneshot"
 
 [functions.purge-expired]
 verify_jwt = false
+
+[functions.campaign-connect-onboard]
+verify_jwt = true
+
+[functions.campaign-create-payment]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false

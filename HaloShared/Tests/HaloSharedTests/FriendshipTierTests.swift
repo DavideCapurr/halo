@@ -62,4 +62,19 @@ final class FriendshipTierTests: XCTestCase {
     }
     XCTAssertEqual(token, "ringtoken")
   }
+
+  func testCampaignDeepLinks() {
+    let id = UUID()
+    guard case .campaign(let parsed) = DeepLink(url: DeepLink.campaign(id: id).url!) else {
+      return XCTFail("failed to parse campaign deep link")
+    }
+    XCTAssertEqual(parsed, id)
+
+    guard case .campaignContribute(let slug) =
+      DeepLink(url: DeepLink.campaignContribute(slug: "abc123def").url!)
+    else {
+      return XCTFail("failed to parse campaign contribute deep link")
+    }
+    XCTAssertEqual(slug, "abc123def")
+  }
 }
