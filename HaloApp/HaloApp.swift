@@ -10,6 +10,9 @@ struct HaloApp: App {
       RootView()
         .environment(state)
         .preferredColorScheme(.dark)
+        .task {
+          StoreKitManager.shared.startTransactionListener()
+        }
         .onOpenURL { url in
           if let link = DeepLink(url: url) {
             state.handle(link: link)

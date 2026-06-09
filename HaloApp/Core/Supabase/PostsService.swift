@@ -7,7 +7,27 @@ final class PostsService {
   static let shared = PostsService()
   private init() {}
 
-  enum PostsError: Error { case notAuthenticated }
+  enum PostsError: LocalizedError {
+    case notAuthenticated
+    case plusRequired
+
+    var errorDescription: String? {
+      switch self {
+      case .notAuthenticated:
+        return "Sessione non valida. Esci e rientra."
+      case .plusRequired:
+        return "Halo Plus richiesto."
+      }
+    }
+  }
+
+  private struct MemoryArchiveParams: Encodable {
+    let limit: Int
+
+    enum CodingKeys: String, CodingKey {
+      case limit = "p_limit"
+    }
+  }
 
   private var client: SupabaseClient { SupabaseClientProvider.shared }
 
@@ -91,19 +111,33 @@ final class PostsService {
   }
 
   /// Archivio privato Halo+: post dell'utente corrente che hanno gia superato
-  /// `expires_at`. La RLS consente solo all'autore di riaprirli.
+  /// `expires_at`. La RPC server-side decide se l'entitlement Halo+ e attivo.
   func memoryArchive(limit: Int = 80) async throws -> [HaloPost] {
-    guard let me = AuthService.shared.currentUserId() else {
+    guard AuthService.shared.currentUserId() != nil else {
+      throw PostsError.notAuthenticated
+    }
+
+    do {
+      return try await client
+        .rpc("memory_archive", params: MemoryArchiveParams(limit: limit))
+        .execute()
+        .value
+    } catch let error as PostgrestError {
+      if error.message.localizedCaseInsensitiveContains("halo_plus_required") {
+        throw PostsError.plusRequired
+      }
+      throw error
+    }
+  }
+
+  /// Conteggio privato dei Moment scaduti. Non sblocca i contenuti.
+  func memoryCount() async throws -> Int {
+    guard AuthService.shared.currentUserId() != nil else {
       throw PostsError.notAuthenticated
     }
 
     return try await client
-      .from("halo_posts")
-      .select()
-      .eq("user_id", value: me)
-      .lte("expires_at", value: Date.now.iso8601String)
-      .order("created_at", ascending: false)
-      .limit(limit)
+      .rpc("memory_count")
       .execute()
       .value
   }

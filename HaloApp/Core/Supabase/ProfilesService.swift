@@ -29,6 +29,31 @@ final class ProfilesService {
 
   private var client: SupabaseClient { SupabaseClientProvider.shared }
 
+  private struct ProfileMutation: Encodable {
+    let id: UUID
+    let handle: String
+    let displayName: String
+    let avatarPath: String?
+    let bio: String?
+    let isPublic: Bool
+
+    init(_ profile: Profile) {
+      self.id = profile.id
+      self.handle = profile.handle
+      self.displayName = profile.displayName
+      self.avatarPath = profile.avatarPath
+      self.bio = profile.bio
+      self.isPublic = profile.isPublic
+    }
+
+    enum CodingKeys: String, CodingKey {
+      case id, handle, bio
+      case displayName = "display_name"
+      case avatarPath = "avatar_path"
+      case isPublic = "is_public"
+    }
+  }
+
   func currentProfile() async throws -> Profile {
     guard let userId = AuthService.shared.currentUserId() else {
       throw ProfilesError.notAuthenticated
@@ -56,7 +81,7 @@ final class ProfilesService {
     do {
       try await client
         .from("profiles")
-        .upsert(profile)
+        .upsert(ProfileMutation(profile))
         .execute()
     } catch let error as PostgrestError {
       if error.code == "23505" {

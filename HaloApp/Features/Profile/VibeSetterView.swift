@@ -4,6 +4,8 @@ import HaloShared
 
 /// Vibe setter sheet: portrait grande con halo pulsante + chips mood + nota 60ch + CTA.
 struct VibeSetterView: View {
+  @Environment(AppState.self) private var state
+
   let initialMood: Mood
   let initialNote: String
   var onSave: (Mood, String) -> Void = { _, _ in }
@@ -68,6 +70,11 @@ struct VibeSetterView: View {
           .padding(.horizontal, 20)
         }
         .padding(.bottom, 18)
+
+        if state.currentProfile?.hasPlus == true {
+          plusPresetRail
+            .padding(.bottom, 18)
+        }
 
         // nota
         VStack(alignment: .leading, spacing: 6) {
@@ -136,6 +143,25 @@ struct VibeSetterView: View {
     }
   }
 
+  private var plusPresetRail: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text("VIBE+")
+        .font(HaloType.eyebrow(10))
+        .kerning(2.0)
+        .foregroundStyle(HaloInk.creamMute)
+        .padding(.horizontal, 22)
+
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 8) {
+          plusPreset("biblio", mood: .focused, note: "biblio silenziosa")
+          plusPreset("loggia", mood: .warm, note: "loggia, ci sono")
+          plusPreset("aula 4", mood: .soft, note: "aula 4 fino a tardi")
+        }
+        .padding(.horizontal, 20)
+      }
+    }
+  }
+
   private func moodChip(_ m: Mood) -> some View {
     let on = m == mood
     return Button {
@@ -153,6 +179,26 @@ struct VibeSetterView: View {
       }
       .padding(.horizontal, 16).padding(.vertical, 9)
       .haloGlass(in: Capsule(), tint: on ? MoodPalette.auraColor(m, l: 0.55) : nil, interactive: true)
+    }
+    .buttonStyle(.plain)
+  }
+
+  private func plusPreset(_ label: String, mood nextMood: Mood, note nextNote: String) -> some View {
+    Button {
+      mood = nextMood
+      note = nextNote
+      UISelectionFeedbackGenerator().selectionChanged()
+    } label: {
+      HStack(spacing: 6) {
+        Image(systemName: "sparkles")
+          .font(HaloType.system(11, weight: .semibold))
+        Text(label)
+          .font(HaloType.ui(13, weight: .semibold))
+      }
+      .foregroundStyle(HaloInk.cream)
+      .padding(.horizontal, 14)
+      .padding(.vertical, 9)
+      .haloGlass(in: Capsule(), tint: MoodPalette.auraColor(nextMood, l: 0.55), interactive: true)
     }
     .buttonStyle(.plain)
   }

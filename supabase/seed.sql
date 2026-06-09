@@ -76,3 +76,63 @@ insert into public.halo_posts (user_id, kind, caption, mood, min_tier) values
   ('11111111-1111-1111-1111-111111111111','text',  'quello sketch mi tormenta','soft',  'orbit'),
   ('11111111-1111-1111-1111-111111111111','text',  'domanda vera: ne vale la pena?','blue','close'),
   ('11111111-1111-1111-1111-111111111111','audio', 'voice memo 18s',            'warm',  'inner');
+
+-- ---------- cold-start Bocconi ----------
+-- Static landing QR points to halo://ring/join/bocconi-orientation-week.
+insert into public.rings (
+  id,
+  kind,
+  creator_id,
+  campus_id,
+  title,
+  subtitle,
+  location_name,
+  starts_at,
+  ends_at,
+  expires_at,
+  join_token,
+  is_public,
+  requires_approval,
+  member_limit,
+  currency
+)
+select
+  '99999999-9999-9999-9999-999999999901',
+  'event',
+  '11111111-1111-1111-1111-111111111111',
+  c.id,
+  'Orientation week / Bocconi',
+  'Scan. Join the ring. Be there.',
+  'Bocconi campus',
+  now() + interval '90 days',
+  now() + interval '90 days 4 hours',
+  now() + interval '90 days 16 hours',
+  'bocconi-orientation-week',
+  true,
+  false,
+  250,
+  'eur'
+from public.campuses c
+where c.slug = 'bocconi'
+on conflict (id) do update
+set title = excluded.title,
+    subtitle = excluded.subtitle,
+    location_name = excluded.location_name,
+    starts_at = excluded.starts_at,
+    ends_at = excluded.ends_at,
+    expires_at = excluded.expires_at,
+    join_token = excluded.join_token,
+    is_public = excluded.is_public,
+    requires_approval = excluded.requires_approval,
+    member_limit = excluded.member_limit;
+
+insert into public.ring_members (ring_id, user_id, role, status)
+values (
+  '99999999-9999-9999-9999-999999999901',
+  '11111111-1111-1111-1111-111111111111',
+  'host',
+  'active'
+)
+on conflict (ring_id, user_id) do update
+set role = excluded.role,
+    status = excluded.status;

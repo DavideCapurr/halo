@@ -196,6 +196,7 @@ public struct RingSubscription: Codable, Identifiable, Hashable, Sendable {
   public var status: String
   public var currentPeriodStart: Date?
   public var currentPeriodEnd: Date?
+  public var plan: String?
   public let createdAt: Date
   public let updatedAt: Date
 
@@ -208,6 +209,7 @@ public struct RingSubscription: Codable, Identifiable, Hashable, Sendable {
     status: String = "active",
     currentPeriodStart: Date? = nil,
     currentPeriodEnd: Date? = nil,
+    plan: String? = nil,
     createdAt: Date = .now,
     updatedAt: Date = .now
   ) {
@@ -219,12 +221,13 @@ public struct RingSubscription: Codable, Identifiable, Hashable, Sendable {
     self.status = status
     self.currentPeriodStart = currentPeriodStart
     self.currentPeriodEnd = currentPeriodEnd
+    self.plan = plan
     self.createdAt = createdAt
     self.updatedAt = updatedAt
   }
 
   enum CodingKeys: String, CodingKey {
-    case id, provider, status
+    case id, provider, status, plan
     case ringId = "ring_id"
     case userId = "user_id"
     case providerSubscriptionId = "provider_subscription_id"
@@ -246,6 +249,9 @@ public struct ClubBilling: Codable, Identifiable, Hashable, Sendable {
   public var status: String
   public var periodStart: Date?
   public var periodEnd: Date?
+  public var plan: String?
+  public var providerInvoiceId: String?
+  public var providerCheckoutSessionId: String?
   public let createdAt: Date
 
   public init(
@@ -259,6 +265,9 @@ public struct ClubBilling: Codable, Identifiable, Hashable, Sendable {
     status: String = "open",
     periodStart: Date? = nil,
     periodEnd: Date? = nil,
+    plan: String? = nil,
+    providerInvoiceId: String? = nil,
+    providerCheckoutSessionId: String? = nil,
     createdAt: Date = .now
   ) {
     self.id = id
@@ -271,17 +280,22 @@ public struct ClubBilling: Codable, Identifiable, Hashable, Sendable {
     self.status = status
     self.periodStart = periodStart
     self.periodEnd = periodEnd
+    self.plan = plan
+    self.providerInvoiceId = providerInvoiceId
+    self.providerCheckoutSessionId = providerCheckoutSessionId
     self.createdAt = createdAt
   }
 
   enum CodingKeys: String, CodingKey {
-    case id, provider, currency, status
+    case id, provider, currency, status, plan
     case ringId = "ring_id"
     case subscriptionId = "subscription_id"
     case payerId = "payer_id"
     case amountCents = "amount_cents"
     case periodStart = "period_start"
     case periodEnd = "period_end"
+    case providerInvoiceId = "provider_invoice_id"
+    case providerCheckoutSessionId = "provider_checkout_session_id"
     case createdAt = "created_at"
   }
 }

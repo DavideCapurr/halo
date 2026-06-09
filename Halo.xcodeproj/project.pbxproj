@@ -154,6 +154,7 @@
 		7C314BE365257988CA85B8CA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		7F3997A5EBC014A4275BDF87 /* HaloWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HaloWidget.entitlements; sourceTree = "<group>"; };
 		8024E8C710BB6866369C0380 /* PlusUpsellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusUpsellView.swift; sourceTree = "<group>"; };
+		80F6C5290E1B4D4CB64E2A11 /* HaloPlus.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Resources/HaloPlus.storekit; sourceTree = "<group>"; };
 		8B1112131415161718191A1C /* CampusVerificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusVerificationService.swift; sourceTree = "<group>"; };
 		86EB7CBFAB97B2F6455ACAE8 /* HaloApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloApp.swift; sourceTree = "<group>"; };
 		8BCF3F03EBD9061D1D280A88 /* HaloSpacePeekSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloSpacePeekSheet.swift; sourceTree = "<group>"; };
@@ -320,6 +321,7 @@
 				AF1E8B661B1389A55B6A8543 /* Fonts */,
 				8C8AE30161E85373230BD5A6 /* Features */,
 				E90724064121075716CB5C3B /* HaloApp.entitlements */,
+				80F6C5290E1B4D4CB64E2A11 /* HaloPlus.storekit */,
 				86EB7CBFAB97B2F6455ACAE8 /* HaloApp.swift */,
 				D1E0037CC1D6F101CD46C34F /* Info.plist */,
 			);

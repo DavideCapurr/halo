@@ -95,10 +95,16 @@ SWARM**.
 
 ### Fase C - Cold-start Bocconi (parallela a B)
 
-- [ ] Landing web statica + waitlist.
-- [ ] Reclutare offline 20 Founder Circles.
+- [x] Landing web statica + waitlist:
+      `web/landing`, tabella `waitlist_signups`,
+      function `waitlist-signup`.
+- [x] Reclutare offline 20 Founder Circles:
+      kit operativo + tracker 20 slot in `docs/growth/`,
+      tabella `founder_circle_recruits`.
 - [x] Verifica `@studbocconi.it` + `founder_invite` code path.
-- [ ] QR Event Ring per orientation week.
+- [x] QR Event Ring per orientation week:
+      QR statico, seed `bocconi-orientation-week`,
+      quick action in `EventRingView`.
 
 ### Fase D - Monetizzazione (mese 2)
 

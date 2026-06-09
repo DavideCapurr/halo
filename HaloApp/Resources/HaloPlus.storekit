@@ -1,0 +1,63 @@
+{
+  "identifier" : "HaloPlus.storekit",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "la.halo",
+    "_developerTeamID" : "HALO",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "it_IT",
+    "_storefront" : "ITA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "HALO_PLUS",
+      "localizations" : [
+        {
+          "description" : "Halo Plus",
+          "displayName" : "Halo Plus",
+          "locale" : "it_IT"
+        }
+      ],
+      "name" : "Halo Plus",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "HALO_PLUS_MONTHLY",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Memory privata, recap eventi, preset Vibe+ e skin leggere.",
+              "displayName" : "Halo Plus",
+              "locale" : "it_IT"
+            }
+          ],
+          "productID" : "app.halo.plus.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Halo Plus Monthly",
+          "subscriptionGroupID" : "HALO_PLUS",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

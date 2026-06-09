@@ -26,6 +26,7 @@ struct HomeView: View {
   @State private var people: [HaloPersonNode] = []
   @State private var vm = HomeViewModel()
   @State private var peek: HaloPersonNode? = nil
+  @State private var reportTarget: HaloPersonNode? = nil
   @State private var showVibeSetter: Bool = false
   @State private var pendingProposal: TierConfirmationSheet.Proposal? = nil
   @State private var fieldZoom: ZoomLevel = .full
@@ -203,6 +204,13 @@ struct HomeView: View {
         onClose: { peek = nil }
       )
     }
+    .sheet(item: $reportTarget, onDismiss: {
+      if case .report = state.route {
+        state.route = .home
+      }
+    }) { person in
+      ReportUserSheet(person: person)
+    }
     .sheet(isPresented: $showVibeSetter) {
       VibeSetterView(
         initialMood: me.mood,
@@ -272,7 +280,7 @@ struct HomeView: View {
         state.route = .home
       }
     }) {
-      MemoryArchiveView(hasPlus: state.currentProfile?.hasPlus ?? false) {
+      MemoryArchiveView(hasPlusHint: state.currentProfile?.hasPlus ?? false) {
         showMemoryArchive = false
         showPlusFromRoute = true
       }
@@ -326,6 +334,35 @@ struct HomeView: View {
     }
     if case .ringJoin(let token) = state.route {
       pendingRing = PendingRing(ringId: nil, token: token)
+    }
+    if case .report(let userId) = state.route {
+      Task { await presentReport(userId: userId) }
+    }
+  }
+
+  @MainActor
+  private func presentReport(userId: UUID) async {
+    if userId == state.currentProfile?.id {
+      selectedTab = .profile
+      lastContentTab = .profile
+      state.route = .home
+      return
+    }
+
+    if let person = people.first(where: { $0.id.lowercased() == userId.uuidString.lowercased() }) {
+      reportTarget = person
+      return
+    }
+
+    do {
+      let profile = try await ProfilesService.shared.profile(id: userId)
+      reportTarget = HaloPersonNode(safetyProfile: profile)
+    } catch {
+      vm.lastError = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco ad aprire il report."
+      )
+      state.route = .home
     }
   }
 

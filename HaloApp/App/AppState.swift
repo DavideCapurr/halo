@@ -99,6 +99,15 @@ final class AppState {
     route = .home
   }
 
+  func refreshCurrentProfile() async {
+    guard currentProfile != nil else { return }
+    do {
+      currentProfile = try await ProfilesService.shared.currentProfile()
+    } catch {
+      // Keep the previous cache if the refresh fails; visible surfaces can retry.
+    }
+  }
+
   // MARK: - Routing
 
   func handle(link: DeepLink) {

@@ -18,6 +18,9 @@ struct ProfileView: View {
   @State private var showEventRings: Bool = false
   @State private var showClubRings: Bool = false
   @State private var showMemory: Bool = false
+  @State private var showSafetyReport: Bool = false
+  @State private var showPrivacy: Bool = false
+  @State private var memoryCount: Int = 0
 
   init(
     person: HaloPersonNode,
@@ -67,12 +70,24 @@ struct ProfileView: View {
     .sheet(isPresented: $showEventRings) { EventRingView() }
     .sheet(isPresented: $showClubRings) { ClubRingView() }
     .sheet(isPresented: $showMemory) {
-      MemoryArchiveView(hasPlus: state.currentProfile?.hasPlus ?? false) {
+      MemoryArchiveView(hasPlusHint: state.currentProfile?.hasPlus ?? false) {
         showMemory = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
           showPlus = true
         }
       }
+    }
+    .sheet(isPresented: $showSafetyReport) {
+      ProfileReportSheet()
+    }
+    .sheet(isPresented: $showPrivacy) {
+      ProfilePrivacySheet()
+    }
+    .task {
+      await loadMemoryCount()
+    }
+    .onChange(of: state.currentProfile?.hasPlus ?? false) { _, _ in
+      Task { await loadMemoryCount() }
     }
   }
 
@@ -120,6 +135,12 @@ struct ProfileView: View {
             .foregroundStyle(SwarmHalo.inkMuted)
           Text("il tuo halo")
             .haloEyebrow(SwarmHalo.inkMuted, size: 9, tracking: 2.1)
+          if state.currentProfile?.hasPlus == true {
+            Image(systemName: "sparkles")
+              .font(HaloType.system(9, weight: .semibold))
+              .foregroundStyle(SwarmActivationRole.attention.color)
+              .accessibilityLabel("Halo Plus")
+          }
         }
       }
     }
@@ -156,6 +177,10 @@ struct ProfileView: View {
     String(format: "%02d", tierCounts[tier] ?? 0)
   }
 
+  private func twoDigits(_ value: Int) -> String {
+    String(format: "%02d", value)
+  }
+
   private var divider: some View {
     Rectangle()
       .fill(SwarmHalo.inkLine)
@@ -184,14 +209,16 @@ struct ProfileView: View {
     .swarmPanel()
   }
 
+  @ViewBuilder
   private var memoryPanel: some View {
+    let hasPlus = state.currentProfile?.hasPlus ?? false
     VStack(alignment: .leading, spacing: SwarmHalo.s3) {
       sectionHeader("memory")
-      Text("i frammenti del semestre restano privati finché non li riapri.")
+      Text(hasPlus ? "i frammenti del semestre restano privati finché non li riapri." : "i frammenti scaduti restano privati. Halo Plus li riapre senza metrica pubblica.")
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
       HStack {
-        SwarmMetricTile(label: "frammenti", value: "00", activation: .rest, active: false)
+        SwarmMetricTile(label: "frammenti", value: twoDigits(memoryCount), activation: hasPlus ? .attention : .rest, active: memoryCount > 0 && hasPlus)
         Spacer()
         SwarmCommandButton(label: "Memory", icon: "archivebox", activation: .attention) {
           showMemory = true
@@ -205,6 +232,15 @@ struct ProfileView: View {
     .swarmPanel()
   }
 
+  @MainActor
+  private func loadMemoryCount() async {
+    do {
+      memoryCount = try await PostsService.shared.memoryCount()
+    } catch {
+      memoryCount = 0
+    }
+  }
+
   private var safetyPanel: some View {
     VStack(alignment: .leading, spacing: SwarmHalo.s3) {
       sectionHeader("safety")
@@ -212,8 +248,14 @@ struct ProfileView: View {
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
       HStack(spacing: SwarmHalo.s2) {
-        SwarmCommandButton(label: "report", icon: "exclamationmark.triangle", activation: .attention) {}
-        SwarmCommandButton(label: "privacy", icon: "lock", activation: .rest) {}
+        SwarmCommandButton(label: "report", icon: "exclamationmark.triangle", activation: .attention) {
+          showSafetyReport = true
+        }
+        .accessibilityLabel("Apri report safety")
+        SwarmCommandButton(label: "privacy", icon: "lock", activation: .rest) {
+          showPrivacy = true
+        }
+        .accessibilityLabel("Apri privacy")
       }
     }
     .padding(SwarmHalo.s4)
@@ -253,6 +295,571 @@ struct ProfileView: View {
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
+  }
+}
+
+private struct ProfileReportSheet: View {
+  @Environment(\.dismiss) private var dismiss
+  @Environment(AppState.self) private var state
+
+  @State private var query: String = ""
+  @State private var results: [Profile] = []
+  @State private var isLoading: Bool = false
+  @State private var errorMessage: String?
+  @State private var reportTarget: HaloPersonNode?
+
+  var body: some View {
+    VStack(spacing: 0) {
+      topRail
+        .padding(.horizontal, 18)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
+
+      ScrollView {
+        VStack(alignment: .leading, spacing: 14) {
+          hero
+          searchField
+          content
+        }
+        .padding(.horizontal, 18)
+        .padding(.bottom, 20)
+      }
+      .scrollIndicators(.hidden)
+
+      footer
+        .padding(.horizontal, 22)
+        .padding(.vertical, 18)
+    }
+    .background(haloSheetBackground())
+    .presentationDetents([.medium, .large])
+    .presentationDragIndicator(.visible)
+    .presentationCornerRadius(HaloTheme.sheetCornerRadius)
+    .presentationBackground(.clear)
+    .task(id: query) {
+      await search()
+    }
+    .sheet(item: $reportTarget) { person in
+      ReportUserSheet(person: person)
+    }
+  }
+
+  private var topRail: some View {
+    HStack(spacing: 12) {
+      VStack(alignment: .leading, spacing: 3) {
+        Text("SAFETY / REPORT")
+          .haloEyebrow(SwarmActivationRole.attention.color, size: 8.5, tracking: 2.3)
+        Text("trova un profilo")
+          .font(HaloType.serif(24, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+      }
+      Spacer()
+      Button(action: { dismiss() }) {
+        Image(systemName: "xmark")
+          .font(HaloType.system(12, weight: .semibold))
+          .foregroundStyle(HaloInk.creamLow)
+          .frame(width: 30, height: 30)
+          .background(Circle().fill(SwarmHalo.inkWhisper))
+          .overlay(Circle().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+      }
+      .buttonStyle(.plain)
+    }
+  }
+
+  private var hero: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text("segnala senza esporre il tier.")
+        .font(HaloType.serif(28, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
+      Text("scegli un profilo e usa lo stesso report sicuro di HaloSpace.")
+        .font(HaloType.ui(13, weight: .regular))
+        .foregroundStyle(HaloInk.creamLow)
+    }
+    .padding(14)
+    .swarmSurface(
+      .panel,
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      activation: .attention
+    )
+  }
+
+  private var searchField: some View {
+    HStack(spacing: 10) {
+      Image(systemName: "magnifyingglass")
+        .foregroundStyle(HaloInk.creamMute)
+      TextField("cerca @handle", text: $query)
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled()
+        .foregroundStyle(HaloInk.cream)
+        .font(HaloType.ui(14, weight: .regular))
+    }
+    .padding(.horizontal, 14)
+    .padding(.vertical, 12)
+    .swarmSurface(
+      .control,
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous)
+    )
+  }
+
+  @ViewBuilder
+  private var content: some View {
+    if isLoading {
+      SwarmLoadingState(label: "cerco profili")
+    } else if let errorMessage {
+      errorText(errorMessage)
+    } else if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+      SwarmEmptyState(
+        title: "cerca un handle.",
+        message: "il report si apre solo su un profilo diverso dal tuo.",
+        activation: .rest
+      )
+    } else if results.isEmpty {
+      SwarmEmptyState(
+        title: "nessun profilo.",
+        message: "controlla handle o nome e riprova.",
+        activation: .rest
+      )
+    } else {
+      VStack(alignment: .leading, spacing: 8) {
+        sectionHeader("risultati")
+        ForEach(results) { profile in
+          resultRow(profile)
+        }
+      }
+    }
+  }
+
+  private func resultRow(_ profile: Profile) -> some View {
+    Button {
+      reportTarget = HaloPersonNode(safetyProfile: profile)
+    } label: {
+      HStack(spacing: 12) {
+        Circle()
+          .fill(MoodPalette.auraColor(.chill, l: 0.55))
+          .frame(width: 40, height: 40)
+          .overlay(PortraitView(personId: profile.handle, size: 36).clipShape(Circle()))
+        VStack(alignment: .leading, spacing: 2) {
+          Text(profile.displayName)
+            .font(HaloType.serif(16, weight: .regular))
+            .foregroundStyle(HaloInk.cream)
+            .lineLimit(1)
+          Text("@\(profile.handle)")
+            .font(HaloType.ui(11, weight: .regular))
+            .foregroundStyle(HaloInk.creamMute)
+        }
+        Spacer()
+        Image(systemName: "exclamationmark.triangle")
+          .font(HaloType.system(12, weight: .semibold))
+          .foregroundStyle(SwarmActivationRole.attention.color)
+          .frame(width: 30, height: 30)
+          .background(SwarmActivationRole.attention.fill, in: Circle())
+          .overlay(Circle().strokeBorder(SwarmActivationRole.attention.stroke, lineWidth: 0.6))
+      }
+      .padding(.horizontal, 12)
+      .padding(.vertical, 10)
+      .swarmSurface(
+        .card,
+        in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+        activation: .attention
+      )
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel("Segnala \(profile.displayName)")
+  }
+
+  private var footer: some View {
+    HStack {
+      Button("chiudi") { dismiss() }
+        .font(HaloType.ui(14, weight: .medium))
+        .buttonStyle(.plain)
+        .foregroundStyle(HaloInk.creamMute)
+      Spacer()
+    }
+  }
+
+  private func sectionHeader(_ text: String) -> some View {
+    HStack(spacing: 8) {
+      Text(text)
+        .haloEyebrow(HaloInk.creamMute, size: 8.5, tracking: 2.0)
+      Rectangle()
+        .fill(HaloInk.creamLine)
+        .frame(height: 0.5)
+    }
+  }
+
+  private func errorText(_ message: String) -> some View {
+    Text(message)
+      .font(HaloType.ui(12, weight: .regular))
+      .foregroundStyle(SwarmHalo.launchAmber)
+      .padding(.horizontal, 12)
+      .padding(.vertical, 10)
+      .swarmSurface(
+        .panel,
+        in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
+        activation: .attention
+      )
+  }
+
+  @MainActor
+  private func search() async {
+    let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
+    results = []
+    errorMessage = nil
+    guard !q.isEmpty else { return }
+
+    isLoading = true
+    defer { isLoading = false }
+
+    try? await Task.sleep(nanoseconds: 250_000_000)
+    guard !Task.isCancelled else { return }
+
+    do {
+      let currentUserId = state.currentProfile?.id
+      results = try await ProfilesService.shared.search(handle: q)
+        .filter { $0.id != currentUserId }
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a cercare profili. Riprova."
+      )
+    }
+  }
+}
+
+private struct ProfilePrivacySheet: View {
+  @Environment(\.dismiss) private var dismiss
+  @Environment(AppState.self) private var state
+
+  @State private var isPublic: Bool = false
+  @State private var blockedProfiles: [Profile] = []
+  @State private var blockedFallbackIds: [UUID] = []
+  @State private var isLoading: Bool = true
+  @State private var isSaving: Bool = false
+  @State private var errorMessage: String?
+
+  var body: some View {
+    VStack(spacing: 0) {
+      topRail
+        .padding(.horizontal, 18)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
+
+      ScrollView {
+        VStack(alignment: .leading, spacing: 14) {
+          visibilitySection
+          blockedSection
+          if let errorMessage {
+            errorText(errorMessage)
+          }
+        }
+        .padding(.horizontal, 18)
+        .padding(.bottom, 20)
+      }
+      .scrollIndicators(.hidden)
+
+      footer
+        .padding(.horizontal, 22)
+        .padding(.vertical, 18)
+    }
+    .background(haloSheetBackground())
+    .presentationDetents([.medium, .large])
+    .presentationDragIndicator(.visible)
+    .presentationCornerRadius(HaloTheme.sheetCornerRadius)
+    .presentationBackground(.clear)
+    .task { await load() }
+  }
+
+  private var topRail: some View {
+    HStack(spacing: 12) {
+      VStack(alignment: .leading, spacing: 3) {
+        Text("SAFETY / PRIVACY")
+          .haloEyebrow(SwarmActivationRole.rest.color, size: 8.5, tracking: 2.3)
+        Text("controlli profilo")
+          .font(HaloType.serif(24, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+      }
+      Spacer()
+      Button(action: { dismiss() }) {
+        Image(systemName: "xmark")
+          .font(HaloType.system(12, weight: .semibold))
+          .foregroundStyle(HaloInk.creamLow)
+          .frame(width: 30, height: 30)
+          .background(Circle().fill(SwarmHalo.inkWhisper))
+          .overlay(Circle().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+      }
+      .buttonStyle(.plain)
+    }
+  }
+
+  private var visibilitySection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      sectionHeader("visibilita")
+      Toggle(isOn: $isPublic) {
+        VStack(alignment: .leading, spacing: 3) {
+          Text("account pubblico in Discovery")
+            .font(HaloType.ui(14, weight: .semibold))
+            .foregroundStyle(HaloInk.cream)
+          Text("handle e nome possono apparire nella ricerca pubblica.")
+            .font(HaloType.ui(12, weight: .regular))
+            .foregroundStyle(HaloInk.creamMute)
+        }
+      }
+      .toggleStyle(.switch)
+      .tint(SwarmActivationRole.connected.color)
+      .padding(.horizontal, 14)
+      .padding(.vertical, 12)
+      .swarmSurface(
+        .panel,
+        in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
+        activation: isPublic ? .connected : .rest
+      )
+
+      Text("i Moment restano filtrati dai tier scelti quando pubblichi.")
+        .font(HaloType.ui(12, weight: .regular))
+        .foregroundStyle(HaloInk.creamMute)
+    }
+    .padding(14)
+    .swarmSurface(
+      .panel,
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      activation: .rest
+    )
+  }
+
+  @ViewBuilder
+  private var blockedSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      sectionHeader("blocchi")
+      if isLoading {
+        SwarmLoadingState(label: "leggo blocchi")
+      } else if blockedProfiles.isEmpty && blockedFallbackIds.isEmpty {
+        SwarmEmptyState(
+          title: "nessun blocco.",
+          message: "i profili bloccati spariscono da orbita e feed.",
+          activation: .rest
+        )
+      } else {
+        ForEach(blockedProfiles) { profile in
+          blockedRow(profile)
+        }
+        ForEach(blockedFallbackIds, id: \.self) { id in
+          blockedFallbackRow(id)
+        }
+      }
+    }
+    .padding(14)
+    .swarmSurface(
+      .panel,
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      activation: .rest
+    )
+  }
+
+  private var footer: some View {
+    HStack {
+      Button("chiudi") { dismiss() }
+        .font(HaloType.ui(14, weight: .medium))
+        .buttonStyle(.plain)
+        .foregroundStyle(HaloInk.creamMute)
+      Spacer()
+      Button {
+        Task { await saveVisibility() }
+      } label: {
+        Text(isSaving ? "salvo..." : "salva")
+          .font(HaloType.ui(15, weight: .semibold))
+          .foregroundStyle(HaloInk.cream)
+          .padding(.horizontal, 22)
+          .padding(.vertical, 12)
+          .swarmSurface(
+            .control,
+            in: Capsule(),
+            activation: .connected
+          )
+      }
+      .buttonStyle(.plain)
+      .disabled(isSaving)
+    }
+  }
+
+  private func blockedRow(_ profile: Profile) -> some View {
+    HStack(spacing: 12) {
+      Circle()
+        .fill(MoodPalette.auraColor(.lost, l: 0.50))
+        .frame(width: 38, height: 38)
+        .overlay(PortraitView(personId: profile.handle, size: 34).clipShape(Circle()))
+      VStack(alignment: .leading, spacing: 2) {
+        Text(profile.displayName)
+          .font(HaloType.serif(15, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+          .lineLimit(1)
+        Text("@\(profile.handle)")
+          .font(HaloType.ui(11, weight: .regular))
+          .foregroundStyle(HaloInk.creamMute)
+      }
+      Spacer()
+      unblockButton(profile.id)
+    }
+    .padding(.horizontal, 12)
+    .padding(.vertical, 10)
+    .swarmSurface(
+      .card,
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      activation: .rest
+    )
+  }
+
+  private func blockedFallbackRow(_ id: UUID) -> some View {
+    HStack(spacing: 12) {
+      Image(systemName: "person.crop.circle.badge.xmark")
+        .font(HaloType.system(17, weight: .semibold))
+        .foregroundStyle(HaloInk.creamMute)
+        .frame(width: 38, height: 38)
+        .background(SwarmHalo.inkWhisper, in: Circle())
+      VStack(alignment: .leading, spacing: 2) {
+        Text("profilo bloccato")
+          .font(HaloType.serif(15, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+        Text(id.uuidString.lowercased())
+          .font(HaloType.mono(9, weight: .regular))
+          .foregroundStyle(HaloInk.creamMute)
+          .lineLimit(1)
+      }
+      Spacer()
+      unblockButton(id)
+    }
+    .padding(.horizontal, 12)
+    .padding(.vertical, 10)
+    .swarmSurface(
+      .card,
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      activation: .rest
+    )
+  }
+
+  private func unblockButton(_ id: UUID) -> some View {
+    Button {
+      Task { await unblock(id) }
+    } label: {
+      Text("sblocca")
+        .font(HaloType.ui(12, weight: .semibold))
+        .foregroundStyle(HaloInk.cream)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .swarmSurface(
+          .control,
+          in: Capsule(),
+          activation: .rest
+        )
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel("Sblocca profilo")
+  }
+
+  private func sectionHeader(_ text: String) -> some View {
+    HStack(spacing: 8) {
+      Text(text)
+        .haloEyebrow(HaloInk.creamMute, size: 8.5, tracking: 2.0)
+      Rectangle()
+        .fill(HaloInk.creamLine)
+        .frame(height: 0.5)
+    }
+  }
+
+  private func errorText(_ message: String) -> some View {
+    Text(message)
+      .font(HaloType.ui(12, weight: .regular))
+      .foregroundStyle(SwarmHalo.launchAmber)
+      .padding(.horizontal, 12)
+      .padding(.vertical, 10)
+      .swarmSurface(
+        .panel,
+        in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
+        activation: .attention
+      )
+  }
+
+  @MainActor
+  private func load() async {
+    isLoading = true
+    errorMessage = nil
+    isPublic = state.currentProfile?.isPublic ?? false
+    defer { isLoading = false }
+
+    do {
+      let ids = try await ReportsService.shared.blockedIds()
+      var profiles: [Profile] = []
+      var fallbackIds: [UUID] = []
+      for id in ids.sorted(by: { $0.uuidString < $1.uuidString }) {
+        do {
+          profiles.append(try await ProfilesService.shared.profile(id: id))
+        } catch {
+          fallbackIds.append(id)
+        }
+      }
+      blockedProfiles = profiles
+      blockedFallbackIds = fallbackIds
+    } catch {
+      blockedProfiles = []
+      blockedFallbackIds = []
+      errorMessage = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a leggere i blocchi."
+      )
+    }
+  }
+
+  @MainActor
+  private func saveVisibility() async {
+    guard !isSaving else { return }
+    guard var profile = state.currentProfile else {
+      errorMessage = "Sessione non valida. Esci e rientra."
+      return
+    }
+
+    isSaving = true
+    errorMessage = nil
+    defer { isSaving = false }
+
+    do {
+      profile.isPublic = isPublic
+      try await ProfilesService.shared.update(profile)
+      state.currentProfile = profile
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a salvare la privacy."
+      )
+    }
+  }
+
+  @MainActor
+  private func unblock(_ id: UUID) async {
+    errorMessage = nil
+    do {
+      try await ReportsService.shared.unblock(id)
+      blockedProfiles.removeAll { $0.id == id }
+      blockedFallbackIds.removeAll { $0 == id }
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a sbloccare questo profilo."
+      )
+    }
+  }
+}
+
+extension HaloPersonNode {
+  init(safetyProfile profile: Profile) {
+    self.init(
+      id: profile.id.uuidString,
+      handle: profile.handle,
+      name: profile.displayName,
+      tier: .nebula,
+      mood: .chill,
+      note: "",
+      hasNew: false,
+      hasActiveVibe: false,
+      isMutual: false
+    )
   }
 }
 

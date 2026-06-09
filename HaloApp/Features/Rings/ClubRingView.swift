@@ -124,6 +124,25 @@ struct ClubRingView: View {
         .padding(.vertical, SwarmHalo.s3)
         .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous))
 
+        HStack(alignment: .top, spacing: SwarmHalo.s3) {
+          Image(systemName: "building.2")
+            .font(HaloType.system(14, weight: .semibold))
+            .foregroundStyle(role.color)
+            .swarmIconFrame(active: true, activation: role)
+          VStack(alignment: .leading, spacing: 4) {
+            Text(billingTitle(for: ring))
+              .font(HaloType.ui(14, weight: .semibold))
+              .foregroundStyle(SwarmHalo.ink)
+            Text(billingCopy(for: ring))
+              .font(HaloType.ui(12, weight: .regular))
+              .foregroundStyle(SwarmHalo.inkSecondary)
+              .fixedSize(horizontal: false, vertical: true)
+          }
+          Spacer()
+        }
+        .padding(SwarmHalo.s3)
+        .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: role)
+
         HStack(spacing: SwarmHalo.s3) {
           SwarmCommandButton(
             label: isJoining ? "join" : "join",
@@ -247,6 +266,10 @@ struct ClubRingView: View {
       .reduce(0) { $0 + $1.amountCents }
   }
 
+  private var activePlan: String? {
+    subscriptions.first { ["active", "trialing", "comped"].contains($0.status) }?.plan
+  }
+
   private func sectionHeader(_ text: String) -> some View {
     HStack(spacing: SwarmHalo.s2) {
       Text(text)
@@ -334,6 +357,25 @@ struct ClubRingView: View {
     case .event:
       return "event ring"
     }
+  }
+
+  private func billingTitle(for ring: HaloRing) -> String {
+    switch ring.kind {
+    case .club:
+      return activeSubscriptions > 0 ? "dashboard club attiva" : "dashboard gestita dal club"
+    case .course:
+      return activeSubscriptions > 0 ? "dashboard corso attiva" : "dashboard gestita dal corso"
+    case .founder:
+      return "billing founder gestito fuori app"
+    case .event:
+      return "billing evento gestito fuori app"
+    }
+  }
+
+  private func billingCopy(for ring: HaloRing) -> String {
+    let plan = activePlan.map { " · \($0.replacingOccurrences(of: "_", with: " "))" } ?? ""
+    let paid = totalPaidCents > 0 ? " · incassato \(money(totalPaidCents, currency: ring.currency))" : ""
+    return "Pagamenti e fatture sono gestiti dal club via dashboard web/admin\(plan)\(paid)."
   }
 
   private func accessory(for ring: HaloRing) -> String {

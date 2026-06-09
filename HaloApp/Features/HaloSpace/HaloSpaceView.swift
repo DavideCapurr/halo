@@ -313,7 +313,7 @@ private struct HaloSpacePage: View {
   }
 }
 
-private struct ReportUserSheet: View {
+struct ReportUserSheet: View {
   @Environment(\.dismiss) private var dismiss
 
   let person: HaloPersonNode

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Halo is a private social map for Bocconi orientation week. Join the waitlist, start a Founder Circle, or open the orientation QR Event Ring."
+    />
+    <title>Halo | Bocconi cold-start</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary">
+      <a class="brand" href="#top" aria-label="Halo home">Halo</a>
+      <nav class="nav-links" aria-label="Landing sections">
+        <a href="#product">Product</a>
+        <a href="#founders">Founder Circles</a>
+        <a href="#orientation">Orientation QR</a>
+        <a href="#waitlist">Waitlist</a>
+      </nav>
+      <a class="header-action" href="#waitlist">Join waitlist <span aria-hidden="true">-></span></a>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>Your people, not your audience.</h1>
+          <p class="lede">
+            Halo is a private social map for Bocconi students. Choose your five,
+            open an Event Ring, and find the people who should actually be near you.
+          </p>
+
+          <form class="waitlist-form" data-waitlist-form data-endpoint="">
+            <label>
+              <span>Name</span>
+              <input name="name" autocomplete="name" placeholder="Your name" required />
+            </label>
+            <label>
+              <span>Bocconi email</span>
+              <input
+                name="email"
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="you@studbocconi.it"
+                required
+              />
+            </label>
+            <label>
+              <span>I am a...</span>
+              <select name="role" required>
+                <option value="" selected disabled>Choose one</option>
+                <option value="freshman">Freshman</option>
+                <option value="msc">MSc student</option>
+                <option value="exchange">Exchange student</option>
+                <option value="club_host">Club host</option>
+                <option value="founder_circle">Founder Circle lead</option>
+              </select>
+            </label>
+            <input type="hidden" name="source" value="landing_bocconi_cold_start" />
+            <button type="submit">Join waitlist <span aria-hidden="true">-></span></button>
+            <p class="form-status" data-form-status aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div class="hero-media" aria-label="Halo orientation QR product visual">
+          <img
+            src="./assets/orientation-qr-hero.png"
+            alt="A dark Halo product mockup with a phone showing an Event Ring QR screen."
+          />
+          <div class="qr-card">
+            <div class="qr-card-header">
+              <span>Event Ring</span>
+              <strong>Orientation week</strong>
+            </div>
+            <img
+              class="qr-image"
+              src="./assets/orientation-ring-qr.png"
+              alt="QR code for halo://ring/join/bocconi-orientation-week"
+            />
+            <a href="halo://ring/join/bocconi-orientation-week">Open orientation QR</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="product" class="split-section">
+        <div class="section-copy">
+          <p class="section-number">01</p>
+          <h2>Choose your five.</h2>
+          <p>
+            Start with the people you trust. Halo keeps your closest circle small,
+            then lets weaker ties orbit without turning campus into a feed.
+          </p>
+        </div>
+        <div class="orbit-panel" aria-hidden="true">
+          <div class="person-node node-a"></div>
+          <div class="person-node node-b"></div>
+          <div class="person-node node-c"></div>
+          <div class="person-node node-d"></div>
+          <div class="person-node node-e"></div>
+          <div class="self-node">You</div>
+          <span class="ring-line line-a"></span>
+          <span class="ring-line line-b"></span>
+          <span class="ring-line line-c"></span>
+          <span class="ring-line line-d"></span>
+          <span class="ring-line line-e"></span>
+        </div>
+      </section>
+
+      <section id="founders" class="split-section founders">
+        <div class="section-copy">
+          <p class="section-number">02</p>
+          <h2>Recruit 20 Founder Circles.</h2>
+          <p>
+            Each circle starts offline: one trusted lead, four real people, one
+            founder code, and a 48-hour feedback loop after the first scan.
+          </p>
+          <ul class="check-list">
+            <li>5 people per circle.</li>
+            <li>Founder-only invite code.</li>
+            <li>Campus trust before network scale.</li>
+          </ul>
+          <a class="secondary-action" href="../../docs/growth/founder-circles.md">
+            Open recruiting kit <span aria-hidden="true">-></span>
+          </a>
+        </div>
+        <div class="terminal-panel" aria-label="Founder Circles launch target">
+          <span>HALO://FOUNDER_CIRCLES</span>
+          <strong>20 circles</strong>
+          <p>5 people each. No broadcast. No audience mode.</p>
+          <code>&gt; apply --now</code>
+        </div>
+      </section>
+
+      <section id="orientation" class="orientation-section">
+        <div class="section-copy">
+          <p class="section-number">03</p>
+          <h2>Orientation week QR Event Ring.</h2>
+          <p>
+            Print one QR per gathering. Students scan, join the ring, check in,
+            and see who is actually in the room.
+          </p>
+        </div>
+        <div class="orientation-grid">
+          <div class="orientation-card">
+            <img
+              class="orientation-qr"
+              src="./assets/orientation-ring-qr.png"
+              alt="Orientation week Event Ring QR code."
+            />
+            <div>
+              <h3>Scan. Join. Be there.</h3>
+              <p>Token: bocconi-orientation-week</p>
+              <a href="halo://ring/join/bocconi-orientation-week">Open orientation QR</a>
+            </div>
+          </div>
+          <div class="steps-card">
+            <ol>
+              <li>Seed the Event Ring locally or create it in-app.</li>
+              <li>Print the QR for orientation tables and club nights.</li>
+              <li>Use check-ins to find live campus clusters.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section id="waitlist" class="final-waitlist">
+        <div>
+          <p class="section-number">04</p>
+          <h2>Be first. Stay close.</h2>
+          <p>Join the Bocconi launch list and get the founder invite path first.</p>
+        </div>
+        <form class="waitlist-form compact" data-waitlist-form data-endpoint="">
+          <label>
+            <span>Name</span>
+            <input name="name" autocomplete="name" placeholder="Your name" required />
+          </label>
+          <label>
+            <span>Bocconi email</span>
+            <input
+              name="email"
+              type="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="you@studbocconi.it"
+              required
+            />
+          </label>
+          <label>
+            <span>I am a...</span>
+            <select name="role" required>
+              <option value="" selected disabled>Choose one</option>
+              <option value="freshman">Freshman</option>
+              <option value="msc">MSc student</option>
+              <option value="exchange">Exchange student</option>
+              <option value="club_host">Club host</option>
+              <option value="founder_circle">Founder Circle lead</option>
+            </select>
+          </label>
+          <button type="submit">Join waitlist <span aria-hidden="true">-></span></button>
+          <p class="form-status" data-form-status aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="./script.js" type="module"></script>
+  </body>
+</html>

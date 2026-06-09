@@ -1,15 +1,38 @@
 import HaloShared
 import SwiftUI
 
+private enum MemoryFilter: String, CaseIterable, Identifiable {
+  case all
+  case inner
+
+  var id: String { rawValue }
+
+  var label: String {
+    switch self {
+    case .all: return "tutto"
+    case .inner: return "inner"
+    }
+  }
+}
+
 struct MemoryArchiveView: View {
   @Environment(\.dismiss) private var dismiss
 
-  var hasPlus: Bool = false
+  var hasPlusHint: Bool = false
   var onUpgrade: () -> Void = {}
 
   @State private var posts: [HaloPost] = []
+  @State private var memoryCount = 0
+  @State private var isLocked = true
+  @State private var filter: MemoryFilter = .all
   @State private var isLoading = false
   @State private var errorMessage: String?
+
+  init(hasPlusHint: Bool = false, onUpgrade: @escaping () -> Void = {}) {
+    self.hasPlusHint = hasPlusHint
+    self.onUpgrade = onUpgrade
+    _isLocked = State(initialValue: !hasPlusHint)
+  }
 
   var body: some View {
     ZStack {
@@ -17,10 +40,10 @@ struct MemoryArchiveView: View {
       ScrollView {
         VStack(alignment: .leading, spacing: SwarmHalo.s4) {
           rail
-          if hasPlus {
-            archiveBody
-          } else {
+          if isLocked {
             lockedBody
+          } else {
+            archiveBody
           }
         }
         .padding(.horizontal, SwarmHalo.s4)
@@ -33,13 +56,12 @@ struct MemoryArchiveView: View {
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
     .presentationBackground(.clear)
     .task {
-      guard hasPlus else { return }
       await load()
     }
   }
 
   private var rail: some View {
-    SwarmOperationalRail(title: "HALO / MEMORY", context: hasPlus ? "\(posts.count) fragments" : "plus", activation: .attention) {
+    SwarmOperationalRail(title: "HALO / MEMORY", context: railContext, activation: .attention) {
       Button(action: { dismiss() }) {
         Image(systemName: "xmark")
           .font(HaloType.system(12, weight: .semibold))
@@ -48,6 +70,13 @@ struct MemoryArchiveView: View {
       }
       .buttonStyle(.plain)
     }
+  }
+
+  private var railContext: String {
+    if isLocked {
+      return memoryCount > 0 ? "\(memoryCount) locked" : "plus"
+    }
+    return "\(posts.count) fragments"
   }
 
   @ViewBuilder
@@ -67,11 +96,28 @@ struct MemoryArchiveView: View {
         activation: .rest
       )
     } else {
+      Picker("memory", selection: $filter) {
+        ForEach(MemoryFilter.allCases) { filter in
+          Text(filter.label).tag(filter)
+        }
+      }
+      .pickerStyle(.segmented)
+      .tint(SwarmActivationRole.attention.color)
+
       LazyVStack(spacing: SwarmHalo.s3) {
-        ForEach(posts) { post in
+        ForEach(filteredPosts) { post in
           MemoryPostRow(post: post)
         }
       }
+    }
+  }
+
+  private var filteredPosts: [HaloPost] {
+    switch filter {
+    case .all:
+      return posts
+    case .inner:
+      return posts.filter { $0.minTier == .inner }
     }
   }
 
@@ -88,9 +134,9 @@ struct MemoryArchiveView: View {
       HStack(spacing: 0) {
         SwarmMetricTile(label: "pubblico", value: "00", activation: .rest, active: false)
         Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
-        SwarmMetricTile(label: "owner", value: "01", activation: .attention, active: true)
+        SwarmMetricTile(label: "owner", value: twoDigits(memoryCount), activation: .attention, active: memoryCount > 0)
         Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
-        SwarmMetricTile(label: "plus", value: "ON", activation: .attention, active: true)
+        SwarmMetricTile(label: "plus", value: hasPlusHint ? "SYNC" : "LOCK", activation: .attention, active: hasPlusHint)
       }
       .padding(.vertical, SwarmHalo.s3)
       .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous))
@@ -110,11 +156,27 @@ struct MemoryArchiveView: View {
     defer { isLoading = false }
 
     do {
+      memoryCount = try await PostsService.shared.memoryCount()
+    } catch {
+      memoryCount = 0
+    }
+
+    do {
       posts = try await PostsService.shared.memoryArchive()
+      isLocked = false
+      errorMessage = nil
+    } catch PostsService.PostsError.plusRequired {
+      posts = []
+      isLocked = true
       errorMessage = nil
     } catch {
+      isLocked = false
       errorMessage = SupabaseErrorMessage.describe(error, fallback: "Non riesco ad aprire Memory.")
     }
+  }
+
+  private func twoDigits(_ value: Int) -> String {
+    String(format: "%02d", value)
   }
 }
 

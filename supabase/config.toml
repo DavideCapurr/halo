@@ -61,3 +61,21 @@ policy = "oneshot"
 
 [functions.purge-expired]
 verify_jwt = false
+
+[functions.waitlist-signup]
+verify_jwt = false
+
+[functions.apple-storekit-sync]
+verify_jwt = true
+
+[functions.apple-storekit-webhook]
+verify_jwt = false
+
+[functions.stripe-create-checkout-session]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.stripe-customer-portal]
+verify_jwt = true

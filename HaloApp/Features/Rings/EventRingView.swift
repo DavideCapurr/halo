@@ -5,6 +5,9 @@ import SwiftUI
 import UIKit
 
 struct EventRingView: View {
+  private static let orientationJoinToken = "bocconi-orientation-week"
+  private static let orientationTitle = "Orientation week / Bocconi"
+
   @Environment(\.dismiss) private var dismiss
 
   private let initialRingId: UUID?
@@ -20,6 +23,7 @@ struct EventRingView: View {
   @State private var isLoading = false
   @State private var isJoining = false
   @State private var isCheckingIn = false
+  @State private var isCreatingOrientation = false
   @State private var didHandleInitialToken = false
   @State private var statusMessage: String?
   @State private var errorMessage: String?
@@ -127,10 +131,31 @@ struct EventRingView: View {
         .opacity(isJoining ? 0.55 : 1)
       }
 
+      orientationQuickStart
       feedbackLine
     }
     .padding(SwarmHalo.s4)
     .swarmPanel()
+  }
+
+  private var orientationQuickStart: some View {
+    HStack(alignment: .center, spacing: SwarmHalo.s3) {
+      SwarmCommandButton(
+        label: isCreatingOrientation ? "preparo QR" : "orientation week",
+        icon: "qrcode",
+        activation: .attention
+      ) {
+        Task { await createOrientationWeekRing() }
+      }
+      .disabled(isCreatingOrientation)
+      .opacity(isCreatingOrientation ? 0.56 : 1)
+
+      Text("token: \(orientationTokenLabel)")
+        .font(HaloType.mono(10, weight: .medium))
+        .foregroundStyle(SwarmHalo.inkMuted)
+        .lineLimit(1)
+        .minimumScaleFactor(0.78)
+    }
   }
 
   @ViewBuilder
@@ -356,6 +381,42 @@ struct EventRingView: View {
   }
 
   @MainActor
+  private func createOrientationWeekRing() async {
+    isCreatingOrientation = true
+    defer { isCreatingOrientation = false }
+    errorMessage = nil
+    statusMessage = nil
+
+    do {
+      if let existing = rings.first(where: { $0.joinToken == Self.orientationJoinToken }) {
+        selectedRing = existing
+        statusMessage = "QR orientation selezionato."
+        await loadSelectedMetadata()
+        return
+      }
+
+      let startsAt = Self.orientationWeekStartDate()
+      let endsAt = Calendar.current.date(byAdding: .hour, value: 4, to: startsAt)
+      let ring = try await RingsService.shared.create(
+        kind: .event,
+        title: Self.orientationTitle,
+        subtitle: "Scan. Join the ring. Be there.",
+        locationName: "Bocconi campus",
+        startsAt: startsAt,
+        endsAt: endsAt,
+        isPublic: true,
+        requiresApproval: false,
+        memberLimit: 250
+      )
+      selectedRing = ring
+      statusMessage = "QR orientation pronto."
+      await load()
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(error, fallback: "QR orientation non creato.")
+    }
+  }
+
+  @MainActor
   private func checkIn() async {
     guard let selectedRing else { return }
     isCheckingIn = true
@@ -379,6 +440,24 @@ struct EventRingView: View {
 
   private func twoDigits(_ value: Int) -> String {
     String(format: "%02d", value)
+  }
+
+  private var orientationTokenLabel: String {
+    guard selectedRing?.title == Self.orientationTitle,
+          let token = selectedRing?.joinToken else {
+      return Self.orientationJoinToken
+    }
+    return token
+  }
+
+  private static func orientationWeekStartDate() -> Date {
+    var components = DateComponents()
+    components.year = 2026
+    components.month = 9
+    components.day = 1
+    components.hour = 10
+    components.minute = 0
+    return Calendar(identifier: .gregorian).date(from: components) ?? .now.addingTimeInterval(90 * 24 * 60 * 60)
   }
 }
 

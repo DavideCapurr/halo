@@ -3,8 +3,11 @@ import SwiftUI
 /// Halo Plus surface. StoreKit wiring can arrive later; the product surface is
 /// no longer a placeholder.
 struct PlusUpsellView: View {
+  @Environment(AppState.self) private var state
   @Environment(\.dismiss) private var dismiss
   @State private var isWorking = false
+  @State private var isRestoring = false
+  @State private var priceText = StoreKitManager.shared.monthlyPriceText
   @State private var errorMessage: String?
 
   var body: some View {
@@ -17,22 +20,36 @@ struct PlusUpsellView: View {
           feature("Memory", "riapri i frammenti del semestre.", .connected)
           feature("Inner archive", "tieni separato ciò che resta vicino.", .operational)
           feature("Event recap", "persone incontrate, Moment salvati, zero pubblico.", .attention)
+          feature("Vibe+ presets", "biblioteca, loggia, aula 4 e preset salvati.", .connected)
+          feature("Halo skin", "profilo e widget con badge sottile opzionale.", .rest)
           if let errorMessage {
             Text(errorMessage)
               .font(HaloType.ui(12, weight: .regular))
               .foregroundStyle(SwarmActivationRole.attention.color)
               .frame(maxWidth: .infinity, alignment: .trailing)
           }
-          SwarmCommandButton(
-            label: isWorking ? "attivazione" : "attiva Halo Plus",
-            icon: "sparkles",
-            activation: .attention,
-            isProminent: true
-          ) {
-            Task { await purchase() }
+          HStack(spacing: SwarmHalo.s3) {
+            SwarmCommandButton(
+              label: isWorking ? "attivazione" : "attiva Halo Plus",
+              icon: "sparkles",
+              activation: .attention,
+              isProminent: true
+            ) {
+              Task { await purchase() }
+            }
+            .disabled(isWorking || isRestoring)
+            .opacity(isWorking ? 0.62 : 1)
+
+            SwarmCommandButton(
+              label: isRestoring ? "restore" : "restore",
+              icon: "arrow.clockwise",
+              activation: .rest
+            ) {
+              Task { await restore() }
+            }
+            .disabled(isWorking || isRestoring)
+            .opacity(isRestoring ? 0.62 : 1)
           }
-          .disabled(isWorking)
-          .opacity(isWorking ? 0.62 : 1)
           .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, SwarmHalo.s4)
@@ -44,7 +61,7 @@ struct PlusUpsellView: View {
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
     .presentationBackground(.clear)
     .task {
-      try? await StoreKitManager.shared.loadEntitlements()
+      await loadProductAndEntitlements()
     }
   }
 
@@ -70,7 +87,7 @@ struct PlusUpsellView: View {
         .font(HaloType.ui(14, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
       HStack(spacing: SwarmHalo.s3) {
-        SwarmMetricTile(label: "mese", value: "€2.99", activation: .attention, active: true)
+        SwarmMetricTile(label: "mese", value: priceText, activation: .attention, active: true)
         Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
         SwarmMetricTile(label: "pubblico", value: "00", activation: .rest, active: false)
       }
@@ -102,15 +119,46 @@ struct PlusUpsellView: View {
   }
 
   @MainActor
+  private func loadProductAndEntitlements() async {
+    do {
+      _ = try await StoreKitManager.shared.loadProducts()
+      priceText = StoreKitManager.shared.monthlyPriceText
+      try await StoreKitManager.shared.loadEntitlements()
+      await state.refreshCurrentProfile()
+    } catch {
+      priceText = StoreKitManager.shared.monthlyPriceText
+    }
+  }
+
+  @MainActor
   private func purchase() async {
     isWorking = true
     defer { isWorking = false }
     do {
       try await StoreKitManager.shared.purchaseMonthly()
+      await state.refreshCurrentProfile()
       errorMessage = nil
       dismiss()
     } catch {
       errorMessage = (error as? LocalizedError)?.errorDescription ?? "Non riesco ad attivare Halo Plus."
+    }
+  }
+
+  @MainActor
+  private func restore() async {
+    isRestoring = true
+    defer { isRestoring = false }
+    do {
+      try await StoreKitManager.shared.restorePurchases()
+      await state.refreshCurrentProfile()
+      if state.currentProfile?.hasPlus == true {
+        errorMessage = nil
+        dismiss()
+      } else {
+        errorMessage = "Nessun Halo Plus attivo da ripristinare."
+      }
+    } catch {
+      errorMessage = (error as? LocalizedError)?.errorDescription ?? "Restore non riuscito."
     }
   }
 }
