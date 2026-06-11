@@ -28,6 +28,20 @@ enum SupabaseClientProvider {
   )
 }
 
+/// App-level config read from Info.plist / Build Settings.
+enum AppConfig {
+  /// Base URL of the public campaigns web landing (e.g. https://halo.app).
+  /// When set, campaign shares link to the open web page instead of the deep
+  /// link, so non-Halo users can open and donate.
+  static let webBaseURL: URL? = {
+    guard let raw = Bundle.main.object(forInfoDictionaryKey: "HALO_WEB_BASE_URL") as? String,
+          !raw.isEmpty else {
+      return nil
+    }
+    return URL(string: raw)
+  }()
+}
+
 enum SupabaseErrorMessage {
   static let connectivity = "Non riesco a raggiungere Halo. Controlla la connessione e riprova."
 

@@ -5,7 +5,8 @@
 //
 // Configure a *Connect* webhook in Stripe pointing here, subscribed to:
 //   payment_intent.succeeded, payment_intent.payment_failed,
-//   payment_intent.canceled, charge.refunded, account.updated
+//   payment_intent.canceled, charge.refunded, account.updated,
+//   checkout.session.completed, checkout.session.expired
 
 import { serve } from "https://deno.land/std@0.210.0/http/server.ts";
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
@@ -40,6 +41,19 @@ serve(async (req) => {
       case "payment_intent.succeeded": {
         const pi = event.data.object as { id: string };
         await setContributionStatus(supa, pi.id, "paid");
+        break;
+      }
+      case "checkout.session.completed": {
+        // Web donations are tracked by the Checkout Session id.
+        const session = event.data.object as { id: string; payment_status: string };
+        if (session.payment_status === "paid") {
+          await setContributionStatus(supa, session.id, "paid");
+        }
+        break;
+      }
+      case "checkout.session.expired": {
+        const session = event.data.object as { id: string };
+        await setContributionStatus(supa, session.id, "failed");
         break;
       }
       case "payment_intent.payment_failed":

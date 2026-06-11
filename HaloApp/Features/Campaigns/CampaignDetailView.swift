@@ -308,6 +308,11 @@ final class CampaignDetailViewModel {
   }
 
   var shareURL: URL? {
+    let slug = campaign?.publicSlug ?? entrySlug
+    // Prefer the public web link (Mike Hayes reach) when a web base is configured.
+    if let base = AppConfig.webBaseURL, let slug, !slug.isEmpty {
+      return base.appendingPathComponent("c").appendingPathComponent(slug)
+    }
     if let campaign { return campaign.contributeDeepLink }
     if let entrySlug { return DeepLink.campaignContribute(slug: entrySlug).url }
     return nil
