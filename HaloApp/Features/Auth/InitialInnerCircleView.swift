@@ -30,7 +30,7 @@ struct InitialInnerCircleView: View {
         if let errorMessage {
           Text(errorMessage)
             .font(HaloType.ui(12, weight: .regular))
-            .foregroundStyle(SwarmHalo.launchAmber)
+            .foregroundStyle(SwarmHalo.attention)
             .multilineTextAlignment(.center)
         }
         ctaRow

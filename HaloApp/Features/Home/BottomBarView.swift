@@ -1,30 +1,32 @@
 import SwiftUI
 import HaloShared
 
-/// Bottom tab bar ispirata al layer di navigazione di iOS 26:
-/// floating glass, tab attiva leggibile, compose centrale prominente.
+/// Floating glass command dock. Four destinations plus a central Moment action.
+/// Tap the centre to compose a Moment (vibe-first); long-press for the
+/// frictionless "easy" share that goes to your Inner and fades in 3 hours.
 struct BottomBarView: View {
   enum Tab {
     case orbit
-    case feed
     case pulse
+    case stato
     case profile
   }
 
   let selfMood: Mood
   var activeTab: Tab = .orbit
   var onCompose: () -> Void = {}
+  var onEasy: () -> Void = {}
   var onOrbit: () -> Void = {}
-  var onFeed: () -> Void = {}
   var onPulse: () -> Void = {}
+  var onStato: () -> Void = {}
   var onProfile: () -> Void = {}
 
   var body: some View {
     HStack(spacing: 10) {
-      tabButton(.orbit, title: "Orbita", icon: "circle.dotted", selectedIcon: "circle.dotted.circle.fill", action: onOrbit)
-      tabButton(.feed, title: "Feed", icon: "text.alignleft", selectedIcon: "text.alignleft", action: onFeed)
+      tabButton(.orbit, title: "Orbita", icon: "circle.dotted", selectedIcon: "circle.circle.fill", action: onOrbit)
+      tabButton(.pulse, title: "Pulse", icon: "waveform.path.ecg", selectedIcon: "waveform.path.ecg", action: onPulse)
       composeButton()
-      tabButton(.pulse, title: "Pulse", icon: "list.dash", selectedIcon: "list.bullet.rectangle.fill", action: onPulse)
+      tabButton(.stato, title: "Stato", icon: "circle.grid.2x2", selectedIcon: "circle.grid.2x2.fill", action: onStato)
       tabButton(.profile, title: "Tu", icon: "person.circle", selectedIcon: "person.circle.fill", action: onProfile)
     }
     .padding(.horizontal, 10)
@@ -42,7 +44,6 @@ struct BottomBarView: View {
     action: @escaping () -> Void
   ) -> some View {
     let isSelected = activeTab == tab
-    let tint = tabTint(for: tab)
 
     return Button(action: action) {
       VStack(spacing: 3) {
@@ -62,38 +63,31 @@ struct BottomBarView: View {
         if isSelected {
           Capsule()
             .fill(.clear)
-            .haloGlass(in: Capsule(), tint: tint, interactive: true)
+            .haloGlass(in: Capsule(), tint: SwarmHalo.bronze.opacity(0.5), interactive: true)
         }
       }
     }
     .buttonStyle(.plain)
     .accessibilityLabel(title)
+    .accessibilityAddTraits(isSelected ? .isSelected : [])
   }
 
   private func composeButton() -> some View {
-    Button(action: onCompose) {
-      ZStack {
-        Circle()
-          .fill(.clear)
-          .haloGlass(in: Circle(), tint: MoodPalette.auraColor(selfMood, l: 0.58), interactive: true)
-        Image(systemName: "plus")
-          .font(HaloType.system(20, weight: .semibold))
-          .foregroundStyle(SwarmHalo.background)
-      }
-      .frame(width: 50, height: 50)
-      .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.26), radius: 10, y: 3)
+    ZStack {
+      Circle()
+        .fill(.clear)
+        .haloGlass(in: Circle(), tint: MoodPalette.auraColor(selfMood, l: 0.58), interactive: true)
+      Image(systemName: "plus")
+        .font(HaloType.system(20, weight: .semibold))
+        .foregroundStyle(SwarmHalo.background)
     }
-    .buttonStyle(.plain)
-    .accessibilityLabel("Compose")
-  }
-
-  private func tabTint(for tab: Tab) -> Color {
-    switch tab {
-    case .orbit:   return MoodPalette.auraColor(selfMood, l: 0.48)
-    case .feed:    return SwarmHalo.inkHairline
-    case .pulse:   return MoodPalette.auraColor(.electric, l: 0.55)
-    case .profile: return MoodPalette.auraColor(.soft, l: 0.58)
-    }
+    .frame(width: 50, height: 50)
+    .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.26), radius: 10, y: 3)
+    .contentShape(Circle())
+    .onTapGesture(perform: onCompose)
+    .onLongPressGesture(minimumDuration: 0.35, perform: onEasy)
+    .accessibilityLabel("Nuovo Moment")
+    .accessibilityHint("Tocca per un Moment, tieni premuto per condividere veloce")
   }
 }
 

@@ -394,7 +394,7 @@ struct MomentCard: View {
 
   private var borderColor: Color {
     if isExpiringSoon {
-      return SwarmHalo.launchAmber.opacity(0.86)
+      return SwarmHalo.attention.opacity(0.86)
     }
     return HaloTheme.hairlineSoft
   }

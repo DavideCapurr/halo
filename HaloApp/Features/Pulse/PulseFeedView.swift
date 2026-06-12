@@ -486,7 +486,7 @@ private struct PulseDropCard: View {
   private func noteDrop(_ text: String, label: String, accent: Bool = false) -> some View {
     VStack(alignment: .leading, spacing: 9) {
       Text(label)
-        .haloEyebrow(accent ? SwarmHalo.launchAmber : HaloInk.creamMute, size: 7.8, tracking: 1.7)
+        .haloEyebrow(accent ? SwarmHalo.bronze : HaloInk.creamMute, size: 7.8, tracking: 1.7)
       Text(text)
         .font(HaloType.serif(19))
         .foregroundStyle(HaloInk.cream)
@@ -497,7 +497,7 @@ private struct PulseDropCard: View {
     .padding(.leading, 12)
     .overlay(alignment: .leading) {
       RoundedRectangle(cornerRadius: 1)
-        .fill(accent ? SwarmHalo.launchAmber.opacity(0.76) : HaloInk.creamLine)
+        .fill(accent ? SwarmHalo.bronze.opacity(0.76) : HaloInk.creamLine)
         .frame(width: 2)
     }
   }

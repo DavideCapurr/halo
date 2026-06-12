@@ -39,19 +39,19 @@ struct DeepSpaceBackground: View {
   private var vignetteColors: [Color] {
     switch theme {
     case .aurora:
-      return [SwarmHalo.platinum.opacity(0.030), SwarmHalo.platinum.opacity(0.010), SwarmHalo.absoluteBlack]
+      return [SwarmHalo.cream.opacity(0.030), SwarmHalo.cream.opacity(0.010), SwarmHalo.absoluteBlack]
     case .dusk:
-      return [SwarmHalo.platinum.opacity(0.026), SwarmHalo.platinum.opacity(0.010), SwarmHalo.absoluteBlack]
+      return [SwarmHalo.cream.opacity(0.026), SwarmHalo.cream.opacity(0.010), SwarmHalo.absoluteBlack]
     case .nocturne:
-      return [SwarmHalo.platinum.opacity(0.026), SwarmHalo.platinum.opacity(0.010), SwarmHalo.absoluteBlack]
+      return [SwarmHalo.cream.opacity(0.026), SwarmHalo.cream.opacity(0.010), SwarmHalo.absoluteBlack]
     }
   }
 
   private var nebulaColor: Color {
     switch theme {
-    case .aurora:   return SwarmHalo.platinum.opacity(0.055)
-    case .dusk:     return SwarmHalo.platinum.opacity(0.045)
-    case .nocturne: return SwarmHalo.platinum.opacity(0.035)
+    case .aurora:   return SwarmHalo.cream.opacity(0.055)
+    case .dusk:     return SwarmHalo.cream.opacity(0.045)
+    case .nocturne: return SwarmHalo.cream.opacity(0.035)
     }
   }
 }

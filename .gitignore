@@ -54,5 +54,11 @@ supabase/volumes/
 .vscode/
 .idea/
 
+# Vim
+*.swp
+*.swo
+*~
+.*.swp
+
 # Logs
 *.log

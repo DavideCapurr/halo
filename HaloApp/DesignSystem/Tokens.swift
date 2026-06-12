@@ -11,40 +11,50 @@ enum SwarmHalo {
   // MARK: - Current endpoints
 
   static let absoluteBlack = HaloVisual.Palette.absoluteBlack
+  /// Primary warm ink — paper-cream. Replaces the SWARM `platinum` endpoint.
+  static let cream = HaloVisual.Palette.cream
+  /// Deprecated alias kept only so any stray reference still resolves to cream.
   static let platinum = HaloVisual.Palette.cream
 
-  // MARK: - Activation
+  // MARK: - Activation (swarm-halo: single bronze accent)
 
-  /// Connected proximity state.
-  static let orbitalBlue = HaloVisual.Aura.color(.electric)
-  /// Operational proximity state.
-  static let signalGreen = HaloVisual.Aura.color(.focused)
-  /// Attention state for alerts and widening warnings.
-  static let launchAmber = HaloVisual.Aura.color(.wild)
+  /// Connected proximity state — inner. The bronze halo of the person.
+  static let bronzeAccent = HaloVisual.Palette.bronze
+  /// Operational proximity state — close.
+  static let bronzeAccentSoft = HaloVisual.Palette.bronzeSoft
+  /// Attention — errors, downgrades, reports only. Warm magenta, not orange.
+  static let attention = Color(hex: "#FF2B6E")
+
+  // MARK: - Legacy activation aliases (being swept out of feature code)
+
+  static let orbitalBlue = bronzeAccent
+  static let signalGreen = bronzeAccentSoft
+  /// Legacy name — now resolves to the real attention magenta.
+  static let launchAmber = attention
 
   // MARK: - Semantic surfaces
 
   static let background = HaloVisual.Palette.warmBlack
-  static let surface = platinum.opacity(0.055)
-  static let surfaceRaised = platinum.opacity(0.085)
-  static let surfaceModal = platinum.opacity(0.11)
-  static let edge = platinum.opacity(0.035)
+  static let surface = cream.opacity(0.055)
+  static let surfaceRaised = cream.opacity(0.085)
+  static let surfaceModal = cream.opacity(0.11)
+  static let edge = cream.opacity(0.035)
 
   // MARK: - Semantic ink
 
-  static let ink = platinum
-  static let inkSecondary = platinum.opacity(0.68)
-  static let inkMuted = platinum.opacity(0.44)
-  static let inkHairline = platinum.opacity(0.18)
-  static let inkLine = platinum.opacity(0.10)
-  static let inkWhisper = platinum.opacity(0.06)
+  static let ink = cream
+  static let inkSecondary = cream.opacity(0.68)
+  static let inkMuted = cream.opacity(0.44)
+  static let inkHairline = cream.opacity(0.18)
+  static let inkLine = cream.opacity(0.10)
+  static let inkWhisper = cream.opacity(0.06)
 
   // MARK: - Semantic strokes
 
-  static let strokeRest = platinum.opacity(0.12)
-  static let strokeActive = platinum.opacity(0.42)
-  static let strokeSoft = platinum.opacity(0.08)
-  static let strokeHair = platinum.opacity(0.16)
+  static let strokeRest = cream.opacity(0.12)
+  static let strokeActive = cream.opacity(0.42)
+  static let strokeSoft = cream.opacity(0.08)
+  static let strokeHair = cream.opacity(0.16)
 
   // MARK: - Legacy aliases during migration
 
@@ -63,7 +73,7 @@ enum SwarmHalo {
   static let bronze = HaloVisual.Palette.bronze
   static let bronzeSoft = HaloVisual.Palette.bronzeSoft
   static let bronzeGlow = HaloVisual.Palette.bronzeGlow
-  static let warmMagenta = HaloVisual.Aura.color(.soft)
+  static let warmMagenta = attention
 
   // MARK: - Radii (SWARM literal)
 
@@ -110,11 +120,15 @@ enum SwarmHalo {
 
 // MARK: - Type scale
 
+/// swarm-halo type scale. Hero is capped at 72 for mobile (the SWARM-literal
+/// 144/64 ramp is archived with `swarm-v1.md`). Headlines are editorial
+/// Cormorant, per `docs/design-system/swarm-halo-v1.md`. Values are base px;
+/// the global `HaloType.scale` multiplier is applied on top at render time.
 enum SwarmHaloTypeScale {
-  static let hero: CGFloat = 144
-  static let h1: CGFloat = 64
-  static let h2: CGFloat = 40
-  static let h3: CGFloat = 28
+  static let hero: CGFloat = 72
+  static let h1: CGFloat = 40
+  static let h2: CGFloat = 28
+  static let h3: CGFloat = 22
   static let lede: CGFloat = 17
   static let body: CGFloat = 15
   static let ui: CGFloat = 13
@@ -131,18 +145,20 @@ enum SwarmHaloTierState {
   case rest
   case farRest
 
+  /// Bronze for active proximity (the person's halo), cream hairline at rest.
   var accent: Color {
     switch self {
-    case .connected: return SwarmHalo.orbitalBlue
-    case .operational: return SwarmHalo.signalGreen
-    case .rest: return SwarmHalo.platinum
+    case .connected: return SwarmHalo.bronze
+    case .operational: return SwarmHalo.bronzeSoft
+    case .rest: return SwarmHalo.cream
     case .farRest: return SwarmHalo.absoluteBlack
     }
   }
 
   var stroke: Color {
     switch self {
-    case .connected, .operational: return accent.opacity(0.26)
+    case .connected: return SwarmHalo.bronze.opacity(0.55)
+    case .operational: return SwarmHalo.bronze.opacity(0.34)
     case .rest: return SwarmHalo.strokeHair
     case .farRest: return SwarmHalo.absoluteBlack.opacity(0.84)
     }
@@ -150,31 +166,35 @@ enum SwarmHaloTierState {
 
   var activeStroke: Color {
     switch self {
-    case .rest: return SwarmHalo.platinum.opacity(0.44)
-    case .farRest: return SwarmHalo.platinum.opacity(0.10)
-    case .connected, .operational: return accent.opacity(0.64)
+    case .rest: return SwarmHalo.cream.opacity(0.44)
+    case .farRest: return SwarmHalo.cream.opacity(0.10)
+    case .connected: return SwarmHalo.bronze.opacity(0.82)
+    case .operational: return SwarmHalo.bronze.opacity(0.6)
     }
   }
 
   var ringFill: Color {
     switch self {
     case .connected, .operational: return SwarmHalo.surfaceRaised
-    case .rest: return SwarmHalo.platinum.opacity(0.16)
+    case .rest: return SwarmHalo.cream.opacity(0.16)
     case .farRest: return SwarmHalo.absoluteBlack
     }
   }
 
+  /// The actual halo — bronze glow that decays from inner to rest.
   var glow: Color {
     switch self {
-    case .connected, .operational: return accent.opacity(0.05)
-    case .rest: return SwarmHalo.platinum.opacity(0.08)
+    case .connected: return SwarmHalo.bronzeGlow
+    case .operational: return SwarmHalo.bronze.opacity(0.18)
+    case .rest: return SwarmHalo.cream.opacity(0.06)
     case .farRest: return .clear
     }
   }
 
   var badgeFill: Color {
     switch self {
-    case .connected, .operational: return accent.opacity(0.04)
+    case .connected: return SwarmHalo.bronze.opacity(0.10)
+    case .operational: return SwarmHalo.bronze.opacity(0.06)
     case .rest: return SwarmHalo.inkWhisper
     case .farRest: return SwarmHalo.absoluteBlack.opacity(0.72)
     }

@@ -90,7 +90,7 @@ struct AudioRecorderView: View {
       case .idle:
         circleButton(icon: "mic.fill", color: SwarmHalo.ink, bg: SwarmHalo.ink.opacity(0.12)) { startRecording() }
       case .recording:
-        circleButton(icon: "stop.fill", color: SwarmHalo.background, bg: SwarmHalo.launchAmber.opacity(0.85)) { stopRecording() }
+        circleButton(icon: "stop.fill", color: SwarmHalo.background, bg: SwarmHalo.attention.opacity(0.85)) { stopRecording() }
       case .recorded:
         Button("ripeti") { reset() }
           .buttonStyle(.plain)

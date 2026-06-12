@@ -14,7 +14,11 @@ import UIKit
 /// development fallback until the official Satoshi files are registered.
 enum HaloType {
 
-  /// Scala globale di leggibilità. Unico punto per ingrandire tutta la tipografia Halo.
+  /// Official global readability multiplier — the single knob for the whole
+  /// Halo type system. Every `HaloType.*` size is multiplied by this at render
+  /// time, so the base px values in `SwarmHaloTypeScale` and the design-system
+  /// docs render at `px × scale` (e.g. hero 72 → ~83pt). Change here, not in
+  /// call sites.
   static let scale: CGFloat = 1.15
 
   private static func scaled(_ size: CGFloat) -> CGFloat { size * scale }
@@ -81,15 +85,15 @@ enum HaloType {
   }
 
   static func h1() -> Font {
-    display(SwarmHaloTypeScale.h1, weight: .medium)
+    serif(SwarmHaloTypeScale.h1, weight: .regular)
   }
 
   static func h2() -> Font {
-    display(SwarmHaloTypeScale.h2, weight: .medium)
+    serif(SwarmHaloTypeScale.h2, weight: .regular)
   }
 
   static func h3() -> Font {
-    display(SwarmHaloTypeScale.h3, weight: .medium)
+    serif(SwarmHaloTypeScale.h3, weight: .regular)
   }
 
   static func lede() -> Font {
@@ -153,16 +157,19 @@ enum HaloInk {
   static let creamLine     = SwarmHalo.inkLine
   static let creamWhisper  = SwarmHalo.inkWhisper
 
-  static let bronze        = SwarmHalo.inkSecondary
-  static let bronzeSoft    = SwarmHalo.inkHairline
-  static let bronzeGlow    = SwarmHalo.inkLine
+  static let bronze        = SwarmHalo.bronze
+  static let bronzeSoft    = SwarmHalo.bronzeSoft
+  static let bronzeGlow    = SwarmHalo.bronzeGlow
 
   static let nightSurface  = SwarmHalo.surface
   static let nightSurface2 = SwarmHalo.surfaceModal
   static let nightEdge     = SwarmHalo.edge
 
-  /// Attention state — errors, downgrades, reports only. Sparingly.
-  static let warmMagenta   = SwarmHalo.launchAmber
+  /// Attention state — errors, downgrades, reports only. Warm magenta #FF2B6E.
+  static let warmMagenta   = SwarmHalo.attention
+
+  /// Text/overlay drawn on top of media (photos). Stays near-cream, not pure white.
+  static let onMedia       = SwarmHalo.cream
 }
 
 extension View {
