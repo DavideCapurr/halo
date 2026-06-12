@@ -32,7 +32,7 @@ struct HaloSpaceView: View {
         topRow
         TabView(selection: $index) {
           ForEach(Array(peers.enumerated()), id: \.element.id) { (i, p) in
-            HaloSpacePage(person: p)
+            HaloSpacePage(person: p, onInvite: { inviteTarget = p })
               .tag(i)
           }
         }
@@ -112,6 +112,7 @@ struct HaloSpaceView: View {
 
 private struct HaloSpacePage: View {
   let person: HaloPersonNode
+  var onInvite: () -> Void = {}
   @State private var posts: [HaloPost] = []
   @State private var isLoading: Bool = true
   @State private var lastError: String?
@@ -276,9 +277,12 @@ private struct HaloSpacePage: View {
 
   private var emptyState: some View {
     SwarmEmptyState(
-      title: "halo silenzioso.",
-      message: "nessun Moment attivo nelle ultime 72h.",
-      activation: .rest
+      title: "ancora silenzio.",
+      message: "\(person.name.lowercased()) non ha Moment attivi nelle ultime 72h. puoi essere tu a farti sentire.",
+      activation: .connected,
+      actionTitle: "invitalo più vicino",
+      actionIcon: "person.badge.plus",
+      action: onInvite
     )
   }
 

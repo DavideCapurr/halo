@@ -79,7 +79,7 @@ struct BottomBarView: View {
         .haloGlass(in: Circle(), tint: MoodPalette.auraColor(selfMood, l: 0.58), interactive: true)
       Image(systemName: "plus")
         .font(HaloType.system(20, weight: .semibold))
-        .foregroundStyle(SwarmHalo.background)
+        .foregroundStyle(MoodPalette.onAccent(selfMood, l: 0.58))
     }
     .frame(width: 50, height: 50)
     .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.26), radius: 10, y: 3)

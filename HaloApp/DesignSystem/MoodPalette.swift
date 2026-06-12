@@ -14,6 +14,17 @@ enum MoodPalette {
   static func auraRing(_ mood: Mood, alpha: Double = 0.35) -> Color {
     HaloVisual.Aura.color(mood, luminance: 0.55, alpha: alpha)
   }
+
+  /// Ink leggibile sopra un fill aura (mood) alla luminanza `l`.
+  /// Sceglie scuro/chiaro in base alla luminanza relativa WCAG del fill, così
+  /// le CTA e il FAB restano contrastati per ogni mood — anche quelli chiari
+  /// (soft, electric) dove il cream sbiadiva.
+  static func onAccent(_ mood: Mood, l: Double = 0.58) -> Color {
+    // Crossover WCAG nero/bianco a L ≈ 0.179.
+    HaloVisual.Aura.relativeLuminance(mood, luminance: l) > 0.179
+      ? SwarmHalo.background
+      : HaloInk.cream
+  }
 }
 
 extension Color {
@@ -49,6 +60,28 @@ extension Color {
     if v <= 0 { return 0 }
     if v >= 1 { return 1 }
     return v <= 0.0031308 ? 12.92 * v : 1.055 * pow(v, 1 / 2.4) - 0.055
+  }
+
+  /// Luminanza relativa WCAG (spazio lineare) per un colore OKLCH, senza dover
+  /// estrarre i componenti da una `Color`. Usata per scegliere un foreground
+  /// leggibile sulle superfici accent dei mood.
+  static func oklchRelativeLuminance(l: Double, c: Double, h: Double) -> Double {
+    let hRad = h * .pi / 180
+    let a = c * cos(hRad)
+    let bLab = c * sin(hRad)
+    let l_ = l + 0.3963377774 * a + 0.2158037573 * bLab
+    let m_ = l - 0.1055613458 * a - 0.0638541728 * bLab
+    let s_ = l - 0.0894841775 * a - 1.2914855480 * bLab
+
+    let lc = l_ * l_ * l_
+    let mc = m_ * m_ * m_
+    let sc = s_ * s_ * s_
+
+    let rLin =  4.0767416621 * lc - 3.3077115913 * mc + 0.2309699292 * sc
+    let gLin = -1.2684380046 * lc + 2.6097574011 * mc - 0.3413193965 * sc
+    let bLin = -0.0041960863 * lc - 0.7034186147 * mc + 1.7076147010 * sc
+
+    return 0.2126 * rLin.clamped() + 0.7152 * gLin.clamped() + 0.0722 * bLin.clamped()
   }
 }
 

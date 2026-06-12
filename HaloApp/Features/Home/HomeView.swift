@@ -644,17 +644,6 @@ struct HomeView: View {
           .position(x: center.x, y: center.y)
 
         orbitReferenceStatusCard(center: center)
-
-        VStack {
-          Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-        .overlay(alignment: .trailing) {
-          orbitReferenceZoomRail
-            .padding(.trailing, HaloVisual.Orbita.zoomRailTrailingPadding)
-            .opacity(showZoomRail ? 1 : 0.55)
-            .animation(.easeInOut(duration: 0.28), value: showZoomRail)
-        }
       }
       .frame(width: proxy.size.width, height: proxy.size.height)
       .clipped()
@@ -664,6 +653,14 @@ struct HomeView: View {
       .simultaneousGesture(
         orbitReferenceFieldZoomDragGesture(center: center, ringRadiusByTier: radii)
       )
+      // Zoom-rail fuori dal `.clipped()`: non viene tagliata dal bordo destro e
+      // resta sopra i nodi dell'anello esterno. Distanziata dal safe-area destro.
+      .overlay(alignment: .trailing) {
+        orbitReferenceZoomRail
+          .padding(.trailing, HaloVisual.Orbita.zoomRailTrailingPadding)
+          .opacity(showZoomRail ? 1 : 0.55)
+          .animation(.easeInOut(duration: 0.28), value: showZoomRail)
+      }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .coordinateSpace(name: Self.orbitCoordinateSpace)
@@ -951,26 +948,29 @@ struct HomeView: View {
     let levels = ZoomLevel.allCases
     let activeIndex = fieldZoom.rawValue
 
-    return VStack(spacing: 8) {
+    return VStack(spacing: 2) {
       Button {
         applyZoom(fieldZoom.zoomedIn(), reveal: true)
       } label: {
         Text("+")
-          .font(Self.orbitStoriesBodyFont(12, weight: .regular))
+          .font(Self.orbitStoriesBodyFont(14, weight: .regular))
           .foregroundStyle(fieldZoom == .innerOnly ? Self.orbitStoriesCreamMute : Self.orbitStoriesCreamLow)
-          .frame(width: 18, height: 12)
+          .frame(width: 40, height: 40)
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
       .disabled(fieldZoom == .innerOnly)
 
+      // Track 40×railHeight: il DragGesture(minimumDistance: 0) seleziona il
+      // livello più vicino già al touch-down, quindi un semplice tap funziona su
+      // tutta la rail. I dot restano puramente visivi (niente hit-target che si
+      // sovrappongono e fanno scegliere il livello sbagliato).
       ZStack(alignment: .top) {
         Rectangle()
           .fill(Self.orbitStoriesCreamLine)
           .frame(width: 2, height: railHeight)
 
         ForEach(levels.indices, id: \.self) { index in
-          let level = levels[index]
           let active = index == activeIndex
           let dotSize: CGFloat = active ? 8 : 5
           Circle()
@@ -978,11 +978,9 @@ struct HomeView: View {
             .frame(width: dotSize, height: dotSize)
             .shadow(color: active ? Self.orbitStoriesBronzeGlow : .clear, radius: 6)
             .offset(y: CGFloat(index) / CGFloat(levels.count - 1) * railHeight - dotSize / 2)
-            .contentShape(Rectangle().inset(by: -10))
-            .onTapGesture { applyZoom(level, reveal: true) }
         }
       }
-      .frame(width: 22, height: railHeight)
+      .frame(width: 40, height: railHeight)
       .contentShape(Rectangle())
       .gesture(
         DragGesture(minimumDistance: 0)
@@ -998,16 +996,16 @@ struct HomeView: View {
         applyZoom(fieldZoom.zoomedOut(), reveal: true)
       } label: {
         Text("−")
-          .font(Self.orbitStoriesBodyFont(14, weight: .regular))
+          .font(Self.orbitStoriesBodyFont(16, weight: .regular))
           .foregroundStyle(fieldZoom == .asteroids ? Self.orbitStoriesCreamMute : Self.orbitStoriesCreamLow)
-          .frame(width: 18, height: 14)
+          .frame(width: 40, height: 40)
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
       .disabled(fieldZoom == .asteroids)
     }
     .padding(.horizontal, 4)
-    .padding(.vertical, 10)
+    .padding(.vertical, 8)
     .background(Self.orbitStoriesZoomRailFill, in: Capsule())
     .haloGlass(
       in: Capsule(),

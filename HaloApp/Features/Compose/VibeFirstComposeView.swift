@@ -64,15 +64,19 @@ struct VibeFirstComposeView: View {
         .padding(.top, 14)
         .padding(.bottom, 10)
 
-      HStack(alignment: .top, spacing: 12) {
-        stepRail
-          .padding(.leading, 18)
-          .padding(.top, 6)
-
+      // Stage centrata verticalmente: gli step corti (es. mood) non lasciano
+      // più un vuoto in fondo, quelli lunghi (foto/audio) scorrono comunque.
+      GeometryReader { geo in
         ScrollView {
-          stageCard
-            .padding(.trailing, 18)
-            .padding(.bottom, 20)
+          HStack(alignment: .top, spacing: 12) {
+            stepRail
+              .padding(.leading, 18)
+
+            stageCard
+              .padding(.trailing, 18)
+          }
+          .padding(.vertical, 8)
+          .frame(minHeight: geo.size.height, alignment: .center)
         }
         .scrollIndicators(.hidden)
       }
@@ -550,7 +554,7 @@ struct VibeFirstComposeView: View {
       } label: {
         Text(footerTitle)
           .font(HaloType.ui(15, weight: .semibold))
-          .foregroundStyle(HaloInk.cream)
+          .foregroundStyle(MoodPalette.onAccent(mood, l: 0.78))
           .padding(.horizontal, 22).padding(.vertical, 12)
           .background(
             LinearGradient(
