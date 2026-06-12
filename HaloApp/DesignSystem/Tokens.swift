@@ -44,7 +44,9 @@ enum SwarmHalo {
 
   static let ink = cream
   static let inkSecondary = cream.opacity(0.68)
-  static let inkMuted = cream.opacity(0.44)
+  /// Tertiary ink. Bumped to ~0.52 so muted counters/labels clear WCAG AA
+  /// (~4.5:1) on warm black instead of reading as disabled.
+  static let inkMuted = cream.opacity(0.52)
   static let inkHairline = cream.opacity(0.18)
   static let inkLine = cream.opacity(0.10)
   static let inkWhisper = cream.opacity(0.06)
@@ -265,7 +267,8 @@ enum HaloVisual {
 
     static let cream = Color(hex: "#E4DDCF")
     static let creamLow = cream.opacity(0.62)
-    static let creamMute = cream.opacity(0.42)
+    /// Bumped to ~0.52 for WCAG AA on warm black (was 0.42 → ~3.3:1).
+    static let creamMute = cream.opacity(0.52)
     static let creamHair = cream.opacity(0.18)
     static let creamLine = cream.opacity(0.10)
     static let creamWhisper = cream.opacity(0.06)
@@ -285,6 +288,12 @@ enum HaloVisual {
     static func color(_ mood: Mood, luminance: Double?, alpha: Double = 1) -> Color {
       let token = token(for: mood)
       return Color.fromOKLCH(l: luminance ?? token.l, c: token.c, h: token.h, alpha: alpha)
+    }
+
+    /// Luminanza relativa WCAG del fill aura per un mood alla luminanza `luminance`.
+    static func relativeLuminance(_ mood: Mood, luminance: Double? = nil) -> Double {
+      let token = token(for: mood)
+      return Color.oklchRelativeLuminance(l: luminance ?? token.l, c: token.c, h: token.h)
     }
 
     private static func token(for mood: Mood) -> (l: Double, c: Double, h: Double) {
@@ -366,7 +375,7 @@ enum HaloVisual {
     static let selfInnerSize: CGFloat = 48
     static let selfFrameSize: CGFloat = 118
 
-    static let zoomRailTrailingPadding: CGFloat = 10
+    static let zoomRailTrailingPadding: CGFloat = 16
     static let zoomRailFillOpacity = 0.45
     static let zoomRailLineHeight: CGFloat = 64
 

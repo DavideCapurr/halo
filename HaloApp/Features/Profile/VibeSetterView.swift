@@ -24,7 +24,8 @@ struct VibeSetterView: View {
   }
 
   var body: some View {
-    ScrollView {
+    VStack(spacing: 0) {
+      ScrollView {
       VStack(spacing: 0) {
         VStack(alignment: .leading, spacing: 6) {
           Text("LA TUA VIBE")
@@ -94,36 +95,52 @@ struct VibeSetterView: View {
         .padding(.horizontal, 14).padding(.vertical, 12)
         .haloContentGlass(in: RoundedRectangle(cornerRadius: 14))
         .padding(.horizontal, 22).padding(.bottom, 14)
-
-        // CTA
-        Button {
-          onSave(mood, note)
-        } label: {
-          Text("manda la vibe")
-            .font(HaloType.ui(15, weight: .semibold))
-            .foregroundStyle(HaloInk.cream)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(
-              LinearGradient(
-                colors: [MoodPalette.auraColor(mood, l: 0.78), MoodPalette.auraColor(mood, l: 0.55)],
-                startPoint: .top, endPoint: .bottom
-              ),
-              in: RoundedRectangle(cornerRadius: 16)
-            )
-            .shadow(color: MoodPalette.auraRing(mood, alpha: 0.4), radius: 14, y: 6)
-            .haloGlass(in: RoundedRectangle(cornerRadius: 16), tint: MoodPalette.auraColor(mood, l: 0.55), interactive: true)
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal, 22).padding(.bottom, 30)
       }
       .padding(.top, 6)
+      }
+      .scrollIndicators(.hidden)
+
+      // CTA pinnata in un footer fisso: l'azione primaria resta sempre visibile
+      // e raggiungibile col pollice anche al detent .medium.
+      ctaFooter
     }
     .background(haloSheetBackground())
     .presentationDetents([.medium, .large])
     .presentationDragIndicator(.visible)
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
     .presentationBackground(.clear)
+  }
+
+  private var ctaFooter: some View {
+    Button {
+      onSave(mood, note)
+    } label: {
+      Text("manda la vibe")
+        .font(HaloType.ui(15, weight: .semibold))
+        .foregroundStyle(MoodPalette.onAccent(mood, l: 0.78))
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(
+          LinearGradient(
+            colors: [MoodPalette.auraColor(mood, l: 0.78), MoodPalette.auraColor(mood, l: 0.55)],
+            startPoint: .top, endPoint: .bottom
+          ),
+          in: RoundedRectangle(cornerRadius: 16)
+        )
+        .shadow(color: MoodPalette.auraRing(mood, alpha: 0.4), radius: 14, y: 6)
+        .haloGlass(in: RoundedRectangle(cornerRadius: 16), tint: MoodPalette.auraColor(mood, l: 0.55), interactive: true)
+    }
+    .buttonStyle(.plain)
+    .padding(.horizontal, 22)
+    .padding(.top, 12)
+    .padding(.bottom, 18)
+    .background(
+      LinearGradient(
+        colors: [SwarmHalo.background.opacity(0), SwarmHalo.background.opacity(0.9), SwarmHalo.background],
+        startPoint: .top, endPoint: .bottom
+      )
+      .allowsHitTesting(false)
+    )
   }
 
   private var previewHalo: some View {

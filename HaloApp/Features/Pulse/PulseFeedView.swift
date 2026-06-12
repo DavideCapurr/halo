@@ -33,13 +33,15 @@ struct PulseFeedView: View {
 
           timelineContent
 
-          Spacer().frame(height: 32)
+          Spacer().frame(height: 24)
         }
-        .padding(.bottom, 176)
+        .padding(.bottom, 16)
       }
       .scrollIndicators(.hidden)
     }
     .safeAreaInset(edge: .bottom) {
+      // Composer ancorato appena sopra la tab bar, con scrim opaco: il feed
+      // sfuma sotto il dock invece di trasparire dietro le card.
       PulseDropDock(
         scope: scope,
         text: $draft,
@@ -48,7 +50,20 @@ struct PulseFeedView: View {
         onQuickDrop: addQuickDrop
       )
       .padding(.horizontal, 14)
-      .padding(.bottom, 76)
+      .padding(.top, 30)
+      .padding(.bottom, 10)
+      .background(
+        LinearGradient(
+          stops: [
+            .init(color: SwarmHalo.background.opacity(0), location: 0),
+            .init(color: SwarmHalo.background.opacity(0.96), location: 0.42),
+            .init(color: SwarmHalo.background, location: 1),
+          ],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+        .allowsHitTesting(false)
+      )
     }
     .task {
       moment = .current()
@@ -72,35 +87,26 @@ struct PulseFeedView: View {
   }
 
   private var headerSection: some View {
-    HStack(alignment: .top, spacing: 16) {
-      VStack(alignment: .leading, spacing: 8) {
-        HStack(spacing: 8) {
-          Text(moment.eyebrow)
-            .haloEyebrow(HaloInk.creamMute, size: 9.5, tracking: 2.6)
-          Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
-        }
-        .padding(.bottom, 2)
-
-        Text(moment.headline + ".")
-          .font(HaloType.serif(36, weight: .regular))
-          .foregroundStyle(HaloInk.cream)
-          .lineLimit(1)
-          .minimumScaleFactor(0.72)
-
-        Text(scope == .inner ? "Moment spontanei dal tuo Inner" : "tutti i segnali dalle tue orbite")
-          .font(HaloType.ui(13, weight: .regular))
-          .foregroundStyle(HaloInk.creamLow)
-          .animation(SwarmHalo.easeSwarm(0.18), value: scope)
+    VStack(alignment: .leading, spacing: 8) {
+      HStack(spacing: 8) {
+        Text(moment.eyebrow)
+          .haloEyebrow(HaloInk.creamMute, size: 9.5, tracking: 2.6)
+        Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
       }
+      .padding(.bottom, 2)
 
-      Text("PULSE")
-        .font(HaloType.mono(9, weight: .semibold))
-        .kerning(2.4)
-        .foregroundStyle(SwarmHalo.inkSecondary)
-        .rotationEffect(.degrees(90))
-        .frame(width: 18, height: 58)
-        .padding(.top, 6)
+      Text(moment.headline + ".")
+        .font(HaloType.serif(36, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
+        .lineLimit(1)
+        .minimumScaleFactor(0.72)
+
+      Text(scope == .inner ? "Moment spontanei dal tuo Inner" : "tutti i segnali dalle tue orbite")
+        .font(HaloType.ui(13, weight: .regular))
+        .foregroundStyle(HaloInk.creamLow)
+        .animation(SwarmHalo.easeSwarm(0.18), value: scope)
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
   }
 
   private var pulseSignalDeck: some View {

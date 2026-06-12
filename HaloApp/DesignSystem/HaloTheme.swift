@@ -90,6 +90,19 @@ enum SwarmActivationRole {
     }
   }
 
+  /// Text-safe accent for values/labels that must stay legible on warm black.
+  /// `operational` (bronzeSoft, ~2.5:1) is promoted to full bronze (~5.5:1) so
+  /// stat counters like "close" don't read as disabled.
+  var textAccent: Color {
+    switch self {
+    case .connected: return SwarmHalo.bronze
+    case .operational: return SwarmHalo.bronze
+    case .rest: return SwarmHalo.cream
+    case .farRest: return SwarmHalo.cream
+    case .attention: return SwarmHalo.attention
+    }
+  }
+
   var stroke: Color {
     switch self {
     case .connected, .operational: return color.opacity(0.48)
@@ -309,7 +322,7 @@ struct SwarmMetricTile: View {
       Text(value)
         .font(HaloType.mono(15, weight: .semibold))
         .kerning(0.8)
-        .foregroundStyle(active ? activation.color : SwarmHalo.ink)
+        .foregroundStyle(active ? activation.textAccent : SwarmHalo.ink)
         .lineLimit(1)
         .minimumScaleFactor(0.72)
       Text(label)
@@ -325,6 +338,11 @@ struct SwarmEmptyState: View {
   let title: String
   let message: String
   var activation: SwarmActivationRole = .rest
+  /// Optional nudge. When present, empty states suggest an action instead of
+  /// only informing.
+  var actionTitle: String? = nil
+  var actionIcon: String? = nil
+  var action: (() -> Void)? = nil
 
   var body: some View {
     VStack(spacing: SwarmHalo.s3) {
@@ -343,6 +361,11 @@ struct SwarmEmptyState: View {
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
         .multilineTextAlignment(.center)
+
+      if let actionTitle, let action {
+        SwarmCommandButton(label: actionTitle, icon: actionIcon, activation: activation, isProminent: true, action: action)
+          .padding(.top, SwarmHalo.s1)
+      }
     }
     .frame(maxWidth: .infinity)
     .padding(.vertical, SwarmHalo.s8)
