@@ -20,7 +20,6 @@
 		3AEC73BA411EC4C6901B5004 /* VibeSetterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2707E165F0796642C584AC /* VibeSetterView.swift */; };
 		42C0A7B7C8D9E0F142C0A7B7 /* InviteSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C0A7B7C8D9E0F142C0A7B8 /* InviteSheets.swift */; };
 		43346F6F5A02D58F5359C560 /* ZoomLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A3BA733F12EEB5C02DDA4B /* ZoomLevel.swift */; };
-		48B4DD8B1B4C4AA6876F2F5A /* HaloTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E3C2D1B44AF4C7F9C0D13D4 /* HaloTabBar.swift */; };
 		4B6322AC9F824D35A654C663 /* DiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F9F011938A04B0197B92A7D /* DiscoveryView.swift */; };
 		4F6EF4398FBA48CE6039E387 /* ProfilesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44AA5A1450AC8C2E86EA3B08 /* ProfilesService.swift */; };
 		514C2C927D2A738C63040A0B /* PulseFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B860FE03BFC3B1CA85907432 /* PulseFeedView.swift */; };
@@ -150,7 +149,6 @@
 		734CF80BBABF3434D5653FED /* VibeFirstComposeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibeFirstComposeView.swift; sourceTree = "<group>"; };
 		EA51C0FACE222222EA51C0FB /* EasyComposeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EasyComposeView.swift; sourceTree = "<group>"; };
 		785C55BF44CAC9DA0467CE7F /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		7E3C2D1B44AF4C7F9C0D13D4 /* HaloTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloTabBar.swift; sourceTree = "<group>"; };
 		7C314BE365257988CA85B8CA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		7F3997A5EBC014A4275BDF87 /* HaloWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HaloWidget.entitlements; sourceTree = "<group>"; };
 		8024E8C710BB6866369C0380 /* PlusUpsellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusUpsellView.swift; sourceTree = "<group>"; };
@@ -284,7 +282,6 @@
 			isa = PBXGroup;
 			children = (
 				4D3A359887F8BB79CE25DEA0 /* DeepSpaceBackground.swift */,
-				7E3C2D1B44AF4C7F9C0D13D4 /* HaloTabBar.swift */,
 				BFCC51CDA4582BC1CA19C823 /* PortraitView.swift */,
 				50CE53415D6F4D5E44F2DC02 /* ReactionGlyph.swift */,
 				A1B2C3D4E5F60718293A4C0D /* StorageMediaViews.swift */,
@@ -660,7 +657,6 @@
 				EF19FCAA5683BB141527B606 /* HaloSpacePeekSheet.swift in Sources */,
 				B7C566F8A16F0BFD746AF3D5 /* HaloSpaceView.swift in Sources */,
 				876C025F38DF4A57F0B87B38 /* HaloTheme.swift in Sources */,
-				48B4DD8B1B4C4AA6876F2F5A /* HaloTabBar.swift in Sources */,
 				9C68B1E83E064CBDA58186C8 /* HaloTypography.swift in Sources */,
 				9AA4F6FE6516D2B6950EAF96 /* HapticEngine.swift in Sources */,
 				999FE1CA7388965CEA2C0B88 /* HomeView.swift in Sources */,

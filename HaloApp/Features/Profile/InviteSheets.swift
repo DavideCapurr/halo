@@ -187,7 +187,7 @@ struct InnerInviteSheet: View {
   private func errorText(_ message: String) -> some View {
     Text(message)
       .font(HaloType.ui(12, weight: .regular))
-      .foregroundStyle(SwarmHalo.launchAmber)
+      .foregroundStyle(SwarmHalo.attention)
       .padding(.horizontal, 12)
       .padding(.vertical, 10)
       .swarmSurface(

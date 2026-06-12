@@ -63,7 +63,7 @@ struct SignInView: View {
       if let err = errorMessage {
         Text(err)
           .font(HaloType.ui(12, weight: .regular))
-          .foregroundStyle(SwarmHalo.launchAmber)
+          .foregroundStyle(SwarmHalo.attention)
           .multilineTextAlignment(.center)
       }
     }

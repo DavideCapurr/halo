@@ -23,7 +23,7 @@ enum HaloTheme {
   // Strokes & rings
   static let hairline          = SwarmHalo.strokeRest
   static let hairlineSoft      = SwarmHalo.strokeSoft
-  static let ringInactive      = SwarmHalo.platinum.opacity(0.07)
+  static let ringInactive      = SwarmHalo.cream.opacity(0.07)
   static let ringActive        = SwarmHalo.strokeActive
   static let glassFallbackFill = SwarmHalo.surface
   static let glassStroke       = SwarmHalo.strokeHair
@@ -82,11 +82,11 @@ enum SwarmActivationRole {
 
   var color: Color {
     switch self {
-    case .connected: return SwarmHalo.orbitalBlue
-    case .operational: return SwarmHalo.signalGreen
-    case .rest: return SwarmHalo.platinum
+    case .connected: return SwarmHalo.bronze
+    case .operational: return SwarmHalo.bronzeSoft
+    case .rest: return SwarmHalo.cream
     case .farRest: return SwarmHalo.absoluteBlack
-    case .attention: return SwarmHalo.launchAmber
+    case .attention: return SwarmHalo.attention
     }
   }
 
@@ -94,7 +94,7 @@ enum SwarmActivationRole {
     switch self {
     case .connected, .operational: return color.opacity(0.48)
     case .rest: return SwarmHalo.strokeRest
-    case .farRest: return SwarmHalo.platinum.opacity(0.08)
+    case .farRest: return SwarmHalo.cream.opacity(0.08)
     case .attention: return color.opacity(0.58)
     }
   }
@@ -102,7 +102,7 @@ enum SwarmActivationRole {
   var glow: Color {
     switch self {
     case .connected, .operational: return color.opacity(0.12)
-    case .rest: return SwarmHalo.platinum.opacity(0.05)
+    case .rest: return SwarmHalo.cream.opacity(0.05)
     case .farRest: return .clear
     case .attention: return color.opacity(0.18)
     }

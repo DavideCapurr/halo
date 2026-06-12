@@ -4,8 +4,6 @@ import HaloShared
 private enum HomeSystemTab: Hashable {
   case orbit
   case pulse
-  case compose
-  case easy
   case status
   case profile
 }
@@ -137,59 +135,45 @@ struct HomeView: View {
   }
 
   var body: some View {
-    TabView(selection: $selectedTab) {
-      orbitTab
-        .tag(HomeSystemTab.orbit)
-        .tabItem {
-          Label("orbita", systemImage: "circle.grid.cross")
-        }
+    ZStack(alignment: .bottom) {
+      Self.orbitStoriesWarmBlack.ignoresSafeArea()
 
-      PulseFeedView(onPersonTap: { peek = $0 })
-        .tag(HomeSystemTab.pulse)
-        .tabItem {
-          Label("pulse", systemImage: "waveform.path.ecg")
+      Group {
+        switch selectedTab {
+        case .orbit:
+          orbitTab
+        case .pulse:
+          PulseFeedView(onPersonTap: { peek = $0 })
+            .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
+        case .status:
+          StatoView(people: people, onTapPerson: { peek = $0 })
+            .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
+        case .profile:
+          ProfileView(
+            person: me,
+            tierCounts: tierCounts,
+            onVibeTap: { showVibeSetter = true },
+            onComposeTap: { showCompose = true }
+          )
+          .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
         }
-
-      Color.clear
-        .background(Self.orbitStoriesWarmBlack)
-        .tag(HomeSystemTab.compose)
-        .tabItem {
-          Label("compose", systemImage: "plus.circle")
-        }
-
-      Color.clear
-        .background(Self.orbitStoriesWarmBlack)
-        .tag(HomeSystemTab.easy)
-        .tabItem {
-          Label("easy", systemImage: "bolt.circle")
-        }
-
-      StatoView(
-        people: people,
-        onTapPerson: { peek = $0 }
-      )
-      .tag(HomeSystemTab.status)
-      .tabItem {
-        Label("stato", systemImage: "circle.grid.2x2")
       }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-      ProfileView(
-        person: me,
-        tierCounts: tierCounts,
-        onVibeTap: { showVibeSetter = true },
-        onComposeTap: { showCompose = true }
+      BottomBarView(
+        selfMood: me.mood,
+        activeTab: bottomBarTab,
+        onCompose: { showCompose = true },
+        onEasy: { showEasyCompose = true },
+        onOrbit: { selectTab(.orbit) },
+        onPulse: { selectTab(.pulse) },
+        onStato: { selectTab(.status) },
+        onProfile: { selectTab(.profile) }
       )
-      .tag(HomeSystemTab.profile)
-      .tabItem {
-        Label("tu", systemImage: "person.crop.circle")
-      }
+      .padding(.bottom, 6)
     }
-    .tint(Self.orbitStoriesCream)
     .preferredColorScheme(.dark)
     .animation(SwarmMotion.mount, value: selectedTab)
-    .onChange(of: selectedTab) { _, newValue in
-      handleSystemTabSelection(newValue)
-    }
     .onChange(of: state.route) { _, _ in
       syncRoutePresentation()
     }
@@ -301,16 +285,17 @@ struct HomeView: View {
     }
   }
 
-  private func handleSystemTabSelection(_ tab: HomeSystemTab) {
-    switch tab {
-    case .compose:
-      showCompose = true
-      selectedTab = lastContentTab
-    case .easy:
-      showEasyCompose = true
-      selectedTab = lastContentTab
-    case .orbit, .pulse, .status, .profile:
-      lastContentTab = tab
+  private func selectTab(_ tab: HomeSystemTab) {
+    selectedTab = tab
+    lastContentTab = tab
+  }
+
+  private var bottomBarTab: BottomBarView.Tab {
+    switch selectedTab {
+    case .orbit:   return .orbit
+    case .pulse:   return .pulse
+    case .status:  return .stato
+    case .profile: return .profile
     }
   }
 

@@ -119,14 +119,14 @@ struct OrbitStoriesView: View {
 
         VStack(spacing: 0) {
           LinearGradient(
-            colors: [Color.black.opacity(0.58), .clear],
+            colors: [SwarmHalo.absoluteBlack.opacity(0.58), .clear],
             startPoint: .top,
             endPoint: .bottom
           )
           .frame(height: 220)
           Spacer()
           LinearGradient(
-            colors: [Color.black.opacity(0.72), .clear],
+            colors: [SwarmHalo.absoluteBlack.opacity(0.72), .clear],
             startPoint: .bottom,
             endPoint: .top
           )
@@ -154,10 +154,10 @@ struct OrbitStoriesView: View {
 
         if paused {
           Text("in pausa")
-            .haloEyebrow(Color.white.opacity(0.78), size: 9, tracking: 2.4)
+            .haloEyebrow(HaloInk.onMedia.opacity(0.78), size: 9, tracking: 2.4)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.black.opacity(0.42), in: Capsule())
+            .background(SwarmHalo.absoluteBlack.opacity(0.42), in: Capsule())
             .haloGlass(in: Capsule())
             .padding(.top, 88)
             .frame(maxHeight: .infinity, alignment: .top)
@@ -191,10 +191,10 @@ struct OrbitStoriesView: View {
       ForEach(stories.indices, id: \.self) { i in
         GeometryReader { proxy in
           Capsule()
-            .fill(Color.white.opacity(0.22))
+            .fill(HaloInk.onMedia.opacity(0.22))
             .overlay(alignment: .leading) {
               Capsule()
-                .fill(Color.white.opacity(0.94))
+                .fill(HaloInk.onMedia.opacity(0.94))
                 .frame(width: proxy.size.width * progressValue(for: i))
             }
         }
@@ -227,10 +227,10 @@ struct OrbitStoriesView: View {
           Text(story.name)
             .font(HaloType.serif(16, weight: .regular))
             .italic()
-            .foregroundStyle(.white)
+            .foregroundStyle(HaloInk.onMedia)
             .lineLimit(1)
           Text(story.tier.label.lowercased())
-            .haloEyebrow(Color.white.opacity(0.60), size: 8.5, tracking: 2.2)
+            .haloEyebrow(HaloInk.onMedia.opacity(0.60), size: 8.5, tracking: 2.2)
             .lineLimit(1)
         }
         HStack(spacing: 6) {
@@ -240,14 +240,14 @@ struct OrbitStoriesView: View {
             .shadow(color: MoodPalette.auraRing(story.mood, alpha: 0.7), radius: 3)
           Text(story.mood.rawValue)
             .font(HaloType.ui(9.5, weight: .medium))
-            .foregroundStyle(Color.white.opacity(0.70))
+            .foregroundStyle(HaloInk.onMedia.opacity(0.70))
           Circle()
-            .fill(Color.white.opacity(0.40))
+            .fill(HaloInk.onMedia.opacity(0.40))
             .frame(width: 2, height: 2)
           Text(story.relativeAge)
             .font(HaloType.mono(9, weight: .medium))
             .kerning(1)
-            .foregroundStyle(Color.white.opacity(0.60))
+            .foregroundStyle(HaloInk.onMedia.opacity(0.60))
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -255,9 +255,9 @@ struct OrbitStoriesView: View {
       Button(action: onClose) {
         Image(systemName: "xmark")
           .font(HaloType.system(11, weight: .semibold))
-          .foregroundStyle(Color.white.opacity(0.92))
+          .foregroundStyle(HaloInk.onMedia.opacity(0.92))
           .frame(width: 32, height: 32)
-          .haloGlass(in: Circle(), interactive: true, stroke: Color.white.opacity(0.18))
+          .haloGlass(in: Circle(), interactive: true, stroke: HaloInk.onMedia.opacity(0.18))
       }
       .buttonStyle(.plain)
       .accessibilityLabel("Chiudi stories")
@@ -268,9 +268,9 @@ struct OrbitStoriesView: View {
     Text(caption)
       .font(HaloType.serif(19, weight: .regular))
       .italic()
-      .foregroundStyle(.white)
+      .foregroundStyle(HaloInk.onMedia)
       .lineSpacing(3)
-      .shadow(color: .black.opacity(0.6), radius: 18, y: 1)
+      .shadow(color: SwarmHalo.absoluteBlack.opacity(0.6), radius: 18, y: 1)
       .frame(maxWidth: .infinity, alignment: .leading)
   }
 
@@ -290,11 +290,11 @@ struct OrbitStoriesView: View {
       Button(action: {}) {
         Text("rispondi a \(story.name.lowercased())...")
           .font(HaloType.ui(13, weight: .regular))
-          .foregroundStyle(Color.white.opacity(0.70))
+          .foregroundStyle(HaloInk.onMedia.opacity(0.70))
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 16)
           .padding(.vertical, 12)
-          .haloGlass(in: Capsule(), interactive: true, stroke: Color.white.opacity(0.22))
+          .haloGlass(in: Capsule(), interactive: true, stroke: HaloInk.onMedia.opacity(0.22))
       }
       .buttonStyle(.plain)
       .accessibilityLabel("Rispondi a \(story.name)")
@@ -318,7 +318,7 @@ struct OrbitStoriesView: View {
 
   private func reactionButton(_ kind: ReactionKind, story: OrbitStory) -> some View {
     let active = reactions[story.id, default: []].contains(kind)
-    let tint = active ? SwarmActivationRole.attention.color : Color.white.opacity(0.32)
+    let tint = active ? SwarmActivationRole.attention.color : HaloInk.onMedia.opacity(0.32)
 
     return Button {
       toggle(kind, for: story)
@@ -326,7 +326,7 @@ struct OrbitStoriesView: View {
       ReactionGlyph(
         kind: kind,
         size: 18,
-        color: active ? SwarmActivationRole.attention.color : Color.white.opacity(0.85)
+        color: active ? SwarmActivationRole.attention.color : HaloInk.onMedia.opacity(0.85)
       )
       .frame(maxWidth: .infinity)
       .frame(height: 44)
@@ -334,7 +334,7 @@ struct OrbitStoriesView: View {
         in: Capsule(),
         tint: active ? SwarmActivationRole.attention.color.opacity(0.22) : nil,
         interactive: true,
-        stroke: active ? SwarmActivationRole.attention.stroke : Color.white.opacity(0.18)
+        stroke: active ? SwarmActivationRole.attention.stroke : HaloInk.onMedia.opacity(0.18)
       )
       .scaleEffect(active ? 1.06 : 1)
       .animation(SwarmMotion.tap, value: active)
@@ -472,7 +472,7 @@ private struct StoryPhotoCanvas: View {
         .clipped()
 
         RadialGradient(
-          colors: [.clear, Color.black.opacity(0.62)],
+          colors: [.clear, SwarmHalo.absoluteBlack.opacity(0.62)],
           center: .center,
           startRadius: min(size.width, size.height) * 0.26,
           endRadius: max(size.width, size.height) * 0.74

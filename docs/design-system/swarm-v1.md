@@ -1,5 +1,13 @@
 # SWARM v1 - Halo adoption brief
 
+> **ARCHIVIATO (2026-06-12).** Questo brief (mono platinum · 3 activation
+> lime/purple/magenta · Satoshi display) **non è più la direzione canonica**.
+> La direzione confermata per Halo è **swarm-halo (warm/bronze)**: vedi
+> `docs/design-system/swarm-halo-v1.md` e la raccomandazione in
+> `docs/research/aesthetic-directions.md`. Documento tenuto solo come
+> riferimento storico della famiglia SWARM. In caso di conflitto, vince
+> swarm-halo.
+
 This is the canonical design brief for Halo Fase A.
 
 Halo is a consumer extension of SWARM, not a literal operator surface. The

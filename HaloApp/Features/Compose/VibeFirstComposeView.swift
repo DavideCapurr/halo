@@ -398,7 +398,7 @@ struct VibeFirstComposeView: View {
       if let photoError {
         Text(photoError)
           .font(HaloType.ui(12, weight: .medium))
-          .foregroundStyle(SwarmHalo.launchAmber)
+          .foregroundStyle(SwarmHalo.attention)
       }
     }
   }
@@ -465,13 +465,13 @@ struct VibeFirstComposeView: View {
       if let warning = wideningWarning {
         HStack(spacing: 8) {
           Image(systemName: "exclamationmark.circle")
-            .foregroundStyle(SwarmHalo.launchAmber)
+            .foregroundStyle(SwarmHalo.attention)
           Text(warning)
             .font(HaloType.ui(12, weight: .regular))
             .foregroundStyle(HaloInk.creamLow)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
-        .haloGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput), tint: SwarmHalo.launchAmber.opacity(0.22))
+        .haloGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput), tint: SwarmHalo.attention.opacity(0.22))
         .transition(.opacity.combined(with: .move(edge: .top)))
       }
     }

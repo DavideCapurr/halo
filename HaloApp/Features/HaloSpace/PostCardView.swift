@@ -59,7 +59,7 @@ struct PostCardView: View {
     }
     .haloContentGlass(
       in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard),
-      stroke: isExpiringSoon ? SwarmHalo.launchAmber.opacity(0.86) : HaloTheme.glassStrokeSoft
+      stroke: isExpiringSoon ? SwarmHalo.attention.opacity(0.86) : HaloTheme.glassStrokeSoft
     )
     .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
   }

@@ -59,7 +59,7 @@ struct TierConfirmationSheet: View {
       tierBadge(proposal.from, dimmed: true, highlight: nil)
       Image(systemName: "arrow.right")
         .font(HaloType.system(15, weight: .regular))
-        .foregroundStyle(Color.white.opacity(0.55))
+        .foregroundStyle(HaloInk.cream.opacity(0.55))
       tierBadge(proposal.to, dimmed: false, highlight: MoodPalette.auraColor(proposal.person.mood, l: 0.75))
     }
     .padding(.vertical, 22)
@@ -79,7 +79,7 @@ struct TierConfirmationSheet: View {
         }
         Circle()
           .strokeBorder(
-            highlight ?? Color.white.opacity(0.3),
+            highlight ?? HaloInk.cream.opacity(0.3),
             style: .init(lineWidth: 1, dash: dimmed ? [3, 3] : [])
           )
         Text(tier.label)

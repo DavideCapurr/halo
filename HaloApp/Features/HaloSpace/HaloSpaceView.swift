@@ -95,10 +95,10 @@ struct HaloSpaceView: View {
         } label: {
           Image(systemName: "exclamationmark.triangle")
             .font(HaloType.system(13, weight: .semibold))
-            .foregroundStyle(SwarmHalo.launchAmber)
+            .foregroundStyle(SwarmHalo.attention)
             .frame(width: 32, height: 32)
-            .background(SwarmHalo.launchAmber.opacity(0.12), in: Circle())
-            .overlay(Circle().strokeBorder(SwarmHalo.launchAmber.opacity(0.32), lineWidth: 0.6))
+            .background(SwarmHalo.attention.opacity(0.12), in: Circle())
+            .overlay(Circle().strokeBorder(SwarmHalo.attention.opacity(0.32), lineWidth: 0.6))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Segnala \(current.name)")
@@ -349,7 +349,7 @@ struct ReportUserSheet: View {
             if let errorMessage {
               Text(errorMessage)
                 .font(HaloType.ui(12, weight: .regular))
-                .foregroundStyle(SwarmHalo.launchAmber)
+                .foregroundStyle(SwarmHalo.attention)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
                 .swarmSurface(
@@ -380,7 +380,7 @@ struct ReportUserSheet: View {
     HStack(spacing: 12) {
       VStack(alignment: .leading, spacing: 3) {
         Text("SAFETY / REPORT")
-          .haloEyebrow(SwarmHalo.launchAmber, size: 8.5, tracking: 2.3)
+          .haloEyebrow(SwarmHalo.attention, size: 8.5, tracking: 2.3)
         Text(person.name.lowercased())
           .font(HaloType.serif(24, weight: .regular))
           .foregroundStyle(HaloInk.cream)
@@ -409,7 +409,7 @@ struct ReportUserSheet: View {
           } label: {
             HStack(spacing: 8) {
               Circle()
-                .fill(item == reason ? SwarmHalo.launchAmber : SwarmHalo.strokeRest)
+                .fill(item == reason ? SwarmHalo.attention : SwarmHalo.strokeRest)
                 .frame(width: 7, height: 7)
               Text(item.label)
                 .font(HaloType.ui(13, weight: item == reason ? .semibold : .medium))
@@ -464,7 +464,7 @@ struct ReportUserSheet: View {
       }
     }
     .toggleStyle(.switch)
-    .tint(SwarmHalo.launchAmber)
+    .tint(SwarmHalo.attention)
     .padding(.horizontal, 14)
     .padding(.vertical, 12)
     .swarmSurface(

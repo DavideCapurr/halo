@@ -191,11 +191,11 @@ struct ProfileView: View {
     VStack(alignment: .leading, spacing: SwarmHalo.s3) {
       sectionHeader("command")
       profileCommand("manda una vibe", "waveform.path.ecg", role: .connected, action: onVibeTap)
-      profileCommand("aggiungi un Moment", "plus", role: .attention, action: onComposeTap)
+      profileCommand("aggiungi un Moment", "plus", role: .connected, action: onComposeTap)
       profileCommand("verifica Bocconi", "checkmark.seal", role: .connected) {
         showBocconiVerify = true
       }
-      profileCommand("Event Ring", "qrcode.viewfinder", role: .attention) {
+      profileCommand("Event Ring", "qrcode.viewfinder", role: .connected) {
         showEventRings = true
       }
       profileCommand("Club e corsi", "person.3.sequence", role: .operational) {
@@ -489,7 +489,7 @@ private struct ProfileReportSheet: View {
   private func errorText(_ message: String) -> some View {
     Text(message)
       .font(HaloType.ui(12, weight: .regular))
-      .foregroundStyle(SwarmHalo.launchAmber)
+      .foregroundStyle(SwarmHalo.attention)
       .padding(.horizontal, 12)
       .padding(.vertical, 10)
       .swarmSurface(
@@ -767,7 +767,7 @@ private struct ProfilePrivacySheet: View {
   private func errorText(_ message: String) -> some View {
     Text(message)
       .font(HaloType.ui(12, weight: .regular))
-      .foregroundStyle(SwarmHalo.launchAmber)
+      .foregroundStyle(SwarmHalo.attention)
       .padding(.horizontal, 12)
       .padding(.vertical, 10)
       .swarmSurface(
