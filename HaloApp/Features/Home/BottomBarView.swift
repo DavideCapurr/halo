@@ -21,19 +21,21 @@ struct BottomBarView: View {
   var onStato: () -> Void = {}
   var onProfile: () -> Void = {}
 
+  @State private var composeLongPressTriggered = false
+
   var body: some View {
-    HStack(spacing: 10) {
+    HStack(spacing: HaloVisual.Dock.itemSpacing) {
       tabButton(.orbit, title: "Orbita", icon: "circle.dotted", selectedIcon: "circle.circle.fill", action: onOrbit)
       tabButton(.pulse, title: "Pulse", icon: "waveform.path.ecg", selectedIcon: "waveform.path.ecg", action: onPulse)
       composeButton()
       tabButton(.stato, title: "Stato", icon: "circle.grid.2x2", selectedIcon: "circle.grid.2x2.fill", action: onStato)
       tabButton(.profile, title: "Tu", icon: "person.circle", selectedIcon: "person.circle.fill", action: onProfile)
     }
-    .padding(.horizontal, 10)
-    .padding(.vertical, 8)
+    .padding(.horizontal, HaloVisual.Dock.barHorizontalPadding)
+    .padding(.vertical, HaloVisual.Dock.barVerticalPadding)
     .frame(maxWidth: .infinity)
     .haloGlass(in: Capsule(), interactive: true)
-    .padding(.horizontal, 18)
+    .padding(.horizontal, HaloVisual.Dock.outerHorizontalPadding)
   }
 
   private func tabButton(
@@ -57,7 +59,7 @@ struct BottomBarView: View {
       }
       .foregroundStyle(isSelected ? HaloInk.cream : HaloInk.creamMute)
       .frame(maxWidth: .infinity)
-      .frame(height: 44)
+      .frame(height: HaloVisual.Dock.tabItemHeight)
       .contentShape(Rectangle())
       .background {
         if isSelected {
@@ -73,21 +75,39 @@ struct BottomBarView: View {
   }
 
   private func composeButton() -> some View {
-    ZStack {
-      Circle()
-        .fill(.clear)
-        .haloGlass(in: Circle(), tint: MoodPalette.auraColor(selfMood, l: 0.58), interactive: true)
-      Image(systemName: "plus")
-        .font(HaloType.system(20, weight: .semibold))
-        .foregroundStyle(MoodPalette.onAccent(selfMood, l: 0.58))
+    Button {
+      if composeLongPressTriggered {
+        composeLongPressTriggered = false
+        return
+      }
+      onCompose()
+    } label: {
+      ZStack {
+        Circle()
+          .fill(.clear)
+          .haloGlass(in: Circle(), tint: MoodPalette.auraColor(selfMood, l: 0.58), interactive: true)
+        Image(systemName: "plus")
+          .font(HaloType.system(20, weight: .semibold))
+          .foregroundStyle(MoodPalette.onAccent(selfMood, l: 0.58))
+      }
+      .frame(width: HaloVisual.Dock.composeButtonSize, height: HaloVisual.Dock.composeButtonSize)
+      .contentShape(Circle())
     }
-    .frame(width: 50, height: 50)
+    .buttonStyle(.plain)
+    .simultaneousGesture(
+      LongPressGesture(minimumDuration: 0.35)
+        .onEnded { _ in
+          composeLongPressTriggered = true
+          onEasy()
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            composeLongPressTriggered = false
+          }
+        }
+    )
     .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.26), radius: 10, y: 3)
-    .contentShape(Circle())
-    .onTapGesture(perform: onCompose)
-    .onLongPressGesture(minimumDuration: 0.35, perform: onEasy)
     .accessibilityLabel("Nuovo Moment")
     .accessibilityHint("Tocca per un Moment, tieni premuto per condividere veloce")
+    .accessibilityIdentifier("bottomDock.newMoment")
   }
 }
 

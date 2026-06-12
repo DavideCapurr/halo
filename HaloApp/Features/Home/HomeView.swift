@@ -135,7 +135,7 @@ struct HomeView: View {
   }
 
   var body: some View {
-    ZStack(alignment: .bottom) {
+    ZStack {
       Self.orbitStoriesWarmBlack.ignoresSafeArea()
 
       Group {
@@ -144,10 +144,8 @@ struct HomeView: View {
           orbitTab
         case .pulse:
           PulseFeedView(onPersonTap: { peek = $0 })
-            .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
         case .status:
           StatoView(people: people, onTapPerson: { peek = $0 })
-            .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
         case .profile:
           ProfileView(
             person: me,
@@ -155,22 +153,12 @@ struct HomeView: View {
             onVibeTap: { showVibeSetter = true },
             onComposeTap: { showCompose = true }
           )
-          .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
         }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-      BottomBarView(
-        selfMood: me.mood,
-        activeTab: bottomBarTab,
-        onCompose: { showCompose = true },
-        onEasy: { showEasyCompose = true },
-        onOrbit: { selectTab(.orbit) },
-        onPulse: { selectTab(.pulse) },
-        onStato: { selectTab(.status) },
-        onProfile: { selectTab(.profile) }
-      )
-      .padding(.bottom, 6)
+    }
+    .safeAreaInset(edge: .bottom, spacing: 0) {
+      bottomDock
     }
     .preferredColorScheme(.dark)
     .animation(SwarmMotion.mount, value: selectedTab)
@@ -297,6 +285,20 @@ struct HomeView: View {
     case .status:  return .stato
     case .profile: return .profile
     }
+  }
+
+  private var bottomDock: some View {
+    BottomBarView(
+      selfMood: me.mood,
+      activeTab: bottomBarTab,
+      onCompose: { showCompose = true },
+      onEasy: { showEasyCompose = true },
+      onOrbit: { selectTab(.orbit) },
+      onPulse: { selectTab(.pulse) },
+      onStato: { selectTab(.status) },
+      onProfile: { selectTab(.profile) }
+    )
+    .padding(.bottom, HaloVisual.Dock.shellBottomPadding)
   }
 
   private func openOrbitHeaderVibeSetter() {

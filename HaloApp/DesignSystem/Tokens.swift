@@ -288,6 +288,19 @@ enum HaloVisual {
     static let pill: CGFloat = 999
   }
 
+  enum Dock {
+    static let itemSpacing: CGFloat = 10
+    static let outerHorizontalPadding: CGFloat = 18
+    static let barHorizontalPadding: CGFloat = 10
+    static let barVerticalPadding: CGFloat = 8
+    static let tabItemHeight: CGFloat = 44
+    static let composeButtonSize: CGFloat = 50
+    static let shellBottomPadding: CGFloat = 6
+    static let visualHeight: CGFloat = Swift.max(tabItemHeight, composeButtonSize) + barVerticalPadding * 2
+    static let reservedHeight: CGFloat = visualHeight + shellBottomPadding
+    static let scrollContentBottomPadding: CGFloat = 32
+  }
+
   enum Aura {
     static func color(_ mood: Mood, alpha: Double = 1) -> Color {
       color(mood, luminance: nil, alpha: alpha)
