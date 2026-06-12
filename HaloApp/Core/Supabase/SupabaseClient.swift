@@ -30,14 +30,22 @@ enum SupabaseClientProvider {
 
 enum SupabaseErrorMessage {
   static let connectivity = "Non riesco a raggiungere Halo. Controlla la connessione e riprova."
+  static let schemaUnavailable = "Questa sezione non e disponibile in questo momento. Riprova tra poco."
 
   static func describe(_ error: Error, fallback: String) -> String {
     if isConnectivityError(error as NSError) {
       return connectivity
     }
 
+    if isSchemaCacheError(error) {
+      return schemaUnavailable
+    }
+
     let description = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
-    return description.isEmpty ? fallback : description
+    if description.isEmpty || isTechnicalPostgrestMessage(description) {
+      return fallback
+    }
+    return description
   }
 
   private static func isConnectivityError(_ error: NSError) -> Bool {
@@ -59,5 +67,29 @@ enum SupabaseErrorMessage {
       return false
     }
     return isConnectivityError(underlying)
+  }
+
+  private static func isSchemaCacheError(_ error: Error) -> Bool {
+    let raw = [
+      error.localizedDescription,
+      String(describing: error),
+    ]
+    .joined(separator: " ")
+    .lowercased()
+
+    return raw.contains("schema cache")
+      || raw.contains("could not find the table")
+      || raw.contains("could not find the function")
+      || raw.contains("pgrst202")
+      || raw.contains("pgrst205")
+  }
+
+  private static func isTechnicalPostgrestMessage(_ message: String) -> Bool {
+    let raw = message.lowercased()
+    return raw.contains("postgrest")
+      || raw.contains("pgrst")
+      || raw.contains("public.")
+      || raw.contains("schema cache")
+      || raw.contains("could not find")
   }
 }
