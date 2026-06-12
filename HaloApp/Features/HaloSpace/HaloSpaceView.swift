@@ -77,18 +77,20 @@ struct HaloSpaceView: View {
       }
       Spacer()
       HStack(spacing: 8) {
-        Button {
-          inviteTarget = current
-        } label: {
-          Image(systemName: "person.badge.plus")
-            .font(HaloType.system(13, weight: .semibold))
-            .foregroundStyle(SwarmActivationRole.connected.color)
-            .frame(width: 32, height: 32)
-            .background(SwarmActivationRole.connected.color.opacity(0.12), in: Circle())
-            .overlay(Circle().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: 0.6))
+        if current.tier != .inner {
+          Button {
+            inviteTarget = current
+          } label: {
+            Image(systemName: "person.badge.plus")
+              .font(HaloType.system(13, weight: .semibold))
+              .foregroundStyle(SwarmActivationRole.connected.color)
+              .frame(width: 32, height: 32)
+              .background(SwarmActivationRole.connected.color.opacity(0.12), in: Circle())
+              .overlay(Circle().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: 0.6))
+          }
+          .buttonStyle(.plain)
+          .accessibilityLabel("Invita \(current.name) nel tuo Inner")
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Invita \(current.name) nel tuo Inner")
 
         Button {
           reportTarget = current
@@ -116,6 +118,10 @@ private struct HaloSpacePage: View {
   @State private var posts: [HaloPost] = []
   @State private var isLoading: Bool = true
   @State private var lastError: String?
+
+  private var canInviteCloser: Bool {
+    person.tier != .inner
+  }
 
   var body: some View {
     ScrollView {
@@ -278,12 +284,19 @@ private struct HaloSpacePage: View {
   private var emptyState: some View {
     SwarmEmptyState(
       title: "ancora silenzio.",
-      message: "\(person.name.lowercased()) non ha Moment attivi nelle ultime 72h. puoi essere tu a farti sentire.",
-      activation: .connected,
-      actionTitle: "invitalo più vicino",
-      actionIcon: "person.badge.plus",
-      action: onInvite
+      message: emptyStateMessage,
+      activation: canInviteCloser ? .connected : .rest,
+      actionTitle: canInviteCloser ? "invitalo nell'Inner" : nil,
+      actionIcon: canInviteCloser ? "person.badge.plus" : nil,
+      action: canInviteCloser ? onInvite : nil
     )
+  }
+
+  private var emptyStateMessage: String {
+    if canInviteCloser {
+      return "\(person.name.lowercased()) non ha Moment attivi nelle ultime 72h. puoi aprire il tuo Inner quando vuoi."
+    }
+    return "\(person.name.lowercased()) e gia nel tuo Inner. Quando torna con un Moment lo vedrai qui."
   }
 
   // MARK: - load
