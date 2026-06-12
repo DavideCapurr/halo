@@ -120,7 +120,27 @@ HaloApp/           — main app target (SwiftUI)
 HaloWidget/        — widget extension (lockscreen + StandBy)
 HaloShared/        — Swift package condiviso (models + supabase lite client)
 supabase/          — migrations, functions, seed
+scripts/           — utility dev (es. demo-screens.sh)
 ```
+
+## Verifica grafica / Demo mode
+
+Per ispezionare l'UI con contenuti realistici senza backend né auth, l'app ha
+una **demo mode offline** attivata via env var (zero impatto in produzione —
+vedi `DemoMode` in `HaloApp/App/AppState.swift`):
+
+- `HALO_DEMO=1` — bypassa auth/Supabase e idrata le schermate da `SeedPeople`
+- `HALO_DEMO_TAB=orbit|pulse|status|profile` — tab iniziale
+- `HALO_DEMO_SHEET=compose|vibe|easy|space` — sheet auto-presentata
+
+Cattura tutte le superfici principali in un colpo solo:
+
+```sh
+./scripts/demo-screens.sh            # usa il simulatore booted (o iPhone 17 Pro)
+OUT=/tmp/shots ./scripts/demo-screens.sh
+```
+
+Gli screenshot finiscono in `/tmp/halo-shots/` (override con `OUT=`).
 
 ## Riferimenti
 

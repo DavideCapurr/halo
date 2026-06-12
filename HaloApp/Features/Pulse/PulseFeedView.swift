@@ -5,7 +5,7 @@ import HaloShared
 /// Il default resta Inner, ma "Tutti" apre il flusso delle proprie orbite
 /// senza trasformare la schermata in una chat di gruppo.
 struct PulseFeedView: View {
-  @State private var vm = FeedViewModel()
+  @State private var vm = FeedViewModel(bootstrap: DemoMode.isActive ? .seed : .live)
   @State private var moment: HaloMoment = .current()
   @State private var scope: PulseScope = .inner
   @State private var draft: String = ""

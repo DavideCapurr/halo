@@ -2,6 +2,16 @@ import Foundation
 import Observation
 import HaloShared
 
+/// Demo/offline mode toggle, attivato passando `HALO_DEMO=1` come variabile
+/// d'ambiente al processo (es. da Xcode scheme o `simctl launch`).
+///
+/// Quando attivo l'app bypassa auth + Supabase e idrata le superfici principali
+/// con `SeedPeople`, così da poter ispezionare l'UI con contenuti realistici.
+/// Non ha alcun effetto sulle build di produzione (variabile assente → `false`).
+enum DemoMode {
+  static let isActive: Bool = ProcessInfo.processInfo.environment["HALO_DEMO"] == "1"
+}
+
 @Observable
 @MainActor
 final class AppState {
@@ -42,6 +52,15 @@ final class AppState {
   /// - assente → `.signedOut`
   func restore() async {
     launchErrorMessage = nil
+    if DemoMode.isActive {
+      currentProfile = Profile(
+        id: UUID(),
+        handle: "you",
+        displayName: "Tu"
+      )
+      phase = .ready
+      return
+    }
     if AuthService.shared.currentUserId() != nil {
       do {
         let p = try await ProfilesService.shared.currentProfile()

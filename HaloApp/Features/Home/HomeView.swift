@@ -25,13 +25,13 @@ struct HomeView: View {
   @State private var vm = HomeViewModel()
   @State private var peek: HaloPersonNode? = nil
   @State private var reportTarget: HaloPersonNode? = nil
-  @State private var showVibeSetter: Bool = false
+  @State private var showVibeSetter: Bool = Self.demoFlag("vibe")
   @State private var pendingProposal: TierConfirmationSheet.Proposal? = nil
   @State private var fieldZoom: ZoomLevel = .full
-  @State private var selectedTab: HomeSystemTab = .orbit
-  @State private var lastContentTab: HomeSystemTab = .orbit
-  @State private var showCompose: Bool = false
-  @State private var showEasyCompose: Bool = false
+  @State private var selectedTab: HomeSystemTab = Self.demoInitialTab
+  @State private var lastContentTab: HomeSystemTab = Self.demoInitialTab
+  @State private var showCompose: Bool = Self.demoFlag("compose")
+  @State private var showEasyCompose: Bool = Self.demoFlag("easy")
   @State private var showStories: Bool = false
   @State private var suppressOrbitHeaderVibeTapUntil: Date? = nil
   @State private var bubbleDrag: BubbleDragState? = nil
@@ -1310,7 +1310,32 @@ struct HomeView: View {
   }
 
   @MainActor
+  /// Tab iniziale in demo mode, pilotabile via `HALO_DEMO_TAB` per screenshot
+  /// deterministici. Default `.orbit`.
+  private static var demoInitialTab: HomeSystemTab {
+    guard DemoMode.isActive else { return .orbit }
+    switch ProcessInfo.processInfo.environment["HALO_DEMO_TAB"] {
+    case "pulse": return .pulse
+    case "status": return .status
+    case "profile": return .profile
+    default: return .orbit
+    }
+  }
+
+  /// Flag demo per auto-presentare una sheet allo startup (`HALO_DEMO_SHEET`).
+  private static func demoFlag(_ name: String) -> Bool {
+    DemoMode.isActive && ProcessInfo.processInfo.environment["HALO_DEMO_SHEET"] == name
+  }
+
   private func refreshHomeFromBackend() async {
+    if DemoMode.isActive {
+      me = SeedPeople.me
+      people = SeedPeople.all + SeedPeople.demoted + SeedPeople.asteroids
+      if ProcessInfo.processInfo.environment["HALO_DEMO_SHEET"] == "space" {
+        peek = people.first
+      }
+      return
+    }
     hydrateCurrentProfile()
     await vm.load()
     people = vm.feedItems.map(HaloPersonNode.init(item:))
