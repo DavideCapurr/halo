@@ -100,7 +100,7 @@ struct ProfileView: View {
   }
 
   private var heroNode: some View {
-    VStack(spacing: SwarmHalo.s4) {
+    VStack(spacing: HaloVisual.Profile.heroSpacing) {
       ZStack {
         Circle()
           .fill(
@@ -111,19 +111,19 @@ struct ProfileView: View {
               endRadius: 120
             )
           )
-          .frame(width: 220, height: 220)
+          .frame(width: HaloVisual.Profile.heroAuraSize, height: HaloVisual.Profile.heroAuraSize)
         Circle()
           .strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: SwarmStroke.node)
-          .frame(width: 150, height: 150)
+          .frame(width: HaloVisual.Profile.heroRingSize, height: HaloVisual.Profile.heroRingSize)
           .shadow(color: SwarmActivationRole.connected.glow, radius: 16)
-        PortraitView(personId: person.id, size: 132, grayscale: true)
+        PortraitView(personId: person.id, size: HaloVisual.Profile.heroPortraitSize, grayscale: true)
           .background(HaloTheme.portraitBacking, in: Circle())
       }
       .frame(maxWidth: .infinity)
 
       VStack(spacing: SwarmHalo.s2) {
         Text(person.name.lowercased())
-          .font(HaloType.serif(48, weight: .regular))
+          .font(HaloType.serif(HaloVisual.Profile.heroTitleSize, weight: .regular))
           .foregroundStyle(SwarmHalo.ink)
           .lineLimit(1)
           .minimumScaleFactor(0.72)
@@ -144,7 +144,7 @@ struct ProfileView: View {
         }
       }
     }
-    .padding(.vertical, SwarmHalo.s4)
+    .padding(.vertical, HaloVisual.Profile.heroVerticalPadding)
   }
 
   private var statusDot: some View {
@@ -188,7 +188,7 @@ struct ProfileView: View {
   }
 
   private var commandPanel: some View {
-    VStack(alignment: .leading, spacing: SwarmHalo.s3) {
+    VStack(alignment: .leading, spacing: HaloVisual.Profile.commandRowSpacing) {
       sectionHeader("command")
       profileCommand("manda una vibe", "waveform.path.ecg", role: .connected, action: onVibeTap)
       profileCommand("aggiungi un Moment", "plus", role: .connected, action: onComposeTap)
@@ -201,11 +201,8 @@ struct ProfileView: View {
       profileCommand("Club e corsi", "person.3.sequence", role: .operational) {
         showClubRings = true
       }
-      profileCommand("scopri account pubblici", "scope", role: .operational) {
-        showDiscovery = true
-      }
     }
-    .padding(SwarmHalo.s4)
+    .padding(HaloVisual.Profile.commandPanelPadding)
     .swarmPanel()
   }
 
@@ -281,11 +278,14 @@ struct ProfileView: View {
     Button(action: action) {
       HStack(spacing: SwarmHalo.s3) {
         Image(systemName: icon)
-          .font(HaloType.system(14, weight: .semibold))
+          .font(HaloType.system(HaloVisual.Profile.commandIconFontSize, weight: .semibold))
           .foregroundStyle(role.color)
-          .swarmIconFrame(active: true, activation: role)
+          .frame(width: HaloVisual.Profile.commandIconSize, height: HaloVisual.Profile.commandIconSize)
+          .background(role.fill, in: Circle())
+          .overlay(Circle().strokeBorder(role.stroke, lineWidth: SwarmStroke.hairline))
+          .shadow(color: role.glow, radius: 8)
         Text(title)
-          .font(HaloType.ui(14, weight: .medium))
+          .font(HaloType.ui(HaloVisual.Profile.commandTitleSize, weight: .medium))
           .foregroundStyle(SwarmHalo.ink)
         Spacer()
         Image(systemName: "arrow.up.right")

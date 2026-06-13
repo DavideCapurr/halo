@@ -301,6 +301,20 @@ enum HaloVisual {
     static let scrollContentBottomPadding: CGFloat = 32
   }
 
+  enum Profile {
+    static let heroAuraSize: CGFloat = 176
+    static let heroRingSize: CGFloat = 122
+    static let heroPortraitSize: CGFloat = 108
+    static let heroTitleSize: CGFloat = 44
+    static let heroVerticalPadding: CGFloat = 8
+    static let heroSpacing: CGFloat = 10
+    static let commandPanelPadding: CGFloat = 14
+    static let commandRowSpacing: CGFloat = 10
+    static let commandIconSize: CGFloat = 34
+    static let commandIconFontSize: CGFloat = 13
+    static let commandTitleSize: CGFloat = 13
+  }
+
   enum Aura {
     static func color(_ mood: Mood, alpha: Double = 1) -> Color {
       color(mood, luminance: nil, alpha: alpha)
