@@ -1370,6 +1370,11 @@ struct HomeView: View {
 
   @MainActor
   private func sendCompose(_ result: VibeFirstComposeView.ComposeResult) async {
+    if DemoMode.isActive {
+      applyDemoCompose(result)
+      return
+    }
+
     do {
       let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
       let postKind = Self.postKind(for: result.momento)
@@ -1441,6 +1446,11 @@ struct HomeView: View {
 
   @MainActor
   private func sendEasyCompose(_ result: EasyComposeView.Result) async {
+    if DemoMode.isActive {
+      applyDemoEasyCompose(result)
+      return
+    }
+
     do {
       let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
       _ = try await VibesService.shared.setCurrent(
@@ -1471,6 +1481,49 @@ struct HomeView: View {
         fallback: "Non riesco a mandare l'easy Moment. Riprova."
       )
     }
+  }
+
+  @MainActor
+  private func applyDemoCompose(_ result: VibeFirstComposeView.ComposeResult) {
+    let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
+    let now = Date.now
+
+    me.mood = result.mood
+    me.note = trimmed
+    me.hasActiveVibe = true
+    me.lastVibeAt = now
+    me.hasNew = true
+
+    if let postKind = Self.postKind(for: result.momento) {
+      me.lastPostAt = now
+      me.lastPostId = UUID()
+      me.lastPostKind = postKind
+      me.lastPostCaption = trimmed.isEmpty ? nil : trimmed
+      me.lastPostMediaPath = nil
+      me.lastPostExpiresAt = now.addingTimeInterval(PostLifespan.standard.duration)
+    }
+
+    showCompose = false
+  }
+
+  @MainActor
+  private func applyDemoEasyCompose(_ result: EasyComposeView.Result) {
+    let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
+    let now = Date.now
+
+    me.mood = result.mood
+    me.note = trimmed
+    me.hasActiveVibe = true
+    me.lastVibeAt = now
+    me.hasNew = true
+    me.lastPostAt = now
+    me.lastPostId = UUID()
+    me.lastPostKind = .text
+    me.lastPostCaption = trimmed.isEmpty ? nil : trimmed
+    me.lastPostMediaPath = nil
+    me.lastPostExpiresAt = now.addingTimeInterval(PostLifespan.easy.duration)
+
+    showEasyCompose = false
   }
 
   private var orbitReferenceSelfDisplayName: String {
