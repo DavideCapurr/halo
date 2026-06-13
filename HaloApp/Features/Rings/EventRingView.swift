@@ -6,7 +6,7 @@ import UIKit
 
 struct EventRingView: View {
   private static let orientationJoinToken = "bocconi-orientation-week"
-  private static let orientationTitle = "Orientation week / Bocconi"
+  private static let orientationTitle = "Orientation Bocconi"
 
   @Environment(\.dismiss) private var dismiss
 
@@ -98,7 +98,7 @@ struct EventRingView: View {
 
   private var joinPanel: some View {
     VStack(alignment: .leading, spacing: SwarmHalo.s3) {
-      sectionHeader("join")
+      sectionHeader("entra")
       HStack(spacing: SwarmHalo.s2) {
         TextField("token", text: $tokenInput)
           .textInputAutocapitalization(.never)
@@ -141,7 +141,7 @@ struct EventRingView: View {
   private var orientationQuickStart: some View {
     HStack(alignment: .center, spacing: SwarmHalo.s3) {
       SwarmCommandButton(
-        label: isCreatingOrientation ? "preparo QR" : "orientation week",
+        label: isCreatingOrientation ? "preparo QR" : "QR orientation",
         icon: "qrcode",
         activation: .attention
       ) {
@@ -176,7 +176,7 @@ struct EventRingView: View {
   @ViewBuilder
   private var selectedPanel: some View {
     if isLoading && selectedRing == nil {
-      SwarmLoadingState(label: "event rings")
+      SwarmLoadingState(label: "carico eventi")
     } else if let ring = selectedRing {
       VStack(alignment: .leading, spacing: SwarmHalo.s4) {
         HStack(alignment: .top, spacing: SwarmHalo.s3) {
@@ -199,11 +199,11 @@ struct EventRingView: View {
         RingScheduleRow(ring: ring)
 
         HStack(spacing: 0) {
-          SwarmMetricTile(label: "members", value: twoDigits(members.count), activation: .connected, active: !members.isEmpty)
+          SwarmMetricTile(label: "membri", value: twoDigits(members.count), activation: .connected, active: !members.isEmpty)
           Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
           SwarmMetricTile(label: "check-in", value: twoDigits(checkIns.count), activation: .attention, active: !checkIns.isEmpty)
           Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
-          SwarmMetricTile(label: "public", value: ring.isPublic ? "ON" : "OFF", activation: .rest, active: ring.isPublic)
+          SwarmMetricTile(label: "pubblico", value: ring.isPublic ? "ON" : "OFF", activation: .rest, active: ring.isPublic)
         }
         .padding(.vertical, SwarmHalo.s3)
         .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous))
@@ -222,7 +222,7 @@ struct EventRingView: View {
 
           if let url = ring.joinURL {
             ShareLink(item: url) {
-              Label("share", systemImage: "square.and.arrow.up")
+              Label("condividi", systemImage: "square.and.arrow.up")
                 .font(HaloType.ui(13, weight: .semibold))
                 .foregroundStyle(SwarmHalo.ink)
                 .padding(.horizontal, SwarmHalo.s4)
@@ -268,7 +268,7 @@ struct EventRingView: View {
     } else {
       SwarmEmptyState(
         title: "nessun evento.",
-        message: "crea il primo Event Ring.",
+        message: "crea un Event Ring o entra con un QR.",
         activation: .attention
       )
     }
@@ -278,7 +278,11 @@ struct EventRingView: View {
     VStack(alignment: .leading, spacing: SwarmHalo.s3) {
       sectionHeader("live")
       if rings.isEmpty && !isLoading {
-        EmptyView()
+        RingInlineEmptyState(
+          title: "nessun evento live",
+          message: "gli eventi attivi appariranno qui dopo la creazione o il check-in.",
+          activation: .attention
+        )
       } else {
         ForEach(rings) { ring in
           Button {
@@ -288,7 +292,7 @@ struct EventRingView: View {
             RingListRow(
               ring: ring,
               isSelected: selectedRing?.id == ring.id,
-              accessory: ring.isPublic ? "public" : "token"
+              accessory: ring.isPublic ? "pubblico" : "token"
             )
           }
           .buttonStyle(.plain)
@@ -309,6 +313,16 @@ struct EventRingView: View {
 
   @MainActor
   private func load() async {
+    if DemoMode.isActive {
+      rings = []
+      selectedRing = nil
+      members = []
+      checkIns = []
+      errorMessage = nil
+      isLoading = false
+      return
+    }
+
     isLoading = true
     defer { isLoading = false }
 
@@ -361,13 +375,29 @@ struct EventRingView: View {
 
   @MainActor
   private func join(_ raw: String) async {
+    let token = raw.trimmingCharacters(in: .whitespacesAndNewlines)
     isJoining = true
     defer { isJoining = false }
     errorMessage = nil
     statusMessage = nil
 
+    guard !token.isEmpty else {
+      errorMessage = "Inserisci un token o scansiona un QR."
+      return
+    }
+
+    if DemoMode.isActive {
+      guard token.caseInsensitiveCompare(Self.orientationJoinToken) == .orderedSame else {
+        errorMessage = "Token demo non riconosciuto."
+        return
+      }
+      activateDemoOrientation(status: "sei dentro Orientation Bocconi.")
+      tokenInput = ""
+      return
+    }
+
     do {
-      let ring = try await RingsService.shared.join(token: raw)
+      let ring = try await RingsService.shared.join(token: token)
       if ring.kind == .event {
         selectedRing = ring
         _ = try? await RingsService.shared.checkIn(eventRingId: ring.id)
@@ -387,6 +417,11 @@ struct EventRingView: View {
     errorMessage = nil
     statusMessage = nil
 
+    if DemoMode.isActive {
+      activateDemoOrientation(status: "QR orientation pronto in demo.")
+      return
+    }
+
     do {
       if let existing = rings.first(where: { $0.joinToken == Self.orientationJoinToken }) {
         selectedRing = existing
@@ -400,7 +435,7 @@ struct EventRingView: View {
       let ring = try await RingsService.shared.create(
         kind: .event,
         title: Self.orientationTitle,
-        subtitle: "Scan. Join the ring. Be there.",
+        subtitle: "Scansiona. Entra nel ring. Fatti trovare.",
         locationName: "Bocconi campus",
         startsAt: startsAt,
         endsAt: endsAt,
@@ -414,6 +449,49 @@ struct EventRingView: View {
     } catch {
       errorMessage = SupabaseErrorMessage.describe(error, fallback: "QR orientation non creato.")
     }
+  }
+
+  @MainActor
+  private func activateDemoOrientation(status: String) {
+    let ring = Self.demoOrientationRing()
+    rings = [ring]
+    selectedRing = ring
+    members = []
+    checkIns = [Self.demoCheckIn(for: ring)]
+    errorMessage = nil
+    statusMessage = status
+  }
+
+  private static func demoOrientationRing() -> HaloRing {
+    let startsAt = orientationWeekStartDate()
+    let endsAt = Calendar(identifier: .gregorian).date(byAdding: .hour, value: 4, to: startsAt)
+    return HaloRing(
+      id: fixedUUID("7A68E1B7-3B4D-4A62-BF1C-00A0D04E2001"),
+      kind: .event,
+      creatorId: fixedUUID("7A68E1B7-3B4D-4A62-BF1C-00A0D04E2002"),
+      title: orientationTitle,
+      subtitle: "Scansiona. Entra nel ring. Fatti trovare.",
+      locationName: "Bocconi campus",
+      startsAt: startsAt,
+      endsAt: endsAt,
+      joinToken: orientationJoinToken,
+      isPublic: true,
+      requiresApproval: false,
+      memberLimit: 250
+    )
+  }
+
+  private static func demoCheckIn(for ring: HaloRing) -> EventCheckIn {
+    EventCheckIn(
+      id: fixedUUID("7A68E1B7-3B4D-4A62-BF1C-00A0D04E2003"),
+      ringId: ring.id,
+      userId: fixedUUID("7A68E1B7-3B4D-4A62-BF1C-00A0D04E2004"),
+      source: "demo"
+    )
+  }
+
+  private static func fixedUUID(_ rawValue: String) -> UUID {
+    UUID(uuidString: rawValue) ?? UUID()
   }
 
   @MainActor
@@ -514,7 +592,7 @@ struct RingScheduleRow: View {
     if let startsAt = ring.startsAt {
       return startsAt.formatted(date: .abbreviated, time: .shortened)
     }
-    return ring.kind == .founder ? "founder circle" : "sempre aperto"
+    return ring.kind == .founder ? "cerchio founder" : "sempre aperto"
   }
 
   private var secondary: String {
@@ -524,7 +602,7 @@ struct RingScheduleRow: View {
     if let endsAt = ring.endsAt {
       return "chiude \(endsAt.formatted(date: .abbreviated, time: .shortened))"
     }
-    return ring.isPublic ? "pubblico" : "token only"
+    return ring.isPublic ? "pubblico" : "solo token"
   }
 }
 
@@ -565,6 +643,39 @@ struct RingListRow: View {
   }
 }
 
+struct RingInlineEmptyState: View {
+  let title: String
+  let message: String
+  var activation: SwarmActivationRole = .rest
+
+  var body: some View {
+    HStack(alignment: .top, spacing: SwarmHalo.s3) {
+      Circle()
+        .strokeBorder(activation.stroke, style: StrokeStyle(lineWidth: SwarmStroke.standard, dash: [3, 5]))
+        .frame(width: 34, height: 34)
+        .overlay(
+          Circle()
+            .fill(activation.color.opacity(0.18))
+            .frame(width: 6, height: 6)
+        )
+
+      VStack(alignment: .leading, spacing: 4) {
+        Text(title)
+          .font(HaloType.ui(14, weight: .semibold))
+          .foregroundStyle(SwarmHalo.ink)
+        Text(message)
+          .font(HaloType.ui(12, weight: .regular))
+          .foregroundStyle(SwarmHalo.inkSecondary)
+          .fixedSize(horizontal: false, vertical: true)
+      }
+
+      Spacer(minLength: 0)
+    }
+    .padding(SwarmHalo.s3)
+    .swarmSurface(.card, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: activation)
+  }
+}
+
 struct RingCreateSheet: View {
   @Environment(\.dismiss) private var dismiss
 
@@ -588,7 +699,7 @@ struct RingCreateSheet: View {
       DeepSpaceBackground()
       ScrollView {
         VStack(alignment: .leading, spacing: SwarmHalo.s4) {
-          SwarmOperationalRail(title: "HALO / NEW RING", context: kind.label, activation: role) {
+          SwarmOperationalRail(title: "HALO / NUOVO RING", context: kind.label, activation: role) {
             Button(action: { dismiss() }) {
               Image(systemName: "xmark")
                 .font(HaloType.system(12, weight: .semibold))
@@ -622,7 +733,7 @@ struct RingCreateSheet: View {
             .foregroundStyle(SwarmHalo.ink)
             .tint(role.color)
 
-          Toggle("approval", isOn: $requiresApproval)
+          Toggle("approvazione", isOn: $requiresApproval)
             .font(HaloType.ui(13, weight: .semibold))
             .foregroundStyle(SwarmHalo.ink)
             .tint(role.color)
