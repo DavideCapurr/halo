@@ -382,4 +382,23 @@ enum HaloVisual {
     static let footerBottomPadding: CGFloat = 92
     static let footerSafeAreaExtra: CGFloat = 70
   }
+
+  enum HaloSpace {
+    static let horizontalPadding: CGFloat = 18
+    static let pageHorizontalPadding: CGFloat = 16
+    static let panelRadius: CGFloat = 22
+    static let cardRadius: CGFloat = 20
+    static let fieldRadius: CGFloat = 16
+    static let chipRadius: CGFloat = 999
+
+    static let topButtonSize: CGFloat = 34
+    static let heroAuraSize: CGFloat = 130
+    static let heroRingSize: CGFloat = 96
+    static let heroPortraitSize: CGFloat = 88
+
+    static let peekHorizontalPadding: CGFloat = 20
+    static let peekAvatarAuraSize: CGFloat = 88
+    static let peekAvatarRingSize: CGFloat = 68
+    static let peekPortraitSize: CGFloat = 62
+  }
 }
