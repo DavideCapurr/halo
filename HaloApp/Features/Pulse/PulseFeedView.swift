@@ -20,11 +20,11 @@ struct PulseFeedView: View {
       ScrollView {
         LazyVStack(spacing: 0) {
           headerSection
-            .padding(.horizontal, 22)
+            .padding(.horizontal, HaloVisual.Pulse.horizontalPadding)
             .padding(.top, 12)
 
           PulseScopePicker(selection: $scope)
-            .padding(.horizontal, 22)
+            .padding(.horizontal, HaloVisual.Pulse.horizontalPadding)
             .padding(.top, 16)
 
           pulseSignalDeck
@@ -51,7 +51,7 @@ struct PulseFeedView: View {
       )
       .padding(.horizontal, 14)
       .padding(.top, 30)
-      .padding(.bottom, 10)
+      .padding(.bottom, HaloVisual.Pulse.dockBottomPadding)
       .background(
         LinearGradient(
           stops: [
@@ -114,11 +114,16 @@ struct PulseFeedView: View {
       HStack(spacing: 8) {
         pulseMetricTile
         ForEach(vm.pulsePeople(in: scope).prefix(8)) { person in
-          PulseSignalTile(person: person)
-            .onTapGesture { onPersonTap(person) }
+          Button {
+            onPersonTap(person)
+          } label: {
+            PulseSignalTile(person: person)
+          }
+          .buttonStyle(.plain)
+          .accessibilityLabel("apri \(person.name), \(person.mood.rawValue)")
         }
       }
-      .padding(.horizontal, 22)
+      .padding(.horizontal, HaloVisual.Pulse.horizontalPadding)
     }
   }
 
@@ -127,7 +132,7 @@ struct PulseFeedView: View {
     let groups = vm.pulseEventGroups(in: scope)
     if vm.isLoading && groups.isEmpty {
       SwarmLoadingState(label: "carico il Pulse")
-        .padding(.horizontal, 22)
+        .padding(.horizontal, HaloVisual.Pulse.horizontalPadding)
         .padding(.top, 14)
     } else if let lastError = vm.lastError {
       SwarmEmptyState(
@@ -135,7 +140,7 @@ struct PulseFeedView: View {
         message: lastError,
         activation: .attention
       )
-      .padding(.horizontal, 22)
+      .padding(.horizontal, HaloVisual.Pulse.horizontalPadding)
       .padding(.top, 14)
     } else if groups.isEmpty {
       SwarmEmptyState(
@@ -145,12 +150,12 @@ struct PulseFeedView: View {
           : "quando le tue orbite si muovono, il Pulse si accende.",
         activation: .rest
       )
-      .padding(.horizontal, 22)
+      .padding(.horizontal, HaloVisual.Pulse.horizontalPadding)
       .padding(.top, 14)
     } else {
       ForEach(groups) { group in
         momentSeparator(group)
-          .padding(.horizontal, 22)
+          .padding(.horizontal, HaloVisual.Pulse.horizontalPadding)
           .padding(.top, group.moment == .adesso ? 8 : 22)
           .padding(.bottom, 10)
 
@@ -164,7 +169,7 @@ struct PulseFeedView: View {
               }
             )
           }
-          .padding(.horizontal, 14)
+          .padding(.horizontal, HaloVisual.Pulse.rowHorizontalPadding)
           .padding(.vertical, 3)
         }
       }
@@ -190,15 +195,15 @@ struct PulseFeedView: View {
         .font(HaloType.ui(11, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
     }
-    .frame(width: 104, alignment: .leading)
+    .frame(width: HaloVisual.Pulse.metricTileWidth, alignment: .leading)
     .padding(.horizontal, 12)
     .padding(.vertical, 11)
     .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(.ultraThinMaterial)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.tileRadius, style: .continuous)
+        .fill(SwarmHalo.inkWhisper)
     )
     .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.tileRadius, style: .continuous)
         .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
     )
   }
@@ -217,9 +222,9 @@ struct PulseFeedView: View {
     }
     .padding(.vertical, 12)
     .padding(.horizontal, 16)
-    .background(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous).fill(.ultraThinMaterial))
+    .background(RoundedRectangle(cornerRadius: HaloVisual.Pulse.tileRadius, style: .continuous).fill(SwarmHalo.inkWhisper))
     .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.tileRadius, style: .continuous)
         .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
     )
   }
@@ -325,17 +330,21 @@ private struct PulseSignalTile: View {
           .font(HaloType.ui(10, weight: .medium))
           .foregroundStyle(HaloInk.creamLow)
           .lineLimit(1)
+        Spacer(minLength: 0)
+        Image(systemName: "chevron.right")
+          .font(HaloType.system(9, weight: .bold))
+          .foregroundStyle(HaloInk.creamMute)
       }
     }
-    .frame(width: 118, alignment: .leading)
+    .frame(width: HaloVisual.Pulse.signalTileWidth, alignment: .leading)
     .padding(.horizontal, 11)
     .padding(.vertical, 10)
     .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.tileRadius, style: .continuous)
         .fill(SwarmHalo.inkWhisper)
     )
     .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.tileRadius, style: .continuous)
         .strokeBorder(person.hasActiveVibe ? person.tier.swarmHaloState.stroke : HaloInk.creamLine, lineWidth: 0.6)
     )
   }
@@ -543,9 +552,9 @@ private struct PulseDropCard: View {
       .padding(14)
     }
     .frame(height: 158)
-    .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous))
+    .clipShape(RoundedRectangle(cornerRadius: HaloVisual.Pulse.cardRadius, style: .continuous))
     .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.cardRadius, style: .continuous)
         .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
     )
   }
@@ -563,11 +572,11 @@ private struct PulseDropCard: View {
     }
     .padding(13)
     .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(HaloInk.nightSurface.opacity(0.34))
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.fieldRadius, style: .continuous)
+        .fill(SwarmHalo.inkWhisper)
     )
     .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.fieldRadius, style: .continuous)
         .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
     )
   }
@@ -605,11 +614,11 @@ private struct PulseDropCard: View {
     }
     .padding(13)
     .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(HaloInk.nightSurface.opacity(0.34))
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.fieldRadius, style: .continuous)
+        .fill(SwarmHalo.inkWhisper)
     )
     .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.fieldRadius, style: .continuous)
         .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
     )
   }
@@ -692,10 +701,10 @@ private struct PulseDropCard: View {
   }
 
   private var cardBackground: some View {
-    RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-      .fill(.ultraThinMaterial)
+    RoundedRectangle(cornerRadius: HaloVisual.Pulse.cardRadius, style: .continuous)
+      .fill(SwarmHalo.inkWhisper)
       .overlay(
-        RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+        RoundedRectangle(cornerRadius: HaloVisual.Pulse.cardRadius, style: .continuous)
           .fill(
             LinearGradient(
               colors: [
@@ -711,7 +720,7 @@ private struct PulseDropCard: View {
   }
 
   private var cardBorder: some View {
-    RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+    RoundedRectangle(cornerRadius: HaloVisual.Pulse.cardRadius, style: .continuous)
       .strokeBorder(event.isLive ? SwarmHalo.strokeActive : HaloInk.creamHair, lineWidth: event.isLive ? 0.8 : 0.5)
   }
 
@@ -743,7 +752,7 @@ private struct PulseDropDock: View {
   }
 
   var body: some View {
-    VStack(spacing: 9) {
+    VStack(spacing: HaloVisual.Pulse.composerSpacing) {
       if isDraftOpen {
         draftPanel
           .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -757,11 +766,11 @@ private struct PulseDropDock: View {
       }
       .padding(10)
       .background(
-        Capsule()
-          .fill(.ultraThinMaterial)
+        RoundedRectangle(cornerRadius: HaloVisual.Pulse.dockRadius, style: .continuous)
+          .fill(SwarmHalo.absoluteBlack.opacity(0.92))
       )
       .overlay(
-        Capsule()
+        RoundedRectangle(cornerRadius: HaloVisual.Pulse.dockRadius, style: .continuous)
           .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
       )
       .shadow(color: SwarmHalo.absoluteBlack.opacity(0.45), radius: 18, y: 10)
@@ -808,10 +817,10 @@ private struct PulseDropDock: View {
             .font(HaloType.mono(9, weight: .semibold))
             .kerning(0.8)
             .textCase(.uppercase)
-            .foregroundStyle(canPublish ? SwarmHalo.background : HaloInk.creamMute)
+            .foregroundStyle(canPublish ? SwarmHalo.absoluteBlack : HaloInk.creamMute)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Capsule().fill(canPublish ? SwarmHalo.ink : HaloInk.creamWhisper))
+            .background(Capsule().fill(canPublish ? SwarmHalo.ink : SwarmHalo.inkWhisper))
             .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
         }
         .buttonStyle(.plain)
@@ -820,11 +829,11 @@ private struct PulseDropDock: View {
     }
     .padding(14)
     .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(.ultraThinMaterial)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.cardRadius, style: .continuous)
+        .fill(SwarmHalo.absoluteBlack.opacity(0.94))
     )
     .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      RoundedRectangle(cornerRadius: HaloVisual.Pulse.cardRadius, style: .continuous)
         .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
     )
     .shadow(color: SwarmHalo.absoluteBlack.opacity(0.35), radius: 16, y: 8)
@@ -846,13 +855,13 @@ private struct PulseDropDock: View {
       }
       .foregroundStyle(HaloInk.creamLow)
       .frame(maxWidth: .infinity)
-      .frame(height: 46)
+      .frame(height: HaloVisual.Pulse.dockButtonHeight)
       .background(
-        RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous)
+        RoundedRectangle(cornerRadius: HaloVisual.Pulse.fieldRadius, style: .continuous)
           .fill(HaloInk.creamWhisper)
       )
       .overlay(
-        RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous)
+        RoundedRectangle(cornerRadius: HaloVisual.Pulse.fieldRadius, style: .continuous)
           .strokeBorder(HaloInk.creamLine, lineWidth: 0.5)
       )
     }
