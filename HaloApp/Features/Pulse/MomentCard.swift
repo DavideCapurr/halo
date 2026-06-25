@@ -56,8 +56,8 @@ struct MomentCard: View {
     }
     .padding(.horizontal, 18)
     .padding(.vertical, 14)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard), stroke: borderColor)
-    .contentShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: HaloVisual.Pulse.cardRadius), stroke: borderColor)
+    .contentShape(RoundedRectangle(cornerRadius: HaloVisual.Pulse.cardRadius))
     .overlay(alignment: .topTrailing) {
       ForEach(Array(livePings), id: \.key) { (id, kind) in
         LivePingView(kind: kind, color: MoodPalette.auraColor(person.mood, l: 0.85))
@@ -282,7 +282,7 @@ struct MomentCard: View {
       }
     }
     .frame(height: 96)
-    .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
+    .clipShape(RoundedRectangle(cornerRadius: HaloVisual.Pulse.fieldRadius))
   }
 
   private var photoPreviewPlaceholder: some View {
@@ -303,7 +303,7 @@ struct MomentCard: View {
       .lineLimit(3)
       .padding(.horizontal, 12).padding(.vertical, 10)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard * 2))
+      .haloContentGlass(in: RoundedRectangle(cornerRadius: HaloVisual.Pulse.fieldRadius))
   }
 
   private func audioPreview(_ p: PostPreview) -> some View {
@@ -332,7 +332,7 @@ struct MomentCard: View {
       }
     }
     .padding(.horizontal, 12).padding(.vertical, 8)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: 12))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: HaloVisual.Pulse.fieldRadius))
   }
 
   // MARK: - reactions (tier-aware)

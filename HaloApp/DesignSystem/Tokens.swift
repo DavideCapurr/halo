@@ -382,4 +382,19 @@ enum HaloVisual {
     static let footerBottomPadding: CGFloat = 92
     static let footerSafeAreaExtra: CGFloat = 70
   }
+
+  enum Pulse {
+    static let horizontalPadding: CGFloat = 22
+    static let rowHorizontalPadding: CGFloat = 14
+    static let cardRadius: CGFloat = 20
+    static let tileRadius: CGFloat = 16
+    static let dockRadius: CGFloat = 24
+    static let fieldRadius: CGFloat = 18
+
+    static let signalTileWidth: CGFloat = 122
+    static let metricTileWidth: CGFloat = 108
+    static let dockButtonHeight: CGFloat = 48
+    static let dockBottomPadding: CGFloat = 10
+    static let composerSpacing: CGFloat = 9
+  }
 }
