@@ -1,0 +1,6 @@
+// Halo — build config del target widget (HaloWidget).
+// Eredita SUPABASE_URL / SUPABASE_ANON_KEY / APP_GROUP_ID da Shared.xcconfig,
+// così il widget condivide la stessa config di produzione dell'app e non
+// resta con i placeholder REPLACE_ME. Il widget non usa HALO_URL_SCHEME.
+
+#include "Shared.xcconfig"
