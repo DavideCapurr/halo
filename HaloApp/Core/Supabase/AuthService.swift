@@ -58,6 +58,9 @@ final class AuthService {
     let suggestedName = bootstrapDisplayName(from: credential)
     let new = Profile(id: userId, handle: suggestedHandle, displayName: suggestedName)
     try await ProfilesService.shared.update(new)
+    Task {
+      await AnalyticsService.shared.track(.signup, metadata: ["auth_provider": "apple"])
+    }
     return new
   }
 
@@ -103,6 +106,9 @@ final class AuthService {
     let userId = try requireUserId()
     let new = Profile(id: userId, handle: randomBootstrapHandle(), displayName: "Halo")
     try await ProfilesService.shared.update(new)
+    Task {
+      await AnalyticsService.shared.track(.signup, metadata: ["auth_provider": "email"])
+    }
     return new
   }
 

@@ -158,6 +158,7 @@ export async function upsertSubscription(row: {
   ring_id: string;
   user_id: string;
   provider_subscription_id: string;
+  provider_customer_id?: string | null;
   status: string;
   current_period_start?: string | null;
   current_period_end?: string | null;
@@ -188,6 +189,7 @@ export async function upsertBilling(row: {
   plan?: string | null;
   provider_invoice_id?: string | null;
   provider_checkout_session_id?: string | null;
+  provider_customer_id?: string | null;
   metadata?: Record<string, unknown>;
 }) {
   const supa = serviceClient();

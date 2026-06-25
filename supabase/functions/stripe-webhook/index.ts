@@ -67,6 +67,7 @@ async function handleCheckoutSession(session: Record<string, unknown>) {
 
   const sessionId = stringValue(session.id);
   const subscriptionId = stringValue(session.subscription);
+  const customerId = stringValue(session.customer);
   const mode = stringValue(session.mode);
   const amount = numberValue(session.amount_total) ??
     BILLING_PLANS[planKey]?.amountCents ?? 0;
@@ -78,18 +79,20 @@ async function handleCheckoutSession(session: Record<string, unknown>) {
       ring_id: ringId,
       user_id: payerId,
       provider_subscription_id: subscriptionId,
+      provider_customer_id: customerId,
       status: paymentStatus === "paid" ? "active" : "incomplete",
       plan: planKey,
-      metadata: { checkout_session_id: sessionId, mode },
+      metadata: { checkout_session_id: sessionId, customer_id: customerId, mode },
     });
   } else if (sessionId) {
     await upsertSubscription({
       ring_id: ringId,
       user_id: payerId,
       provider_subscription_id: sessionId,
+      provider_customer_id: customerId,
       status: paymentStatus === "paid" ? "active" : "incomplete",
       plan: planKey,
-      metadata: { mode },
+      metadata: { customer_id: customerId, mode },
     });
   }
 
@@ -102,7 +105,8 @@ async function handleCheckoutSession(session: Record<string, unknown>) {
       status: paymentStatus === "paid" ? "paid" : "open",
       plan: planKey,
       provider_checkout_session_id: sessionId,
-      metadata: { mode, subscription_id: subscriptionId },
+      provider_customer_id: customerId,
+      metadata: { customer_id: customerId, mode, subscription_id: subscriptionId },
     });
   }
 }
@@ -113,12 +117,14 @@ async function handleSubscription(subscription: Record<string, unknown>) {
   const payerId = metadata.payer_id;
   const planKey = metadata.plan;
   const subscriptionId = stringValue(subscription.id);
+  const customerId = stringValue(subscription.customer);
   if (!ringId || !payerId || !planKey || !subscriptionId) return;
 
   await upsertSubscription({
     ring_id: ringId,
     user_id: payerId,
     provider_subscription_id: subscriptionId,
+    provider_customer_id: customerId,
     status: subscriptionStatus(stringValue(subscription.status)),
     current_period_start: isoFromSeconds(subscription.current_period_start),
     current_period_end: isoFromSeconds(subscription.current_period_end),
@@ -126,6 +132,7 @@ async function handleSubscription(subscription: Record<string, unknown>) {
     metadata: {
       cancel_at_period_end: subscription.cancel_at_period_end ?? false,
       canceled_at: subscription.canceled_at ?? null,
+      customer_id: customerId,
     },
   });
 }
@@ -142,6 +149,7 @@ async function handleInvoice(
 
   const invoiceId = stringValue(invoice.id);
   const subscriptionId = stringValue(invoice.subscription);
+  const customerId = stringValue(invoice.customer);
   const amount = numberValue(invoice.amount_paid) ??
     numberValue(invoice.amount_due) ??
     BILLING_PLANS[planKey]?.amountCents ?? 0;
@@ -153,11 +161,12 @@ async function handleInvoice(
       ring_id: ringId,
       user_id: payerId,
       provider_subscription_id: subscriptionId,
+      provider_customer_id: customerId,
       status: billingStatus === "paid" ? "active" : "past_due",
       current_period_start: period.start,
       current_period_end: period.end,
       plan: planKey,
-      metadata: { invoice_id: invoiceId },
+      metadata: { customer_id: customerId, invoice_id: invoiceId },
     });
   }
 
@@ -171,7 +180,8 @@ async function handleInvoice(
     period_end: period.end,
     plan: planKey,
     provider_invoice_id: invoiceId,
-    metadata: { subscription_id: subscriptionId },
+    provider_customer_id: customerId,
+    metadata: { customer_id: customerId, subscription_id: subscriptionId },
   });
 }
 

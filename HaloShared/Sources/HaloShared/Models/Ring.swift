@@ -193,6 +193,7 @@ public struct RingSubscription: Codable, Identifiable, Hashable, Sendable {
   public let userId: UUID
   public var provider: String
   public var providerSubscriptionId: String?
+  public var providerCustomerId: String?
   public var status: String
   public var currentPeriodStart: Date?
   public var currentPeriodEnd: Date?
@@ -206,6 +207,7 @@ public struct RingSubscription: Codable, Identifiable, Hashable, Sendable {
     userId: UUID,
     provider: String = "manual",
     providerSubscriptionId: String? = nil,
+    providerCustomerId: String? = nil,
     status: String = "active",
     currentPeriodStart: Date? = nil,
     currentPeriodEnd: Date? = nil,
@@ -218,6 +220,7 @@ public struct RingSubscription: Codable, Identifiable, Hashable, Sendable {
     self.userId = userId
     self.provider = provider
     self.providerSubscriptionId = providerSubscriptionId
+    self.providerCustomerId = providerCustomerId
     self.status = status
     self.currentPeriodStart = currentPeriodStart
     self.currentPeriodEnd = currentPeriodEnd
@@ -231,6 +234,7 @@ public struct RingSubscription: Codable, Identifiable, Hashable, Sendable {
     case ringId = "ring_id"
     case userId = "user_id"
     case providerSubscriptionId = "provider_subscription_id"
+    case providerCustomerId = "provider_customer_id"
     case currentPeriodStart = "current_period_start"
     case currentPeriodEnd = "current_period_end"
     case createdAt = "created_at"
@@ -252,6 +256,7 @@ public struct ClubBilling: Codable, Identifiable, Hashable, Sendable {
   public var plan: String?
   public var providerInvoiceId: String?
   public var providerCheckoutSessionId: String?
+  public var providerCustomerId: String?
   public let createdAt: Date
 
   public init(
@@ -268,6 +273,7 @@ public struct ClubBilling: Codable, Identifiable, Hashable, Sendable {
     plan: String? = nil,
     providerInvoiceId: String? = nil,
     providerCheckoutSessionId: String? = nil,
+    providerCustomerId: String? = nil,
     createdAt: Date = .now
   ) {
     self.id = id
@@ -283,6 +289,7 @@ public struct ClubBilling: Codable, Identifiable, Hashable, Sendable {
     self.plan = plan
     self.providerInvoiceId = providerInvoiceId
     self.providerCheckoutSessionId = providerCheckoutSessionId
+    self.providerCustomerId = providerCustomerId
     self.createdAt = createdAt
   }
 
@@ -296,6 +303,7 @@ public struct ClubBilling: Codable, Identifiable, Hashable, Sendable {
     case periodEnd = "period_end"
     case providerInvoiceId = "provider_invoice_id"
     case providerCheckoutSessionId = "provider_checkout_session_id"
+    case providerCustomerId = "provider_customer_id"
     case createdAt = "created_at"
   }
 }

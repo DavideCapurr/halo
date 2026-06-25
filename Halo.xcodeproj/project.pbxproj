@@ -11,6 +11,8 @@
 		0B40EF8971971598AC792F16 /* HaloShared in Frameworks */ = {isa = PBXBuildFile; productRef = 75A04FDE4CC667832BB0DA70 /* HaloShared */; };
 		1B35EC9631A3C5AA18AFE71D /* FollowsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDDBA1F2CEA95FDEF3C8E8F /* FollowsService.swift */; };
 		250B6FE45ADB706193C4DDB6 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0853E0F4195CF915733A5ED0 /* AppState.swift */; };
+		A171C5E0000000000000002 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A171C5E0000000000000001 /* AnalyticsService.swift */; };
+		B10000000000000000000017 /* BillingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000027 /* BillingService.swift */; };
 		2B9C43BE236819B77874A6B7 /* PlusUpsellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8024E8C710BB6866369C0380 /* PlusUpsellView.swift */; };
 		2EBC0A112233445566778899 /* BocconiVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EBC0A11223344556677889A /* BocconiVerifyView.swift */; };
 		33A951EAF4D9245DD5E56245 /* WidgetSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AD8F2BD6CB52B37E10D1DA /* WidgetSnapshotStore.swift */; };
@@ -149,6 +151,8 @@
 		5F19C3296B85B41B832FB82C /* BottomBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomBarView.swift; sourceTree = "<group>"; };
 		651288C61F2F291D932D8E54 /* HaloWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloWidgetBundle.swift; sourceTree = "<group>"; };
 		6FC3B403558A70E666D77B80 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		A171C5E0000000000000001 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
+		B10000000000000000000027 /* BillingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingService.swift; sourceTree = "<group>"; };
 		734CF80BBABF3434D5653FED /* VibeFirstComposeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibeFirstComposeView.swift; sourceTree = "<group>"; };
 		EA51C0FACE222222EA51C0FB /* EasyComposeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EasyComposeView.swift; sourceTree = "<group>"; };
 		785C55BF44CAC9DA0467CE7F /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -295,7 +299,9 @@
 		2547DA03DF45E1AB6A55BBFA /* Supabase */ = {
 			isa = PBXGroup;
 			children = (
+				A171C5E0000000000000001 /* AnalyticsService.swift */,
 				6FC3B403558A70E666D77B80 /* AuthService.swift */,
+				B10000000000000000000027 /* BillingService.swift */,
 				8B1112131415161718191A1C /* CampusVerificationService.swift */,
 				248F6CEDE8A1B44D47719630 /* FeedRealtime.swift */,
 				ACDDBA1F2CEA95FDEF3C8E8F /* FollowsService.swift */,
@@ -657,6 +663,8 @@
 				250B6FE45ADB706193C4DDB6 /* AppState.swift in Sources */,
 				43346F6F5A02D58F5359C560 /* ZoomLevel.swift in Sources */,
 				A960E64B6AE9D1166CAEA25D /* AudioRecorderView.swift in Sources */,
+				A171C5E0000000000000002 /* AnalyticsService.swift in Sources */,
+				B10000000000000000000017 /* BillingService.swift in Sources */,
 				2EBC0A112233445566778899 /* BocconiVerifyView.swift in Sources */,
 				57625BFD8C86B08A1CBCB178 /* AuthService.swift in Sources */,
 				89A6203B06472FB1E7FA9EF0 /* BottomBarView.swift in Sources */,

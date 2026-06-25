@@ -48,21 +48,21 @@ Apple/device sono manuali per natura: il repo prepara tutto lo scaffolding.)*
 - [ ] Conversione **waitlist → invito** attiva e testata
 
 ## 2. Misurazione del lancio (Fase E) — senza non sai se funziona ⭐
-- [ ] Migration tabella eventi (`analytics_events` + RLS)
-- [ ] `AnalyticsService.track(_:)`
-- [ ] Strumentare: `signup`, `invite_sent`, `invite_accepted`, `vibe_set`,
+- [x] Migration tabella eventi (`analytics_events` + RLS)
+- [x] `AnalyticsService.track(_:)`
+- [x] Strumentare: `signup`, `invite_sent`, `invite_accepted`, `vibe_set`,
       `moment_created`, `ring_joined`, `move_closer`
-- [ ] Funnel attivazione → target **50% verified → activated**
+- [x] Funnel attivazione → target **50% verified → activated**
 
 ---
 
 ## 3. Monetizzazione — può seguire il lancio 🔧
-*(StoreKit Halo+ è già implementato; il resto è backend-only)*
+*(StoreKit Halo+ è già implementato; Events/Clubs usano Stripe via Edge Functions)*
 
-- [ ] UI checkout **Halo Events** (4.99 / 29 / 79-99) →
+- [x] UI checkout **Halo Events** (4.99 / 29 / 79-99) →
       `stripe-create-checkout-session`
-- [ ] **Halo Clubs** dashboard/billing (49-149/m)
-- [ ] Accesso a `stripe-customer-portal` dal profilo
+- [x] **Halo Clubs** dashboard/billing (49-149/m)
+- [x] Accesso a `stripe-customer-portal` dal profilo
 
 ## 4. Qualità & polish 🔧
 - [ ] Test sui service principali (Posts, Follows, Vibes, Invites)
