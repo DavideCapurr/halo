@@ -37,6 +37,7 @@ fastlane/test_output
 .env
 .env.*
 !.env.example
+!supabase/.env.prod.example
 
 # Supabase
 supabase/.branches/

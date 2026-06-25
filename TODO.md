@@ -14,22 +14,28 @@ manda la prima vibe — e noi lo vediamo nel funnel.
 ---
 
 ## 0. Distribuzione — senza questo non si lancia 🚀
-*(oggi non tracciato da nessuna parte: è il gap più pericoloso)*
+*(runbook eseguibile: `docs/launch/RUNBOOK.md`. Gli item con account
+Apple/device sono manuali per natura: il repo prepara tutto lo scaffolding.)*
 
 - [ ] Apple Developer account + App ID, capabilities (Sign in with Apple,
-      App Groups, Push), provisioning
+      App Groups, Push), provisioning — **manuale**, passi in `RUNBOOK.md §2`
+      (entitlements Apple Sign-in/App Group già in repo; snippet Push pronto)
 - [x] Build config di produzione: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
       `APP_GROUP_ID`, `HALO_URL_SCHEME` per app **e** widget
       — centralizzati in `Config/*.xcconfig` (single source `Shared.xcconfig`
       condivisa app+widget via `baseConfigurationReference`); risolti i
       placeholder `REPLACE_ME` del widget
 - [ ] Prodotto StoreKit `app.halo.plus.monthly` creato in App Store Connect
-      (oggi solo l'ID è nel codice)
-- [ ] Supabase **prod** deployato: migrations + edge function
+      — **manuale**, campi esatti in `RUNBOOK.md §3` (config locale già in
+      `HaloPlus.storekit`)
+- [~] Supabase **prod** deployato: migrations + edge function
       (`waitlist-signup`, `apple-storekit-*`, `stripe-*`, `purge-expired`),
-      secrets configurati
+      secrets configurati — **scriptato**: `scripts/deploy-supabase-prod.sh`
+      + `supabase/.env.prod.example`; resta da eseguire con le credenziali prod
 - [ ] Build su **TestFlight** + privacy nutrition labels / review prep
+      — **manuale**, checklist in `RUNBOOK.md §5`
 - [ ] Smoke test end-to-end su device reale (auth → verify → ring → vibe)
+      — **manuale**, checklist in `RUNBOOK.md §6`
 
 ## 1. Cold-start Bocconi — il successo si gioca qui ⭐
 *(la strumentazione c'è, manca l'esecuzione)*
