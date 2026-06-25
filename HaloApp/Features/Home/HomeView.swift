@@ -410,26 +410,7 @@ struct HomeView: View {
       Spacer(minLength: 12)
 
       Button(action: openOrbitHeaderVibeSetter) {
-        HStack(spacing: 7) {
-          Circle()
-            .fill(Self.orbitReferenceMoodColor(orbitReferenceSelfMood))
-            .frame(width: HaloVisual.Orbita.vibeDotSize, height: HaloVisual.Orbita.vibeDotSize)
-            .shadow(color: Self.orbitReferenceMoodColor(orbitReferenceSelfMood), radius: 8)
-
-          Text(orbitReferenceSelfMood.rawValue)
-            .font(Self.orbitStoriesBodyFont(10.5, weight: .medium))
-            .kerning(0.42)
-            .foregroundStyle(Self.orbitStoriesCream)
-            .lineLimit(1)
-        }
-        .padding(.horizontal, HaloVisual.Orbita.vibePillHorizontalPadding)
-        .padding(.vertical, HaloVisual.Orbita.vibePillVerticalPadding)
-        .haloGlass(
-          in: Capsule(),
-          tint: Self.orbitStoriesHeaderPillFill,
-          interactive: true,
-          stroke: Self.orbitStoriesCreamHair
-        )
+        orbitReferenceVibePill
       }
       .buttonStyle(.plain)
       .padding(.top, HaloVisual.Orbita.vibePillTopPadding)
@@ -440,50 +421,93 @@ struct HomeView: View {
   }
 
   @ViewBuilder
+  private var orbitReferenceVibePill: some View {
+    let content = HStack(spacing: 7) {
+      Circle()
+        .fill(Self.orbitReferenceMoodColor(orbitReferenceSelfMood))
+        .frame(width: HaloVisual.Orbita.vibeDotSize, height: HaloVisual.Orbita.vibeDotSize)
+        .shadow(color: Self.orbitReferenceMoodColor(orbitReferenceSelfMood), radius: 8)
+
+      Text(orbitReferenceSelfMood.rawValue)
+        .font(Self.orbitStoriesBodyFont(10.5, weight: .medium))
+        .kerning(0.42)
+        .foregroundStyle(Self.orbitStoriesCream)
+        .lineLimit(1)
+    }
+    .padding(.horizontal, HaloVisual.Orbita.vibePillHorizontalPadding)
+    .padding(.vertical, HaloVisual.Orbita.vibePillVerticalPadding)
+
+    if #available(iOS 26.0, *) {
+      content
+        .background(Self.orbitStoriesHeaderPillFill, in: Capsule())
+        .glassEffect(.regular.tint(Self.orbitStoriesHeaderPillFill).interactive(), in: Capsule())
+        .overlay(Capsule().strokeBorder(Self.orbitStoriesCreamHair, lineWidth: 0.8))
+        .shadow(color: Self.orbitStoriesWarmBlack.opacity(0.28), radius: 12, y: 5)
+    } else {
+      content
+        .background(Self.orbitStoriesHeaderPillFill, in: Capsule())
+        .overlay(Capsule().strokeBorder(Self.orbitStoriesCreamHair, lineWidth: 0.8))
+        .shadow(color: Self.orbitStoriesWarmBlack.opacity(0.28), radius: 12, y: 5)
+    }
+  }
+
+  @ViewBuilder
   private var orbitStoriesHeroCard: some View {
     if let person = orbitStoriesHeroPerson {
       Button(action: { showStories = true }) {
-        HStack(spacing: 12) {
-          orbitStoriesHeroPortrait(person)
-
-          VStack(alignment: .leading, spacing: 5) {
-            HStack(spacing: 0) {
-              Text("\(person.name.lowercased()) ")
-                .foregroundStyle(Self.orbitStoriesCream)
-              Text("vibra")
-                .foregroundStyle(Self.orbitStoriesCreamLow)
-            }
-            .font(HaloType.serif(17, weight: .regular))
-            .lineLimit(1)
-            .minimumScaleFactor(0.76)
-
-            Text(orbitStoriesCountText)
-              .font(HaloType.mono(8.5, weight: .medium))
-              .kerning(1.53)
-              .foregroundStyle(Self.orbitStoriesCreamMute)
-              .lineLimit(1)
-          }
-
-          Spacer(minLength: 8)
-
-          Text("→")
-            .font(HaloType.serif(18, weight: .regular))
-            .foregroundStyle(Self.orbitStoriesBronze)
-            .padding(.trailing, 2)
-        }
-        .padding(.horizontal, HaloVisual.Orbita.heroCardHorizontalPadding)
-        .padding(.vertical, HaloVisual.Orbita.heroCardVerticalPadding)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(Self.orbitStoriesCardShape)
-        .haloGlass(
-          in: Self.orbitStoriesCardShape,
-          tint: Self.orbitStoriesCream.opacity(0.04),
-          interactive: true,
-          stroke: Self.orbitStoriesCreamHair
-        )
+        orbitStoriesHeroCardSurface(person)
       }
       .buttonStyle(.plain)
       .accessibilityLabel("Apri stories di \(person.name)")
+    }
+  }
+
+  @ViewBuilder
+  private func orbitStoriesHeroCardSurface(_ person: HaloPersonNode) -> some View {
+    let content = HStack(spacing: 12) {
+      orbitStoriesHeroPortrait(person)
+
+      VStack(alignment: .leading, spacing: 5) {
+        HStack(spacing: 0) {
+          Text("\(person.name.lowercased()) ")
+            .foregroundStyle(Self.orbitStoriesCream)
+          Text("vibra")
+            .foregroundStyle(Self.orbitStoriesCreamLow)
+        }
+        .font(HaloType.serif(17, weight: .regular))
+        .lineLimit(1)
+        .minimumScaleFactor(0.76)
+
+        Text(orbitStoriesCountText)
+          .font(HaloType.mono(8.5, weight: .medium))
+          .kerning(1.53)
+          .foregroundStyle(Self.orbitStoriesCreamMute)
+          .lineLimit(1)
+      }
+
+      Spacer(minLength: 8)
+
+      Text("→")
+        .font(HaloType.serif(18, weight: .regular))
+        .foregroundStyle(Self.orbitStoriesBronze)
+        .padding(.trailing, 2)
+    }
+    .padding(.horizontal, HaloVisual.Orbita.heroCardHorizontalPadding)
+    .padding(.vertical, HaloVisual.Orbita.heroCardVerticalPadding)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .contentShape(Self.orbitStoriesCardShape)
+
+    if #available(iOS 26.0, *) {
+      content
+        .background(Self.orbitStoriesChromeFill, in: Self.orbitStoriesCardShape)
+        .glassEffect(.regular.tint(Self.orbitStoriesChromeFill).interactive(), in: Self.orbitStoriesCardShape)
+        .overlay(Self.orbitStoriesCardShape.strokeBorder(Self.orbitStoriesChromeStroke, lineWidth: 0.9))
+        .shadow(color: Self.orbitStoriesWarmBlack.opacity(0.34), radius: 20, y: 10)
+    } else {
+      content
+        .background(Self.orbitStoriesChromeFill, in: Self.orbitStoriesCardShape)
+        .overlay(Self.orbitStoriesCardShape.strokeBorder(Self.orbitStoriesChromeStroke, lineWidth: 0.9))
+        .shadow(color: Self.orbitStoriesWarmBlack.opacity(0.34), radius: 20, y: 10)
     }
   }
 
@@ -658,7 +682,7 @@ struct HomeView: View {
       .overlay(alignment: .trailing) {
         orbitReferenceZoomRail
           .padding(.trailing, HaloVisual.Orbita.zoomRailTrailingPadding)
-          .opacity(showZoomRail ? 1 : 0.55)
+          .opacity(showZoomRail ? HaloVisual.Orbita.zoomRailActiveOpacity : HaloVisual.Orbita.zoomRailIdleOpacity)
           .animation(.easeInOut(duration: 0.28), value: showZoomRail)
       }
     }
@@ -778,8 +802,9 @@ struct HomeView: View {
     }
   }
 
+  @ViewBuilder
   private func orbitReferenceGhostHint(target: FriendshipTier, center: CGPoint) -> some View {
-    HStack(spacing: 6) {
+    let content = HStack(spacing: 6) {
       Text("sposta in")
         .foregroundStyle(Self.orbitStoriesCreamMute)
       Text(target.label.lowercased())
@@ -791,16 +816,27 @@ struct HomeView: View {
     .textCase(.uppercase)
     .padding(.horizontal, 14)
     .padding(.vertical, 8)
-    .haloGlass(
-      in: Capsule(),
-      tint: Self.orbitStoriesHeaderPillFill,
-      stroke: Self.orbitStoriesBronze.opacity(0.55)
-    )
-    .shadow(color: Self.orbitStoriesBronzeGlow, radius: 14)
-    .position(x: center.x, y: 30)
-    .zIndex(60)
-    .transition(.opacity.combined(with: .move(edge: .top)))
-    .allowsHitTesting(false)
+
+    if #available(iOS 26.0, *) {
+      content
+        .background(Self.orbitStoriesHeaderPillFill, in: Capsule())
+        .glassEffect(.regular.tint(Self.orbitStoriesHeaderPillFill), in: Capsule())
+        .overlay(Capsule().strokeBorder(Self.orbitStoriesBronze.opacity(0.55), lineWidth: 0.9))
+        .shadow(color: Self.orbitStoriesBronzeGlow, radius: 14)
+        .position(x: center.x, y: 30)
+        .zIndex(60)
+        .transition(.opacity.combined(with: .move(edge: .top)))
+        .allowsHitTesting(false)
+    } else {
+      content
+        .background(Self.orbitStoriesHeaderPillFill, in: Capsule())
+        .overlay(Capsule().strokeBorder(Self.orbitStoriesBronze.opacity(0.55), lineWidth: 0.9))
+        .shadow(color: Self.orbitStoriesBronzeGlow, radius: 14)
+        .position(x: center.x, y: 30)
+        .zIndex(60)
+        .transition(.opacity.combined(with: .move(edge: .top)))
+        .allowsHitTesting(false)
+    }
   }
 
   private func orbitReferenceBubbleContent(
@@ -943,19 +979,20 @@ struct HomeView: View {
     .onLongPressGesture { showCompose = true }
   }
 
+  @ViewBuilder
   private var orbitReferenceZoomRail: some View {
     let railHeight = HaloVisual.Orbita.zoomRailLineHeight
     let levels = ZoomLevel.allCases
     let activeIndex = fieldZoom.rawValue
 
-    return VStack(spacing: 2) {
+    let content = VStack(spacing: 2) {
       Button {
         applyZoom(fieldZoom.zoomedIn(), reveal: true)
       } label: {
         Text("+")
           .font(Self.orbitStoriesBodyFont(14, weight: .regular))
           .foregroundStyle(fieldZoom == .innerOnly ? Self.orbitStoriesCreamMute : Self.orbitStoriesCreamLow)
-          .frame(width: 40, height: 40)
+          .frame(width: HaloVisual.Orbita.zoomRailControlSize, height: HaloVisual.Orbita.zoomRailControlSize)
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
@@ -980,7 +1017,7 @@ struct HomeView: View {
             .offset(y: CGFloat(index) / CGFloat(levels.count - 1) * railHeight - dotSize / 2)
         }
       }
-      .frame(width: 40, height: railHeight)
+      .frame(width: HaloVisual.Orbita.zoomRailControlSize, height: railHeight)
       .contentShape(Rectangle())
       .gesture(
         DragGesture(minimumDistance: 0)
@@ -998,31 +1035,46 @@ struct HomeView: View {
         Text("−")
           .font(Self.orbitStoriesBodyFont(16, weight: .regular))
           .foregroundStyle(fieldZoom == .asteroids ? Self.orbitStoriesCreamMute : Self.orbitStoriesCreamLow)
-          .frame(width: 40, height: 40)
+          .frame(width: HaloVisual.Orbita.zoomRailControlSize, height: HaloVisual.Orbita.zoomRailControlSize)
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
       .disabled(fieldZoom == .asteroids)
     }
-    .padding(.horizontal, 4)
-    .padding(.vertical, 8)
-    .background(Self.orbitStoriesZoomRailFill, in: Capsule())
-    .haloGlass(
-      in: Capsule(),
-      tint: Self.orbitStoriesZoomRailFill,
-      interactive: true,
-      stroke: Self.orbitStoriesCreamHair
-    )
-    .overlay(Capsule().strokeBorder(Self.orbitStoriesCreamHair, lineWidth: 1))
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Zoom orbita")
-    .accessibilityValue(fieldZoom.shortLabel)
-    .accessibilityAdjustableAction { direction in
-      switch direction {
-      case .increment: applyZoom(fieldZoom.zoomedOut(), reveal: true)
-      case .decrement: applyZoom(fieldZoom.zoomedIn(), reveal: true)
-      @unknown default: break
-      }
+    .padding(.horizontal, HaloVisual.Orbita.zoomRailHorizontalPadding)
+    .padding(.vertical, HaloVisual.Orbita.zoomRailVerticalPadding)
+
+    if #available(iOS 26.0, *) {
+      content
+        .background(Self.orbitStoriesZoomRailFill, in: Capsule())
+        .glassEffect(.regular.tint(Self.orbitStoriesZoomRailFill).interactive(), in: Capsule())
+        .overlay(Capsule().strokeBorder(Self.orbitStoriesChromeStroke, lineWidth: 0.8))
+        .shadow(color: Self.orbitStoriesWarmBlack.opacity(0.32), radius: 12, y: 5)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Zoom orbita")
+        .accessibilityValue(fieldZoom.shortLabel)
+        .accessibilityAdjustableAction { direction in
+          switch direction {
+          case .increment: applyZoom(fieldZoom.zoomedOut(), reveal: true)
+          case .decrement: applyZoom(fieldZoom.zoomedIn(), reveal: true)
+          @unknown default: break
+          }
+        }
+    } else {
+      content
+        .background(Self.orbitStoriesZoomRailFill, in: Capsule())
+        .overlay(Capsule().strokeBorder(Self.orbitStoriesChromeStroke, lineWidth: 0.8))
+        .shadow(color: Self.orbitStoriesWarmBlack.opacity(0.32), radius: 12, y: 5)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Zoom orbita")
+        .accessibilityValue(fieldZoom.shortLabel)
+        .accessibilityAdjustableAction { direction in
+          switch direction {
+          case .increment: applyZoom(fieldZoom.zoomedOut(), reveal: true)
+          case .decrement: applyZoom(fieldZoom.zoomedIn(), reveal: true)
+          @unknown default: break
+          }
+        }
     }
   }
 
@@ -1526,8 +1578,10 @@ struct HomeView: View {
   private static let orbitStoriesCreamLine = HaloVisual.Palette.creamLine
   private static let orbitStoriesCreamWhisper = HaloVisual.Palette.creamWhisper
   private static let orbitStoriesBronzeGlow = HaloVisual.Palette.bronzeGlow
-  private static let orbitStoriesHeaderPillFill = HaloVisual.Palette.glassInkFill.opacity(HaloVisual.Orbita.headerPillFillOpacity)
-  private static let orbitStoriesZoomRailFill = HaloVisual.Palette.glassInkFill.opacity(HaloVisual.Orbita.zoomRailFillOpacity)
+  private static let orbitStoriesChromeFill = HaloVisual.Orbita.chromeFill
+  private static let orbitStoriesChromeStroke = HaloVisual.Orbita.chromeStroke
+  private static let orbitStoriesHeaderPillFill = HaloVisual.Orbita.chromeFillStrong.opacity(HaloVisual.Orbita.headerPillFillOpacity)
+  private static let orbitStoriesZoomRailFill = HaloVisual.Orbita.chromeFillStrong.opacity(0.82)
 
   private static let emptySelfNode = HaloPersonNode(
     id: "self",

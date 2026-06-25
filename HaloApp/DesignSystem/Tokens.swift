@@ -34,7 +34,7 @@ enum SwarmHalo {
 
   // MARK: - Semantic surfaces
 
-  static let background = HaloVisual.Palette.warmBlack
+  static let background = HaloVisual.Palette.absoluteBlack
   static let surface = cream.opacity(0.055)
   static let surfaceRaised = cream.opacity(0.085)
   static let surfaceModal = cream.opacity(0.11)
@@ -60,7 +60,7 @@ enum SwarmHalo {
 
   // MARK: - Legacy aliases during migration
 
-  static let warmBlack = HaloVisual.Palette.warmBlack
+  static let warmBlack = HaloVisual.Palette.absoluteBlack
   static let nightSurface = HaloVisual.Palette.nightSurface
   static let nightSurface2 = HaloVisual.Palette.nightSurface2
   static let nightEdge = HaloVisual.Palette.creamWhisper
@@ -261,13 +261,13 @@ enum SwarmHaloFont {
 enum HaloVisual {
   enum Palette {
     static let absoluteBlack = Color(hex: "#000000")
-    static let warmBlack = Color(hex: "#0F0E10")
+    static let warmBlack = Color(hex: "#000000")
     static let nightSurface = Color(hex: "#161516")
     static let nightSurface2 = Color(hex: "#1B191A")
 
     static let cream = Color(hex: "#E4DDCF")
     static let creamLow = cream.opacity(0.62)
-    /// Bumped to ~0.52 for WCAG AA on warm black (was 0.42 → ~3.3:1).
+    /// Bumped to ~0.52 for WCAG AA on black backgrounds (was 0.42 → ~3.3:1).
     static let creamMute = cream.opacity(0.52)
     static let creamHair = cream.opacity(0.18)
     static let creamLine = cream.opacity(0.10)
@@ -335,6 +335,13 @@ enum HaloVisual {
   }
 
   enum Orbita {
+    static let chromeFill = HaloVisual.Palette.absoluteBlack.opacity(0.94)
+    static let chromeFillStrong = HaloVisual.Palette.absoluteBlack
+    static let chromeStroke = HaloVisual.Palette.cream.opacity(0.16)
+    static let chromeStrokeStrong = HaloVisual.Palette.bronze.opacity(0.56)
+    static let selectedFill = HaloVisual.Palette.bronze.opacity(0.34)
+    static let selectedStroke = HaloVisual.Palette.bronze.opacity(0.48)
+
     static let contentTopPadding: CGFloat = 48
     static let sectionGap: CGFloat = 12
 
@@ -354,14 +361,14 @@ enum HaloVisual {
 
     static let heroHorizontalPadding: CGFloat = 22
     static let heroTopPadding: CGFloat = 14
-    static let heroCardRadius: CGFloat = 14
+    static let heroCardRadius: CGFloat = 24
     static let heroCardHorizontalPadding: CGFloat = 12
     static let heroCardVerticalPadding: CGFloat = 10
     static let heroPortraitSize: CGFloat = 44
     static let heroPortraitFontSize: CGFloat = 22
     static let heroDotSize: CGFloat = 8
 
-    static let fieldBaseWidth: CGFloat = 360
+    static let fieldBaseWidth: CGFloat = 396
     static let fieldBaseHeight: CGFloat = 533
     static let fieldMinScale: CGFloat = 0.86
     static let innerRadius: CGFloat = 78
@@ -375,11 +382,24 @@ enum HaloVisual {
     static let selfInnerSize: CGFloat = 48
     static let selfFrameSize: CGFloat = 118
 
-    static let zoomRailTrailingPadding: CGFloat = 16
-    static let zoomRailFillOpacity = 0.45
+    static let zoomRailTrailingPadding: CGFloat = 8
+    static let zoomRailControlSize: CGFloat = 34
+    static let zoomRailHorizontalPadding: CGFloat = 2
+    static let zoomRailVerticalPadding: CGFloat = 6
+    static let zoomRailIdleOpacity = 0.30
+    static let zoomRailActiveOpacity = 0.92
     static let zoomRailLineHeight: CGFloat = 64
 
     static let footerBottomPadding: CGFloat = 92
     static let footerSafeAreaExtra: CGFloat = 70
+
+    static let dockHorizontalPadding: CGFloat = 18
+    static let dockInnerHorizontalPadding: CGFloat = 10
+    static let dockVerticalPadding: CGFloat = 8
+    static let dockTabHeight: CGFloat = 44
+    static let dockSelectedRadius: CGFloat = 25
+    static let dockComposeSize: CGFloat = 52
+    static let dockStroke = HaloVisual.Palette.cream.opacity(0.14)
+    static let dockShadow = HaloVisual.Palette.absoluteBlack.opacity(0.40)
   }
 }

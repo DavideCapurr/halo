@@ -21,7 +21,27 @@ struct BottomBarView: View {
   var onStato: () -> Void = {}
   var onProfile: () -> Void = {}
 
+  @ViewBuilder
   var body: some View {
+    if #available(iOS 26.0, *) {
+      GlassEffectContainer(spacing: 10) {
+        dockContent
+          .background(HaloVisual.Orbita.chromeFillStrong.opacity(0.72), in: Capsule())
+          .glassEffect(.regular.tint(HaloVisual.Orbita.chromeFillStrong.opacity(0.72)).interactive(), in: Capsule())
+          .overlay(Capsule().strokeBorder(HaloVisual.Orbita.dockStroke, lineWidth: 0.9))
+          .shadow(color: HaloVisual.Orbita.dockShadow, radius: 22, y: 12)
+      }
+      .padding(.horizontal, HaloVisual.Orbita.dockHorizontalPadding)
+    } else {
+      dockContent
+        .background(HaloVisual.Orbita.chromeFillStrong, in: Capsule())
+        .overlay(Capsule().strokeBorder(HaloVisual.Orbita.dockStroke, lineWidth: 0.9))
+        .shadow(color: HaloVisual.Orbita.dockShadow, radius: 22, y: 12)
+        .padding(.horizontal, HaloVisual.Orbita.dockHorizontalPadding)
+    }
+  }
+
+  private var dockContent: some View {
     HStack(spacing: 10) {
       tabButton(.orbit, title: "Orbita", icon: "circle.dotted", selectedIcon: "circle.circle.fill", action: onOrbit)
       tabButton(.pulse, title: "Pulse", icon: "waveform.path.ecg", selectedIcon: "waveform.path.ecg", action: onPulse)
@@ -29,11 +49,9 @@ struct BottomBarView: View {
       tabButton(.stato, title: "Stato", icon: "circle.grid.2x2", selectedIcon: "circle.grid.2x2.fill", action: onStato)
       tabButton(.profile, title: "Tu", icon: "person.circle", selectedIcon: "person.circle.fill", action: onProfile)
     }
-    .padding(.horizontal, 10)
-    .padding(.vertical, 8)
+    .padding(.horizontal, HaloVisual.Orbita.dockInnerHorizontalPadding)
+    .padding(.vertical, HaloVisual.Orbita.dockVerticalPadding)
     .frame(maxWidth: .infinity)
-    .haloGlass(in: Capsule(), interactive: true)
-    .padding(.horizontal, 18)
   }
 
   private func tabButton(
@@ -57,13 +75,11 @@ struct BottomBarView: View {
       }
       .foregroundStyle(isSelected ? HaloInk.cream : HaloInk.creamMute)
       .frame(maxWidth: .infinity)
-      .frame(height: 44)
+      .frame(height: HaloVisual.Orbita.dockTabHeight)
       .contentShape(Rectangle())
       .background {
         if isSelected {
-          Capsule()
-            .fill(.clear)
-            .haloGlass(in: Capsule(), tint: SwarmHalo.bronze.opacity(0.5), interactive: true)
+          selectedTabBackground
         }
       }
     }
@@ -72,22 +88,48 @@ struct BottomBarView: View {
     .accessibilityAddTraits(isSelected ? .isSelected : [])
   }
 
+  @ViewBuilder
+  private var selectedTabBackground: some View {
+    let shape = RoundedRectangle(cornerRadius: HaloVisual.Orbita.dockSelectedRadius, style: .continuous)
+    if #available(iOS 26.0, *) {
+      shape
+        .fill(HaloVisual.Orbita.selectedFill)
+        .glassEffect(.regular.tint(HaloVisual.Orbita.selectedFill).interactive(), in: shape)
+        .overlay(shape.strokeBorder(HaloVisual.Orbita.selectedStroke, lineWidth: 0.8))
+    } else {
+      shape
+        .fill(HaloVisual.Orbita.selectedFill)
+        .overlay(shape.strokeBorder(HaloVisual.Orbita.selectedStroke, lineWidth: 0.8))
+    }
+  }
+
+  @ViewBuilder
   private func composeButton() -> some View {
+    let accent = MoodPalette.auraColor(selfMood, l: 0.78)
+
     ZStack {
-      Circle()
-        .fill(.clear)
-        .haloGlass(in: Circle(), tint: MoodPalette.auraColor(selfMood, l: 0.58), interactive: true)
+      if #available(iOS 26.0, *) {
+        Circle()
+          .fill(HaloVisual.Orbita.chromeFillStrong.opacity(0.60))
+          .glassEffect(.regular.tint(accent.opacity(0.24)).interactive(), in: Circle())
+          .overlay(Circle().strokeBorder(accent.opacity(0.84), lineWidth: 1.1))
+      } else {
+        Circle()
+          .fill(HaloVisual.Orbita.chromeFillStrong)
+          .overlay(Circle().strokeBorder(accent.opacity(0.84), lineWidth: 1.1))
+      }
+
       Image(systemName: "plus")
         .font(HaloType.system(20, weight: .semibold))
-        .foregroundStyle(MoodPalette.onAccent(selfMood, l: 0.58))
+        .foregroundStyle(accent)
     }
-    .frame(width: 50, height: 50)
-    .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.26), radius: 10, y: 3)
-    .contentShape(Circle())
-    .onTapGesture(perform: onCompose)
-    .onLongPressGesture(minimumDuration: 0.35, perform: onEasy)
-    .accessibilityLabel("Nuovo Moment")
-    .accessibilityHint("Tocca per un Moment, tieni premuto per condividere veloce")
+      .frame(width: HaloVisual.Orbita.dockComposeSize, height: HaloVisual.Orbita.dockComposeSize)
+      .shadow(color: MoodPalette.auraRing(selfMood, alpha: 0.30), radius: 12, y: 4)
+      .contentShape(Circle())
+      .onTapGesture(perform: onCompose)
+      .onLongPressGesture(minimumDuration: 0.35, perform: onEasy)
+      .accessibilityLabel("Nuovo Moment")
+      .accessibilityHint("Tocca per un Moment, tieni premuto per condividere veloce")
   }
 }
 
