@@ -201,7 +201,6 @@ extension View {
     } else {
       self
         .background(HaloTheme.glassFallbackFill, in: shape)
-        .background(.ultraThinMaterial, in: shape)
         .overlay(shape.strokeBorder(stroke, lineWidth: 0.6))
     }
   }
@@ -214,7 +213,6 @@ extension View {
   ) -> some View {
     self
       .background(SwarmHalo.surface, in: shape)
-      .background(.regularMaterial, in: shape)
       .overlay(shape.strokeBorder(stroke, lineWidth: 0.5))
   }
 }

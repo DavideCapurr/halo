@@ -35,10 +35,10 @@ enum SwarmHalo {
   // MARK: - Semantic surfaces
 
   static let background = HaloVisual.Palette.warmBlack
-  static let surface = cream.opacity(0.055)
-  static let surfaceRaised = cream.opacity(0.085)
-  static let surfaceModal = cream.opacity(0.11)
-  static let edge = cream.opacity(0.035)
+  static let surface = cream.opacity(0.035)
+  static let surfaceRaised = cream.opacity(0.055)
+  static let surfaceModal = cream.opacity(0.075)
+  static let edge = cream.opacity(0.030)
 
   // MARK: - Semantic ink
 
@@ -77,13 +77,13 @@ enum SwarmHalo {
   static let bronzeGlow = HaloVisual.Palette.bronzeGlow
   static let warmMagenta = attention
 
-  // MARK: - Radii (SWARM literal)
+  // MARK: - Radii
 
-  static let radiusCard:  CGFloat = 6
-  static let radiusInput: CGFloat = 4
-  static let radiusChip:  CGFloat = 2
-  static let radiusPill:  CGFloat = 999
-  static let radiusSheet: CGFloat = 24   // sheet present, Halo extension
+  static let radiusCard:  CGFloat = HaloVisual.Radius.card
+  static let radiusInput: CGFloat = HaloVisual.Radius.input
+  static let radiusChip:  CGFloat = HaloVisual.Radius.chip
+  static let radiusPill:  CGFloat = HaloVisual.Radius.pill
+  static let radiusSheet: CGFloat = HaloVisual.Radius.sheet
 
   // MARK: - Spacing (SWARM 4/8 scale)
 
@@ -261,9 +261,9 @@ enum SwarmHaloFont {
 enum HaloVisual {
   enum Palette {
     static let absoluteBlack = Color(hex: "#000000")
-    static let warmBlack = Color(hex: "#0F0E10")
-    static let nightSurface = Color(hex: "#161516")
-    static let nightSurface2 = Color(hex: "#1B191A")
+    static let warmBlack = Color(hex: "#000000")
+    static let nightSurface = Color(hex: "#050505")
+    static let nightSurface2 = Color(hex: "#080808")
 
     static let cream = Color(hex: "#E4DDCF")
     static let creamLow = cream.opacity(0.62)
@@ -277,7 +277,42 @@ enum HaloVisual {
     static let bronzeSoft = bronze.opacity(0.55)
     static let bronzeGlow = bronze.opacity(0.35)
 
-    static let glassInkFill = Color(red: 11 / 255, green: 14 / 255, blue: 17 / 255)
+    static let glassInkFill = Color(hex: "#030303")
+  }
+
+  enum Radius {
+    static let card: CGFloat = 18
+    static let input: CGFloat = 14
+    static let chip: CGFloat = 12
+    static let sheet: CGFloat = 28
+    static let pill: CGFloat = 999
+  }
+
+  enum Dock {
+    static let itemSpacing: CGFloat = 10
+    static let outerHorizontalPadding: CGFloat = 18
+    static let barHorizontalPadding: CGFloat = 10
+    static let barVerticalPadding: CGFloat = 8
+    static let tabItemHeight: CGFloat = 44
+    static let composeButtonSize: CGFloat = 50
+    static let shellBottomPadding: CGFloat = 6
+    static let visualHeight: CGFloat = Swift.max(tabItemHeight, composeButtonSize) + barVerticalPadding * 2
+    static let reservedHeight: CGFloat = visualHeight + shellBottomPadding
+    static let scrollContentBottomPadding: CGFloat = 32
+  }
+
+  enum Profile {
+    static let heroAuraSize: CGFloat = 176
+    static let heroRingSize: CGFloat = 122
+    static let heroPortraitSize: CGFloat = 108
+    static let heroTitleSize: CGFloat = 44
+    static let heroVerticalPadding: CGFloat = 8
+    static let heroSpacing: CGFloat = 10
+    static let commandPanelPadding: CGFloat = 14
+    static let commandRowSpacing: CGFloat = 10
+    static let commandIconSize: CGFloat = 34
+    static let commandIconFontSize: CGFloat = 13
+    static let commandTitleSize: CGFloat = 13
   }
 
   enum Aura {
@@ -354,7 +389,7 @@ enum HaloVisual {
 
     static let heroHorizontalPadding: CGFloat = 22
     static let heroTopPadding: CGFloat = 14
-    static let heroCardRadius: CGFloat = 14
+    static let heroCardRadius: CGFloat = HaloVisual.Radius.card
     static let heroCardHorizontalPadding: CGFloat = 12
     static let heroCardVerticalPadding: CGFloat = 10
     static let heroPortraitSize: CGFloat = 44

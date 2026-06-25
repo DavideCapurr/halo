@@ -12,6 +12,10 @@ struct InnerInviteSheet: View {
   @State private var isCreating: Bool = false
   @State private var errorMessage: String?
 
+  private var canCreateInvite: Bool {
+    person.tier != .inner
+  }
+
   var body: some View {
     VStack(spacing: 0) {
       topRail
@@ -24,11 +28,13 @@ struct InnerInviteSheet: View {
           hero
           if let invite, let url = invite.deepLinkURL {
             createdState(url)
-          } else {
+          } else if canCreateInvite {
             messageField
             if let errorMessage {
               errorText(errorMessage)
             }
+          } else {
+            alreadyInnerState
           }
         }
         .padding(.horizontal, 18)
@@ -76,15 +82,15 @@ struct InnerInviteSheet: View {
           .background(HaloTheme.portraitBacking, in: Circle())
           .overlay(Circle().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: 0.8))
         VStack(alignment: .leading, spacing: 2) {
-          Text("stai aprendo l'Inner.")
+          Text(canCreateInvite ? "stai aprendo l'Inner." : "e gia nel tuo Inner.")
             .font(HaloType.serif(22, weight: .regular))
             .foregroundStyle(HaloInk.cream)
-          Text("@\(person.handle) ricevera un link privato.")
+          Text(canCreateInvite ? "@\(person.handle) ricevera un link privato." : "@\(person.handle) non ha bisogno di un altro invite.")
             .font(HaloType.ui(12, weight: .regular))
             .foregroundStyle(HaloInk.creamMute)
         }
       }
-      Text("copy: ti ho messo nel mio Inner.")
+      Text(canCreateInvite ? "copy: ti ho messo nel mio Inner." : "continua a vederlo come Inner.")
         .font(HaloType.ui(12, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
     }
@@ -133,6 +139,14 @@ struct InnerInviteSheet: View {
     }
   }
 
+  private var alreadyInnerState: some View {
+    SwarmEmptyState(
+      title: "gia Inner.",
+      message: "@\(person.handle) e gia vicino. Non creo un invite duplicato.",
+      activation: .connected
+    )
+  }
+
   private var footer: some View {
     HStack {
       if let invite, let url = invite.deepLinkURL {
@@ -152,6 +166,15 @@ struct InnerInviteSheet: View {
             .padding(.vertical, 12)
             .swarmSurface(.control, in: Capsule(), activation: .connected)
         }
+      } else if !canCreateInvite {
+        Spacer()
+        Button("chiudi") { dismiss() }
+          .font(HaloType.ui(15, weight: .semibold))
+          .buttonStyle(.plain)
+          .foregroundStyle(HaloInk.cream)
+          .padding(.horizontal, 20)
+          .padding(.vertical, 12)
+          .swarmSurface(.control, in: Capsule(), activation: .connected)
       } else {
         Button("annulla") { dismiss() }
           .font(HaloType.ui(14, weight: .medium))
@@ -200,6 +223,7 @@ struct InnerInviteSheet: View {
   @MainActor
   private func createInvite() async {
     guard !isCreating else { return }
+    guard canCreateInvite else { return }
     guard let userId = UUID(uuidString: person.id) else {
       errorMessage = "Questo profilo non puo ricevere invite."
       return

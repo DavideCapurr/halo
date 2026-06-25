@@ -135,7 +135,7 @@ struct HomeView: View {
   }
 
   var body: some View {
-    ZStack(alignment: .bottom) {
+    ZStack {
       Self.orbitStoriesWarmBlack.ignoresSafeArea()
 
       Group {
@@ -144,10 +144,8 @@ struct HomeView: View {
           orbitTab
         case .pulse:
           PulseFeedView(onPersonTap: { peek = $0 })
-            .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
         case .status:
           StatoView(people: people, onTapPerson: { peek = $0 })
-            .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
         case .profile:
           ProfileView(
             person: me,
@@ -155,22 +153,12 @@ struct HomeView: View {
             onVibeTap: { showVibeSetter = true },
             onComposeTap: { showCompose = true }
           )
-          .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
         }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-      BottomBarView(
-        selfMood: me.mood,
-        activeTab: bottomBarTab,
-        onCompose: { showCompose = true },
-        onEasy: { showEasyCompose = true },
-        onOrbit: { selectTab(.orbit) },
-        onPulse: { selectTab(.pulse) },
-        onStato: { selectTab(.status) },
-        onProfile: { selectTab(.profile) }
-      )
-      .padding(.bottom, 6)
+    }
+    .safeAreaInset(edge: .bottom, spacing: 0) {
+      bottomDock
     }
     .preferredColorScheme(.dark)
     .animation(SwarmMotion.mount, value: selectedTab)
@@ -297,6 +285,20 @@ struct HomeView: View {
     case .status:  return .stato
     case .profile: return .profile
     }
+  }
+
+  private var bottomDock: some View {
+    BottomBarView(
+      selfMood: me.mood,
+      activeTab: bottomBarTab,
+      onCompose: { showCompose = true },
+      onEasy: { showEasyCompose = true },
+      onOrbit: { selectTab(.orbit) },
+      onPulse: { selectTab(.pulse) },
+      onStato: { selectTab(.status) },
+      onProfile: { selectTab(.profile) }
+    )
+    .padding(.bottom, HaloVisual.Dock.shellBottomPadding)
   }
 
   private func openOrbitHeaderVibeSetter() {
@@ -1370,6 +1372,11 @@ struct HomeView: View {
 
   @MainActor
   private func sendCompose(_ result: VibeFirstComposeView.ComposeResult) async {
+    if DemoMode.isActive {
+      applyDemoCompose(result)
+      return
+    }
+
     do {
       let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
       let postKind = Self.postKind(for: result.momento)
@@ -1441,6 +1448,11 @@ struct HomeView: View {
 
   @MainActor
   private func sendEasyCompose(_ result: EasyComposeView.Result) async {
+    if DemoMode.isActive {
+      applyDemoEasyCompose(result)
+      return
+    }
+
     do {
       let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
       _ = try await VibesService.shared.setCurrent(
@@ -1471,6 +1483,49 @@ struct HomeView: View {
         fallback: "Non riesco a mandare l'easy Moment. Riprova."
       )
     }
+  }
+
+  @MainActor
+  private func applyDemoCompose(_ result: VibeFirstComposeView.ComposeResult) {
+    let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
+    let now = Date.now
+
+    me.mood = result.mood
+    me.note = trimmed
+    me.hasActiveVibe = true
+    me.lastVibeAt = now
+    me.hasNew = true
+
+    if let postKind = Self.postKind(for: result.momento) {
+      me.lastPostAt = now
+      me.lastPostId = UUID()
+      me.lastPostKind = postKind
+      me.lastPostCaption = trimmed.isEmpty ? nil : trimmed
+      me.lastPostMediaPath = nil
+      me.lastPostExpiresAt = now.addingTimeInterval(PostLifespan.standard.duration)
+    }
+
+    showCompose = false
+  }
+
+  @MainActor
+  private func applyDemoEasyCompose(_ result: EasyComposeView.Result) {
+    let trimmed = result.note.trimmingCharacters(in: .whitespacesAndNewlines)
+    let now = Date.now
+
+    me.mood = result.mood
+    me.note = trimmed
+    me.hasActiveVibe = true
+    me.lastVibeAt = now
+    me.hasNew = true
+    me.lastPostAt = now
+    me.lastPostId = UUID()
+    me.lastPostKind = .text
+    me.lastPostCaption = trimmed.isEmpty ? nil : trimmed
+    me.lastPostMediaPath = nil
+    me.lastPostExpiresAt = now.addingTimeInterval(PostLifespan.easy.duration)
+
+    showEasyCompose = false
   }
 
   private var orbitReferenceSelfDisplayName: String {

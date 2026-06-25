@@ -5,6 +5,13 @@ import HaloShared
 /// Tap su un risultato = follow asimmetrico (default `.nebula`); finiscono nel
 /// proprio AsteroidBelt sull'orbital field.
 struct DiscoveryView: View {
+  private static let demoProfiles: [Profile] = [
+    Profile(id: UUID(uuidString: "00000000-0000-0000-0000-000000000201") ?? UUID(), handle: "gia", displayName: "Giacomo", bio: "in loggia, vieni?", hasPlus: true, isPublic: true),
+    Profile(id: UUID(uuidString: "00000000-0000-0000-0000-000000000202") ?? UUID(), handle: "fra", displayName: "Francesca", bio: "pioggia sul tetto", isPublic: true),
+    Profile(id: UUID(uuidString: "00000000-0000-0000-0000-000000000203") ?? UUID(), handle: "niko", displayName: "Niko", bio: "studio floor", isPublic: true),
+    Profile(id: UUID(uuidString: "00000000-0000-0000-0000-000000000204") ?? UUID(), handle: "lune", displayName: "Lune", bio: "solo dopo mezzanotte", hasPlus: true, isPublic: true),
+  ]
+
   @State private var query: String = ""
   @State private var results: [Profile] = []
   @State private var trending: [Profile] = []
@@ -32,7 +39,15 @@ struct DiscoveryView: View {
               }
             } else {
               header("da scoprire")
-              ForEach(trending, id: \.id) { p in row(p) }
+              if trending.isEmpty && !isLoading {
+                SwarmEmptyState(
+                  title: "discovery in ascolto.",
+                  message: "cerca un handle o un account pubblico. I segnali disponibili appariranno qui.",
+                  activation: .operational
+                )
+              } else {
+                ForEach(trending, id: \.id) { p in row(p) }
+              }
             }
           }
           .padding(.horizontal, 16)
@@ -130,6 +145,11 @@ struct DiscoveryView: View {
 
   @MainActor
   private func loadTrending() async {
+    if DemoMode.isActive {
+      trending = Self.demoProfiles
+      return
+    }
+
     isLoading = true; defer { isLoading = false }
     if let list = try? await ProfilesService.shared.discoverPublic(limit: 30) {
       trending = list
@@ -140,6 +160,15 @@ struct DiscoveryView: View {
   private func search() async {
     let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !q.isEmpty else { results = []; return }
+    if DemoMode.isActive {
+      let normalized = q.lowercased()
+      results = Self.demoProfiles.filter {
+        $0.handle.lowercased().hasPrefix(normalized)
+          || $0.displayName.lowercased().contains(normalized)
+      }
+      return
+    }
+
     if let list = try? await ProfilesService.shared.searchPublic(handle: q) {
       results = list
     }
