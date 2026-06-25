@@ -382,4 +382,17 @@ enum HaloVisual {
     static let footerBottomPadding: CGFloat = 92
     static let footerSafeAreaExtra: CGFloat = 70
   }
+
+  enum AudioRecorder {
+    static let panelRadius: CGFloat = 24
+    static let fieldRadius: CGFloat = 18
+    static let controlSize: CGFloat = 64
+    static let iconSize: CGFloat = 22
+    static let waveformHeight: CGFloat = 70
+
+    static let surfaceFill = HaloVisual.Palette.absoluteBlack
+    static let controlFill = HaloVisual.Palette.absoluteBlack
+    static let stroke = HaloVisual.Palette.creamLine
+    static let activeStroke = HaloVisual.Palette.bronze.opacity(0.58)
+  }
 }
