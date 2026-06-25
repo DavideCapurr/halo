@@ -334,6 +334,14 @@ enum HaloVisual {
     }
   }
 
+  enum Chrome {
+    static let controlFill = HaloVisual.Palette.absoluteBlack.opacity(0.76)
+    static let contentFill = HaloVisual.Palette.absoluteBlack.opacity(0.88)
+    static let fallbackFill = HaloVisual.Palette.absoluteBlack
+    static let stroke = HaloVisual.Palette.cream.opacity(0.16)
+    static let contentStroke = HaloVisual.Palette.cream.opacity(0.10)
+  }
+
   enum Orbita {
     static let chromeFill = HaloVisual.Palette.absoluteBlack.opacity(0.94)
     static let chromeFillStrong = HaloVisual.Palette.absoluteBlack
