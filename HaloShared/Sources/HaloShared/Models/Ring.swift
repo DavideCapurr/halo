@@ -10,10 +10,19 @@ public enum RingKind: String, Codable, CaseIterable, Identifiable, Sendable {
 
   public var label: String {
     switch self {
-    case .event: return "event"
+    case .event: return "evento"
     case .club: return "club"
-    case .course: return "course"
-    case .founder: return "founder"
+    case .course: return "corso"
+    case .founder: return "fondatori"
+    }
+  }
+
+  public var localizedNoun: String {
+    switch self {
+    case .event: return "evento"
+    case .club: return "club"
+    case .course: return "corso"
+    case .founder: return "cerchio founder"
     }
   }
 }

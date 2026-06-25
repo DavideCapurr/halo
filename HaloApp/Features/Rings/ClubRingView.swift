@@ -94,7 +94,7 @@ struct ClubRingView: View {
   @ViewBuilder
   private var selectedPanel: some View {
     if isLoading && selectedRing == nil {
-      SwarmLoadingState(label: "rings")
+      SwarmLoadingState(label: "carico ring")
     } else if let ring = selectedRing {
       VStack(alignment: .leading, spacing: SwarmHalo.s4) {
         HStack(alignment: .top, spacing: SwarmHalo.s3) {
@@ -115,11 +115,11 @@ struct ClubRingView: View {
         RingScheduleRow(ring: ring)
 
         HStack(spacing: 0) {
-          SwarmMetricTile(label: "members", value: twoDigits(members.count), activation: .connected, active: !members.isEmpty)
+          SwarmMetricTile(label: "membri", value: twoDigits(members.count), activation: .connected, active: !members.isEmpty)
           Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
-          SwarmMetricTile(label: "active", value: twoDigits(activeSubscriptions), activation: .operational, active: activeSubscriptions > 0)
+          SwarmMetricTile(label: "attivi", value: twoDigits(activeSubscriptions), activation: .operational, active: activeSubscriptions > 0)
           Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
-          SwarmMetricTile(label: "billing", value: money(totalPaidCents, currency: ring.currency), activation: .attention, active: totalPaidCents > 0)
+          SwarmMetricTile(label: "cassa", value: money(totalPaidCents, currency: ring.currency), activation: .attention, active: totalPaidCents > 0)
         }
         .padding(.vertical, SwarmHalo.s3)
         .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous))
@@ -145,7 +145,7 @@ struct ClubRingView: View {
 
         HStack(spacing: SwarmHalo.s3) {
           SwarmCommandButton(
-            label: isJoining ? "join" : "join",
+            label: isJoining ? "entro" : "entra",
             icon: ring.isPublic ? "person.badge.plus" : "link",
             activation: role,
             isProminent: ring.isPublic
@@ -157,7 +157,7 @@ struct ClubRingView: View {
 
           if let url = ring.joinURL {
             ShareLink(item: url) {
-              Label("share", systemImage: "square.and.arrow.up")
+              Label("condividi", systemImage: "square.and.arrow.up")
                 .font(HaloType.ui(13, weight: .semibold))
                 .foregroundStyle(SwarmHalo.ink)
                 .padding(.horizontal, SwarmHalo.s4)
@@ -213,7 +213,7 @@ struct ClubRingView: View {
     } else {
       SwarmEmptyState(
         title: emptyTitle,
-        message: "crea un ring o entra con token.",
+        message: emptyMessage,
         activation: role
       )
     }
@@ -221,19 +221,27 @@ struct ClubRingView: View {
 
   private var ringList: some View {
     VStack(alignment: .leading, spacing: SwarmHalo.s3) {
-      sectionHeader("index")
-      ForEach(rings) { ring in
-        Button {
-          selectedRing = ring
-          Task { await loadSelectedMetadata() }
-        } label: {
-          RingListRow(
-            ring: ring,
-            isSelected: selectedRing?.id == ring.id,
-            accessory: accessory(for: ring)
-          )
+      sectionHeader("indice")
+      if rings.isEmpty && !isLoading {
+        RingInlineEmptyState(
+          title: "nessun ring in indice",
+          message: "quando crei o agganci un \(selectedKind.localizedNoun), lo ritrovi qui.",
+          activation: role
+        )
+      } else {
+        ForEach(rings) { ring in
+          Button {
+            selectedRing = ring
+            Task { await loadSelectedMetadata() }
+          } label: {
+            RingListRow(
+              ring: ring,
+              isSelected: selectedRing?.id == ring.id,
+              accessory: accessory(for: ring)
+            )
+          }
+          .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
       }
     }
   }
@@ -251,8 +259,21 @@ struct ClubRingView: View {
     switch selectedKind {
     case .club: return "nessun club."
     case .course: return "nessun corso."
-    case .founder: return "nessun founder circle."
+    case .founder: return "nessun cerchio founder."
     case .event: return "nessun ring."
+    }
+  }
+
+  private var emptyMessage: String {
+    switch selectedKind {
+    case .club:
+      return "crea il primo club o entra con un token privato."
+    case .course:
+      return "crea un ring per corso, aula o gruppo studio."
+    case .founder:
+      return "usa questo spazio per cerchie founder e gruppi iniziali."
+    case .event:
+      return "crea un ring o entra con token."
     }
   }
 
@@ -282,6 +303,17 @@ struct ClubRingView: View {
 
   @MainActor
   private func load() async {
+    if DemoMode.isActive {
+      rings = []
+      selectedRing = nil
+      members = []
+      subscriptions = []
+      billing = []
+      errorMessage = nil
+      isLoading = false
+      return
+    }
+
     isLoading = true
     defer { isLoading = false }
 
@@ -351,11 +383,11 @@ struct ClubRingView: View {
     case .club:
       return ring.priceCents == nil ? "club privato" : "club \(money(ring.priceCents ?? 0, currency: ring.currency))"
     case .course:
-      return "course ring"
+      return "ring corso"
     case .founder:
-      return "founder circle"
+      return "cerchio founder"
     case .event:
-      return "event ring"
+      return "ring evento"
     }
   }
 
@@ -366,23 +398,24 @@ struct ClubRingView: View {
     case .course:
       return activeSubscriptions > 0 ? "dashboard corso attiva" : "dashboard gestita dal corso"
     case .founder:
-      return "billing founder gestito fuori app"
+      return "pagamenti founder gestiti fuori app"
     case .event:
-      return "billing evento gestito fuori app"
+      return "pagamenti evento gestiti fuori app"
     }
   }
 
   private func billingCopy(for ring: HaloRing) -> String {
     let plan = activePlan.map { " · \($0.replacingOccurrences(of: "_", with: " "))" } ?? ""
     let paid = totalPaidCents > 0 ? " · incassato \(money(totalPaidCents, currency: ring.currency))" : ""
-    return "Pagamenti e fatture sono gestiti dal club via dashboard web/admin\(plan)\(paid)."
+    let owner = ring.kind == .course ? "corso" : ring.kind == .founder ? "cerchio founder" : "club"
+    return "Pagamenti e fatture sono gestiti dal \(owner) via dashboard admin\(plan)\(paid)."
   }
 
   private func accessory(for ring: HaloRing) -> String {
     if let price = ring.priceCents, price > 0 {
       return money(price, currency: ring.currency)
     }
-    return ring.isPublic ? "public" : "token"
+    return ring.isPublic ? "pubblico" : "token"
   }
 
   private func money(_ cents: Int, currency: String) -> String {
