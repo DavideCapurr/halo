@@ -18,8 +18,11 @@ manda la prima vibe — e noi lo vediamo nel funnel.
 
 - [ ] Apple Developer account + App ID, capabilities (Sign in with Apple,
       App Groups, Push), provisioning
-- [ ] Build config di produzione: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+- [x] Build config di produzione: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
       `APP_GROUP_ID`, `HALO_URL_SCHEME` per app **e** widget
+      — centralizzati in `Config/*.xcconfig` (single source `Shared.xcconfig`
+      condivisa app+widget via `baseConfigurationReference`); risolti i
+      placeholder `REPLACE_ME` del widget
 - [ ] Prodotto StoreKit `app.halo.plus.monthly` creato in App Store Connect
       (oggi solo l'ID è nel codice)
 - [ ] Supabase **prod** deployato: migrations + edge function

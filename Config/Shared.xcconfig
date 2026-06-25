@@ -1,0 +1,17 @@
+// Halo — configurazione di build condivisa (produzione)
+//
+// Single source of truth per i valori che Info.plist espone a runtime,
+// condivisi tra il target app (HaloApp) e il target widget (HaloWidget).
+// I target li ereditano via baseConfigurationReference; per gli override
+// specifici vedi HaloApp.xcconfig / HaloWidget.xcconfig.
+//
+// Nota xcconfig: la sequenza "//" inizia un commento, quindi gli URL vanno
+// spezzati con l'interpolazione vuota $() (es. https:/$()/host) per non
+// perdere tutto ciò che segue lo schema.
+
+// App Group condiviso app <-> widget (snapshot orbital field).
+APP_GROUP_ID = group.app.halo.shared
+
+// Supabase prod. La anon key è publishable: è sicuro committarla.
+SUPABASE_URL = https:/$()/gxzdasexwlfmxhimaxnd.supabase.co
+SUPABASE_ANON_KEY = sb_publishable_WvuldxJTizj53ClxRrN5vQ_WizBL1UP

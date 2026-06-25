@@ -1,0 +1,7 @@
+// Halo — build config del target app (HaloApp).
+// Eredita SUPABASE_URL / SUPABASE_ANON_KEY / APP_GROUP_ID da Shared.xcconfig.
+
+#include "Shared.xcconfig"
+
+// Schema deep link: halo://invite/{token}, halo://ring/{token}, ...
+HALO_URL_SCHEME = halo

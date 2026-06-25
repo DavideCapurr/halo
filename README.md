@@ -83,18 +83,19 @@ supabase db reset   # applica migrations + seed.sql
 open Halo.xcodeproj
 ```
 
-Poi in Xcode apri il target `HaloApp` e imposta i valori in `Build Settings`:
+La build configuration di produzione vive in `Config/` come file `.xcconfig`,
+single source of truth condiviso da app e widget (niente più valori sparsi
+nelle Build Settings del `.pbxproj`):
 
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `APP_GROUP_ID`
-- `HALO_URL_SCHEME`
+- `Config/Shared.xcconfig` — `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `APP_GROUP_ID`
+  (ereditati sia da `HaloApp` sia da `HaloWidget`)
+- `Config/HaloApp.xcconfig` — include `Shared` + `HALO_URL_SCHEME`
+- `Config/HaloWidget.xcconfig` — include `Shared`
 
-Per il target `HaloWidget` imposta almeno:
-
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `APP_GROUP_ID`
+Per puntare a un altro progetto Supabase basta cambiare i valori in
+`Config/Shared.xcconfig` (la anon key è publishable: ok in repo). Nota
+xcconfig: gli URL vanno spezzati con `$()` (es. `https:/$()/host`) perché
+`//` introduce un commento.
 
 ## Architettura (riassunto)
 

@@ -118,6 +118,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C0AF1C0000000000000000A1 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		C0AF1C0000000000000000A2 /* HaloApp.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = HaloApp.xcconfig; sourceTree = "<group>"; };
+		C0AF1C0000000000000000A3 /* HaloWidget.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = HaloWidget.xcconfig; sourceTree = "<group>"; };
 		06B8A3BBB9DAC8884CCCC077 /* ComposePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposePostView.swift; sourceTree = "<group>"; };
 		0853E0F4195CF915733A5ED0 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		0D6C6F10A0B93506351AB718 /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
@@ -328,12 +331,23 @@
 		51B564D418A4F44AA96B80C9 = {
 			isa = PBXGroup;
 			children = (
+				C0AF1C00000000000000000F /* Config */,
 				257EF3FF24C3E6E134E6C07F /* HaloApp */,
 				DFB855330639D545D0EB97F6 /* HaloWidget */,
 				75BEE458DC5F20FDD167C909 /* Packages */,
 				BD6303AED3A6DCA28C61CD3D /* Frameworks */,
 				BD68B0C91838E25BAB79DB31 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		C0AF1C00000000000000000F /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				C0AF1C0000000000000000A1 /* Shared.xcconfig */,
+				C0AF1C0000000000000000A2 /* HaloApp.xcconfig */,
+				C0AF1C0000000000000000A3 /* HaloWidget.xcconfig */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 		554831F241AD3DB0FBCF2812 /* Profile */ = {
@@ -785,13 +799,12 @@
 		};
 		408F6B580F6DE8A32AEFE455 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0AF1C0000000000000000A2 /* HaloApp.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = group.app.halo.shared;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = HaloApp/HaloApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 2MY3NF258J;
-				HALO_URL_SCHEME = halo;
 				INFOPLIST_FILE = HaloApp/Info.plist;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
@@ -802,8 +815,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = la.halo;
 				SDKROOT = iphoneos;
-				SUPABASE_ANON_KEY = sb_publishable_WvuldxJTizj53ClxRrN5vQ_WizBL1UP;
-				SUPABASE_URL = "https://gxzdasexwlfmxhimaxnd.supabase.co";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -869,8 +880,8 @@
 		};
 		7BB4157E5DD18E9578EA37FE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0AF1C0000000000000000A3 /* HaloWidget.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = group.app.halo.shared;
 				CODE_SIGN_ENTITLEMENTS = HaloWidget/HaloWidget.entitlements;
 				DEVELOPMENT_TEAM = 2MY3NF258J;
 				INFOPLIST_FILE = HaloWidget/Info.plist;
@@ -881,16 +892,14 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = la.halo.widget;
 				SDKROOT = iphoneos;
-				SUPABASE_ANON_KEY = REPLACE_ME;
-				SUPABASE_URL = "https://example.supabase.co";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
 		D68E784DE084EBED9FB93C14 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0AF1C0000000000000000A3 /* HaloWidget.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = group.app.halo.shared;
 				CODE_SIGN_ENTITLEMENTS = HaloWidget/HaloWidget.entitlements;
 				DEVELOPMENT_TEAM = 2MY3NF258J;
 				INFOPLIST_FILE = HaloWidget/Info.plist;
@@ -901,21 +910,18 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = la.halo.widget;
 				SDKROOT = iphoneos;
-				SUPABASE_ANON_KEY = REPLACE_ME;
-				SUPABASE_URL = "https://example.supabase.co";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
 		F2ED63B88C6DA52ADACDA9E5 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0AF1C0000000000000000A2 /* HaloApp.xcconfig */;
 			buildSettings = {
-				APP_GROUP_ID = group.app.halo.shared;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = HaloApp/HaloApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = 2MY3NF258J;
-				HALO_URL_SCHEME = halo;
 				INFOPLIST_FILE = HaloApp/Info.plist;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
@@ -926,8 +932,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = la.halo;
 				SDKROOT = iphoneos;
-				SUPABASE_ANON_KEY = sb_publishable_WvuldxJTizj53ClxRrN5vQ_WizBL1UP;
-				SUPABASE_URL = "https://gxzdasexwlfmxhimaxnd.supabase.co";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
