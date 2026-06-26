@@ -112,6 +112,14 @@ final class InvitesService {
       .single()
       .execute()
       .value
+    Task {
+      await AnalyticsService.shared.track(
+        .inviteSent,
+        targetUserId: inviteeId,
+        inviteId: saved.id,
+        tier: saved.tier
+      )
+    }
     return saved
   }
 
@@ -164,6 +172,14 @@ final class InvitesService {
       .single()
       .execute()
       .value
+    Task {
+      await AnalyticsService.shared.track(
+        .inviteAccepted,
+        targetUserId: invite.inviterId,
+        inviteId: updated.id,
+        tier: updated.tier
+      )
+    }
     return updated
   }
 }

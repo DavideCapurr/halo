@@ -60,6 +60,17 @@ final class PostsService {
       .single()
       .execute()
       .value
+    Task {
+      await AnalyticsService.shared.track(
+        .momentCreated,
+        postId: inserted.id,
+        tier: inserted.minTier,
+        metadata: [
+          "kind": inserted.kind.rawValue,
+          "lifespan": lifespan.rawValue
+        ]
+      )
+    }
     return inserted
   }
 

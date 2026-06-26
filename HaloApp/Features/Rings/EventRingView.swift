@@ -9,6 +9,7 @@ struct EventRingView: View {
   private static let orientationTitle = "Orientation week / Bocconi"
 
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.openURL) private var openURL
 
   private let initialRingId: UUID?
   private let initialJoinToken: String?
@@ -17,6 +18,8 @@ struct EventRingView: View {
   @State private var selectedRing: HaloRing?
   @State private var members: [RingMember] = []
   @State private var checkIns: [EventCheckIn] = []
+  @State private var subscriptions: [RingSubscription] = []
+  @State private var billing: [ClubBilling] = []
   @State private var tokenInput: String
   @State private var showScanner = false
   @State private var showCreate = false
@@ -24,6 +27,7 @@ struct EventRingView: View {
   @State private var isJoining = false
   @State private var isCheckingIn = false
   @State private var isCreatingOrientation = false
+  @State private var isStartingCheckout = false
   @State private var didHandleInitialToken = false
   @State private var statusMessage: String?
   @State private var errorMessage: String?
@@ -208,6 +212,10 @@ struct EventRingView: View {
         .padding(.vertical, SwarmHalo.s3)
         .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous))
 
+        if canManageSelectedRing {
+          eventBillingPanel(for: ring)
+        }
+
         HStack(spacing: SwarmHalo.s3) {
           SwarmCommandButton(
             label: isCheckingIn ? "check-in" : "check-in",
@@ -297,6 +305,63 @@ struct EventRingView: View {
     }
   }
 
+  private func eventBillingPanel(for ring: HaloRing) -> some View {
+    VStack(alignment: .leading, spacing: SwarmHalo.s3) {
+      HStack(alignment: .top, spacing: SwarmHalo.s3) {
+        Image(systemName: "ticket")
+          .font(HaloType.system(14, weight: .semibold))
+          .foregroundStyle(SwarmActivationRole.attention.color)
+          .swarmIconFrame(active: true, activation: .attention)
+        VStack(alignment: .leading, spacing: 4) {
+          Text("checkout evento")
+            .font(HaloType.ui(14, weight: .semibold))
+            .foregroundStyle(SwarmHalo.ink)
+          Text(eventBillingCopy(for: ring))
+            .font(HaloType.ui(12, weight: .regular))
+            .foregroundStyle(SwarmHalo.inkSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        Spacer()
+      }
+
+      ForEach(StripeBillingPlan.available(for: .event)) { plan in
+        eventPlanButton(plan, ring: ring)
+      }
+    }
+    .padding(SwarmHalo.s3)
+    .swarmSurface(.card, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: .attention)
+  }
+
+  private func eventPlanButton(_ plan: StripeBillingPlan, ring: HaloRing) -> some View {
+    Button {
+      Task { await startCheckout(plan, for: ring) }
+    } label: {
+      HStack(spacing: SwarmHalo.s3) {
+        Image(systemName: isStartingCheckout ? "clock" : "arrow.up.right")
+          .font(HaloType.system(13, weight: .semibold))
+          .foregroundStyle(SwarmActivationRole.attention.color)
+          .swarmIconFrame(active: true, activation: .attention)
+        VStack(alignment: .leading, spacing: 2) {
+          Text(plan.title.lowercased())
+            .font(HaloType.ui(13, weight: .semibold))
+            .foregroundStyle(SwarmHalo.ink)
+          Text(plan.subtitle)
+            .font(HaloType.ui(11, weight: .regular))
+            .foregroundStyle(SwarmHalo.inkMuted)
+        }
+        Spacer()
+        Text(plan.priceText)
+          .font(HaloType.mono(10, weight: .medium))
+          .foregroundStyle(SwarmHalo.inkSecondary)
+      }
+      .padding(SwarmHalo.s2)
+      .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: .attention)
+    }
+    .buttonStyle(.plain)
+    .disabled(isStartingCheckout)
+    .opacity(isStartingCheckout ? 0.58 : 1)
+  }
+
   private func sectionHeader(_ text: String) -> some View {
     HStack(spacing: SwarmHalo.s2) {
       Text(text)
@@ -338,17 +403,25 @@ struct EventRingView: View {
     guard let selectedRing else {
       members = []
       checkIns = []
+      subscriptions = []
+      billing = []
       return
     }
 
     async let membersTask = RingsService.shared.members(for: selectedRing.id)
     async let checkInsTask = RingsService.shared.checkIns(for: selectedRing.id)
+    async let subscriptionsTask = RingsService.shared.subscriptions(for: selectedRing.id)
+    async let billingTask = RingsService.shared.billing(for: selectedRing.id)
     do {
       members = try await membersTask
       checkIns = try await checkInsTask
+      subscriptions = try await subscriptionsTask
+      billing = try await billingTask
     } catch {
       members = []
       checkIns = []
+      subscriptions = []
+      billing = []
     }
   }
 
@@ -432,6 +505,22 @@ struct EventRingView: View {
     }
   }
 
+  @MainActor
+  private func startCheckout(_ plan: StripeBillingPlan, for ring: HaloRing) async {
+    isStartingCheckout = true
+    defer { isStartingCheckout = false }
+    errorMessage = nil
+    statusMessage = nil
+
+    do {
+      let url = try await BillingService.shared.checkout(ringId: ring.id, plan: plan)
+      openURL(url)
+      statusMessage = "checkout Stripe aperto."
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(error, fallback: "Checkout evento non riuscito.")
+    }
+  }
+
   private func sortEvents(_ lhs: HaloRing, _ rhs: HaloRing) -> Bool {
     let left = lhs.startsAt ?? lhs.createdAt
     let right = rhs.startsAt ?? rhs.createdAt
@@ -440,6 +529,40 @@ struct EventRingView: View {
 
   private func twoDigits(_ value: Int) -> String {
     String(format: "%02d", value)
+  }
+
+  private var canManageSelectedRing: Bool {
+    guard let userId = AuthService.shared.currentUserId() else { return false }
+    return members.contains {
+      $0.userId == userId
+        && $0.status == .active
+        && [.owner, .admin, .host, .founder].contains($0.role)
+    }
+  }
+
+  private var totalPaidCents: Int {
+    billing
+      .filter { $0.status == "paid" }
+      .reduce(0) { $0 + $1.amountCents }
+  }
+
+  private var activePlan: String? {
+    subscriptions.first { ["active", "trialing", "comped"].contains($0.status) }?.plan
+  }
+
+  private func eventBillingCopy(for ring: HaloRing) -> String {
+    let plan = activePlan.map { " · \($0.replacingOccurrences(of: "_", with: " "))" } ?? ""
+    let paid = totalPaidCents > 0 ? " · incassato \(money(totalPaidCents, currency: ring.currency))" : ""
+    return "Ticket e launch package passano da Stripe; il webhook aggiorna revenue e customer\(plan)\(paid)."
+  }
+
+  private func money(_ cents: Int, currency: String) -> String {
+    let amount = Double(cents) / 100
+    let symbol = currency.lowercased() == "eur" ? "EUR" : currency.uppercased()
+    if amount >= 100 {
+      return "\(symbol) \(Int(amount))"
+    }
+    return "\(symbol) \(String(format: "%.2f", amount))"
   }
 
   private var orientationTokenLabel: String {

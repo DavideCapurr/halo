@@ -34,6 +34,9 @@ final class VibesService {
       .single()
       .execute()
       .value
+    Task {
+      await AnalyticsService.shared.track(.vibeSet, metadata: ["mood": mood.rawValue])
+    }
     return saved
   }
 

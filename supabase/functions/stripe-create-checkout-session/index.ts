@@ -77,12 +77,16 @@ serve(async (req) => {
     params.set("metadata[ring_id]", ringId);
     params.set("metadata[payer_id]", user.id);
     params.set("metadata[plan]", plan.key);
+    if (user.email) {
+      params.set("customer_email", user.email);
+    }
 
     if (plan.mode === "subscription") {
       params.set("subscription_data[metadata][ring_id]", ringId);
       params.set("subscription_data[metadata][payer_id]", user.id);
       params.set("subscription_data[metadata][plan]", plan.key);
     } else {
+      params.set("customer_creation", "always");
       params.set("payment_intent_data[metadata][ring_id]", ringId);
       params.set("payment_intent_data[metadata][payer_id]", user.id);
       params.set("payment_intent_data[metadata][plan]", plan.key);

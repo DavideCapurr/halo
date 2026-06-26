@@ -25,9 +25,9 @@ enum HaloTheme {
   static let hairlineSoft      = SwarmHalo.strokeSoft
   static let ringInactive      = SwarmHalo.cream.opacity(0.07)
   static let ringActive        = SwarmHalo.strokeActive
-  static let glassFallbackFill = SwarmHalo.surface
-  static let glassStroke       = SwarmHalo.strokeHair
-  static let glassStrokeSoft   = SwarmHalo.inkLine
+  static let glassFallbackFill = HaloVisual.Chrome.fallbackFill
+  static let glassStroke       = HaloVisual.Chrome.stroke
+  static let glassStrokeSoft   = HaloVisual.Chrome.contentStroke
 
   static let cornerRadius: CGFloat = SwarmHalo.radiusCard
   static let sheetCornerRadius: CGFloat = SwarmHalo.radiusSheet
@@ -187,8 +187,8 @@ extension View {
       .shadow(color: active ? activation.glow : .clear, radius: 8)
   }
 
-  /// Liquid Glass token for controls and navigation, with material fallback
-  /// on versions earlier than iOS 26.
+  /// Compatibility path for existing controls. iOS 26 uses native Liquid Glass;
+  /// older OS versions fall back to black surfaces, never gray materials.
   @ViewBuilder
   func haloGlass<S: InsettableShape>(
     in shape: S,
@@ -197,25 +197,33 @@ extension View {
     stroke: Color = HaloTheme.glassStroke
   ) -> some View {
     if #available(iOS 26.0, *) {
-      self.glassEffect(.regular.tint(tint).interactive(interactive), in: shape)
+      self
+        .background(HaloVisual.Chrome.controlFill, in: shape)
+        .glassEffect(.regular.tint(tint ?? HaloVisual.Chrome.controlFill).interactive(interactive), in: shape)
+        .overlay(shape.strokeBorder(stroke, lineWidth: 0.6))
     } else {
       self
         .background(HaloTheme.glassFallbackFill, in: shape)
-        .background(.ultraThinMaterial, in: shape)
         .overlay(shape.strokeBorder(stroke, lineWidth: 0.6))
     }
   }
 
-  /// Quieter glass for cards and content surfaces.
+  /// Quieter native glass for cards and content surfaces.
   @ViewBuilder
   func haloContentGlass<S: InsettableShape>(
     in shape: S,
     stroke: Color = HaloTheme.glassStrokeSoft
   ) -> some View {
-    self
-      .background(SwarmHalo.surface, in: shape)
-      .background(.regularMaterial, in: shape)
-      .overlay(shape.strokeBorder(stroke, lineWidth: 0.5))
+    if #available(iOS 26.0, *) {
+      self
+        .background(HaloVisual.Chrome.contentFill, in: shape)
+        .glassEffect(.regular.tint(HaloVisual.Chrome.contentFill), in: shape)
+        .overlay(shape.strokeBorder(stroke, lineWidth: 0.5))
+    } else {
+      self
+        .background(HaloVisual.Chrome.fallbackFill, in: shape)
+        .overlay(shape.strokeBorder(stroke, lineWidth: 0.5))
+    }
   }
 }
 

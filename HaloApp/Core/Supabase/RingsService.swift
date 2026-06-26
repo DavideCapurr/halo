@@ -157,20 +157,42 @@ final class RingsService {
     let token = normalizeToken(rawToken)
     guard !token.isEmpty else { throw RingsError.invalidToken }
 
-    return try await client
+    let ring: HaloRing = try await client
       .rpc("join_ring_by_token", params: TokenParams(token: token))
       .single()
       .execute()
       .value
+    Task {
+      await AnalyticsService.shared.track(
+        .ringJoined,
+        ringId: ring.id,
+        metadata: [
+          "kind": ring.kind.rawValue,
+          "join_method": "token"
+        ]
+      )
+    }
+    return ring
   }
 
   @discardableResult
   func joinPublic(ringId: UUID) async throws -> HaloRing {
-    try await client
+    let ring: HaloRing = try await client
       .rpc("join_public_ring", params: RingIdParams(ringId: ringId))
       .single()
       .execute()
       .value
+    Task {
+      await AnalyticsService.shared.track(
+        .ringJoined,
+        ringId: ring.id,
+        metadata: [
+          "kind": ring.kind.rawValue,
+          "join_method": "public"
+        ]
+      )
+    }
+    return ring
   }
 
   @discardableResult

@@ -56,6 +56,17 @@ final class FollowsService {
       .eq("follower_id", value: me)
       .eq("followee_id", value: followeeId)
       .execute()
+
+    if tier.rank > FriendshipTier.nebula.rank {
+      Task {
+        await AnalyticsService.shared.track(
+          .moveCloser,
+          targetUserId: followeeId,
+          tier: tier,
+          metadata: ["action": "proposed"]
+        )
+      }
+    }
   }
 
   /// La controparte (followee) conferma la proposta del follower applicandola a `tier`.
@@ -81,6 +92,17 @@ final class FollowsService {
       .eq("follower_id", value: followerId)
       .eq("followee_id", value: me)
       .execute()
+
+    if proposed.rank > FriendshipTier.nebula.rank {
+      Task {
+        await AnalyticsService.shared.track(
+          .moveCloser,
+          targetUserId: followerId,
+          tier: proposed,
+          metadata: ["action": "accepted"]
+        )
+      }
+    }
   }
 
   func declineProposedTier(on followerId: UUID) async throws {

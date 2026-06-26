@@ -4,6 +4,7 @@ import UIKit
 
 struct ClubRingView: View {
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.openURL) private var openURL
 
   private let allowedKinds: [RingKind] = [.club, .course, .founder]
 
@@ -16,6 +17,8 @@ struct ClubRingView: View {
   @State private var showCreate = false
   @State private var isLoading = false
   @State private var isJoining = false
+  @State private var isStartingCheckout = false
+  @State private var isOpeningPortal = false
   @State private var statusMessage: String?
   @State private var errorMessage: String?
 
@@ -142,6 +145,10 @@ struct ClubRingView: View {
         }
         .padding(SwarmHalo.s3)
         .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: role)
+
+        if canManageSelectedRing && !StripeBillingPlan.available(for: ring.kind).isEmpty {
+          billingActionPanel(for: ring)
+        }
 
         HStack(spacing: SwarmHalo.s3) {
           SwarmCommandButton(
@@ -270,6 +277,79 @@ struct ClubRingView: View {
     subscriptions.first { ["active", "trialing", "comped"].contains($0.status) }?.plan
   }
 
+  private var canManageSelectedRing: Bool {
+    guard let userId = AuthService.shared.currentUserId() else { return false }
+    return members.contains {
+      $0.userId == userId
+        && $0.status == .active
+        && [.owner, .admin, .host, .founder].contains($0.role)
+    }
+  }
+
+  private var activeStripeCustomerId: String? {
+    subscriptions.first {
+      $0.provider == "stripe"
+        && ["active", "trialing", "past_due", "incomplete"].contains($0.status)
+        && $0.providerCustomerId != nil
+    }?.providerCustomerId ?? subscriptions.first {
+      $0.provider == "stripe" && $0.providerCustomerId != nil
+    }?.providerCustomerId
+  }
+
+  private func billingActionPanel(for ring: HaloRing) -> some View {
+    VStack(alignment: .leading, spacing: SwarmHalo.s3) {
+      sectionHeader("stripe")
+
+      VStack(spacing: SwarmHalo.s2) {
+        ForEach(StripeBillingPlan.available(for: ring.kind)) { plan in
+          billingPlanButton(plan, ring: ring)
+        }
+      }
+
+      SwarmCommandButton(
+        label: isOpeningPortal ? "portal" : "portal",
+        icon: "creditcard",
+        activation: role
+      ) {
+        Task { await openBillingPortal(for: ring) }
+      }
+      .disabled(isOpeningPortal || activeStripeCustomerId == nil)
+      .opacity((isOpeningPortal || activeStripeCustomerId == nil) ? 0.55 : 1)
+    }
+    .padding(SwarmHalo.s3)
+    .swarmSurface(.card, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: role)
+  }
+
+  private func billingPlanButton(_ plan: StripeBillingPlan, ring: HaloRing) -> some View {
+    Button {
+      Task { await startCheckout(plan, for: ring) }
+    } label: {
+      HStack(spacing: SwarmHalo.s3) {
+        Image(systemName: isStartingCheckout ? "clock" : "arrow.up.right")
+          .font(HaloType.system(13, weight: .semibold))
+          .foregroundStyle(role.color)
+          .swarmIconFrame(active: true, activation: role)
+        VStack(alignment: .leading, spacing: 2) {
+          Text(plan.title.lowercased())
+            .font(HaloType.ui(13, weight: .semibold))
+            .foregroundStyle(SwarmHalo.ink)
+          Text(plan.subtitle)
+            .font(HaloType.ui(11, weight: .regular))
+            .foregroundStyle(SwarmHalo.inkMuted)
+        }
+        Spacer()
+        Text(plan.priceText)
+          .font(HaloType.mono(10, weight: .medium))
+          .foregroundStyle(SwarmHalo.inkSecondary)
+      }
+      .padding(SwarmHalo.s2)
+      .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: role)
+    }
+    .buttonStyle(.plain)
+    .disabled(isStartingCheckout || isOpeningPortal)
+    .opacity((isStartingCheckout || isOpeningPortal) ? 0.58 : 1)
+  }
+
   private func sectionHeader(_ text: String) -> some View {
     HStack(spacing: SwarmHalo.s2) {
       Text(text)
@@ -346,6 +426,41 @@ struct ClubRingView: View {
     }
   }
 
+  @MainActor
+  private func startCheckout(_ plan: StripeBillingPlan, for ring: HaloRing) async {
+    isStartingCheckout = true
+    defer { isStartingCheckout = false }
+    errorMessage = nil
+    statusMessage = nil
+
+    do {
+      let url = try await BillingService.shared.checkout(ringId: ring.id, plan: plan)
+      openURL(url)
+      statusMessage = "checkout Stripe aperto."
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(error, fallback: "Checkout Stripe non riuscito.")
+    }
+  }
+
+  @MainActor
+  private func openBillingPortal(for ring: HaloRing) async {
+    isOpeningPortal = true
+    defer { isOpeningPortal = false }
+    errorMessage = nil
+    statusMessage = nil
+
+    do {
+      let url = try await BillingService.shared.customerPortal(
+        ringId: ring.id,
+        stripeCustomerId: activeStripeCustomerId
+      )
+      openURL(url)
+      statusMessage = "portal Stripe aperto."
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(error, fallback: "Portal Stripe non disponibile.")
+    }
+  }
+
   private func panelFallback(for ring: HaloRing) -> String {
     switch ring.kind {
     case .club:
@@ -362,20 +477,20 @@ struct ClubRingView: View {
   private func billingTitle(for ring: HaloRing) -> String {
     switch ring.kind {
     case .club:
-      return activeSubscriptions > 0 ? "dashboard club attiva" : "dashboard gestita dal club"
+      return activeSubscriptions > 0 ? "checkout club attivo" : "checkout club pronto"
     case .course:
-      return activeSubscriptions > 0 ? "dashboard corso attiva" : "dashboard gestita dal corso"
+      return activeSubscriptions > 0 ? "checkout corso attivo" : "checkout corso pronto"
     case .founder:
-      return "billing founder gestito fuori app"
+      return "billing founder manuale"
     case .event:
-      return "billing evento gestito fuori app"
+      return "checkout evento pronto"
     }
   }
 
   private func billingCopy(for ring: HaloRing) -> String {
     let plan = activePlan.map { " · \($0.replacingOccurrences(of: "_", with: " "))" } ?? ""
     let paid = totalPaidCents > 0 ? " · incassato \(money(totalPaidCents, currency: ring.currency))" : ""
-    return "Pagamenti e fatture sono gestiti dal club via dashboard web/admin\(plan)\(paid)."
+    return "Checkout e ricevute passano da Stripe; il portal si abilita quando arriva il customer dal webhook\(plan)\(paid)."
   }
 
   private func accessory(for ring: HaloRing) -> String {

@@ -193,13 +193,9 @@ struct PulseFeedView: View {
     .frame(width: 104, alignment: .leading)
     .padding(.horizontal, 12)
     .padding(.vertical, 11)
-    .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(.ultraThinMaterial)
-    )
-    .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    .haloContentGlass(
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      stroke: HaloInk.creamHair
     )
   }
 
@@ -217,10 +213,9 @@ struct PulseFeedView: View {
     }
     .padding(.vertical, 12)
     .padding(.horizontal, 16)
-    .background(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous).fill(.ultraThinMaterial))
-    .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    .haloContentGlass(
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      stroke: HaloInk.creamHair
     )
   }
 
@@ -692,8 +687,11 @@ private struct PulseDropCard: View {
   }
 
   private var cardBackground: some View {
-    RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-      .fill(.ultraThinMaterial)
+    Color.clear
+      .haloContentGlass(
+        in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+        stroke: .clear
+      )
       .overlay(
         RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
           .fill(
@@ -756,13 +754,11 @@ private struct PulseDropDock: View {
         dockButton("vibe", icon: "sparkle", type: .vibe)
       }
       .padding(10)
-      .background(
-        Capsule()
-          .fill(.ultraThinMaterial)
-      )
-      .overlay(
-        Capsule()
-          .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+      .haloGlass(
+        in: Capsule(),
+        tint: HaloVisual.Chrome.controlFill,
+        interactive: true,
+        stroke: HaloInk.creamHair
       )
       .shadow(color: SwarmHalo.absoluteBlack.opacity(0.45), radius: 18, y: 10)
     }
@@ -819,13 +815,9 @@ private struct PulseDropDock: View {
       }
     }
     .padding(14)
-    .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(.ultraThinMaterial)
-    )
-    .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    .haloContentGlass(
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      stroke: HaloInk.creamHair
     )
     .shadow(color: SwarmHalo.absoluteBlack.opacity(0.35), radius: 16, y: 8)
   }
