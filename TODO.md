@@ -4,6 +4,10 @@ Checklist viva orientata a **un obiettivo solo: distribuire Halo a Bocconi con
 successo**. Gli item sono sequenziati e marcati per criticità di lancio, non
 per fase tecnica. Per lo storico completo e le scelte prese vedi `PLAN.md`.
 
+> **Piano operativo completo (audit 2026-07-05)**:
+> `docs/launch/PIANO-LANCIO-BOCCONI.md` — fasi, date, criteri di
+> accettazione e triage. Questa checklist ne è il riassunto di stato.
+
 **Stato**: `[ ]` da fare · `[x]` fatto · `[~]` in corso · `[!]` bloccato
 **Priorità**: 🚀 blocker di lancio · ⭐ alto impatto sul successo · 🔧 dopo il lancio
 
@@ -36,6 +40,32 @@ Apple/device sono manuali per natura: il repo prepara tutto lo scaffolding.)*
       — **manuale**, checklist in `RUNBOOK.md §5`
 - [ ] Smoke test end-to-end su device reale (auth → verify → ring → vibe)
       — **manuale**, checklist in `RUNBOOK.md §6`
+- [ ] **App icon + `Assets.xcassets`** — oggi non esiste alcun asset catalog:
+      l'upload su ASC fallisce senza icona (piano §0.1)
+- [ ] **Cancellazione account in-app** — richiesta da App Review 5.1.1(v):
+      edge function `delete-account` + voce in ProfileView (piano §0.2)
+- [ ] **Privacy policy + termini + regole contenuti** — URL obbligatori per
+      App Store e review UGC; pagine su `web/landing/` (piano §0.3)
+- [ ] **Deployment target**: app a iOS 26.0 vs progetto/README 17.0 — portare
+      a 17.0 (i fallback `#available` esistono già) o decidere (piano §0.4)
+
+## 0-bis. Loop sociale — senza questo il lancio non tiene 🚀
+*(dettaglio e criteri di accettazione: piano §1)*
+
+- [ ] **Push notifications MVP**: invito Inner ricevuto, vibe di un Inner,
+      reaction/reply — APNs + `device_tokens` + edge function (piano §1.1)
+- [ ] **Invito https + universal links**: link cliccabile da WhatsApp che
+      funziona anche senza app installata; inviti "aperti" per non iscritti
+      (piano §1.2)
+- [ ] **Reply 1:1 effimera** sul Moment/vibe, visibile solo all'autore
+      (piano §1.3)
+- [ ] **QR orientation → funnel https** (oggi `halo://` = vicolo cieco senza
+      app installata) e rigenerare i PNG stampa (piano §1.4)
+- [ ] **Landing**: `data-endpoint` waitlist collegato a prod (oggi i signup
+      muoiono nel localStorage) + fix overflow mobile (piano §2.2)
+- [ ] **Verifica @studbocconi.it con OTP email**: il founder code condiviso è
+      committato nel repo pubblico → ruotare e passare a codici per-circle
+      (piano §2.1)
 
 ## 1. Cold-start Bocconi — il successo si gioca qui ⭐
 *(la strumentazione c'è, manca l'esecuzione)*
