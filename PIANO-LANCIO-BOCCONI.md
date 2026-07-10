@@ -48,7 +48,7 @@ tutti nel percorso critico dell'orientation week)*
       registrato deve atterrare nel ring dopo auth/verify, non su un'orbita
       vuota. Verificare il percorso `AppState.handle(link:)` → auth →
       `HomeView.syncRoutePresentation`.
-- [ ] **Quick-drop "scatto"/"audio" nel Pulse pubblicano post vuoti** —
+- [x] **Quick-drop "scatto"/"audio" nel Pulse pubblicano post vuoti** —
       chiamano `publishQuickDrop(.photo/.audio)` con `mediaPath: nil`, senza
       picker né recorder (`PulseFeedView.swift:270`,
       `FeedViewModel.publishQuickDrop`). Collegare PhotosPicker /
