@@ -178,8 +178,13 @@ struct HomeView: View {
       syncRoutePresentation()
     }
     .task {
-      await refreshHomeFromBackend()
+      // La route da deep link (ring/invite) può essere arrivata mentre l'utente
+      // non era ancora su Home — tipicamente il QR aperto da non registrato, che
+      // atterra qui solo dopo auth/onboarding. Presentiamola subito, prima del
+      // refresh del feed: se restasse in coda dietro una `load()` lenta o a vuoto
+      // al primo avvio, l'utente vedrebbe l'orbita vuota invece del ring.
       syncRoutePresentation()
+      await refreshHomeFromBackend()
     }
     .sheet(item: $peek) { person in
       HaloSpaceView(

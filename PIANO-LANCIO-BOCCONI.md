@@ -44,7 +44,7 @@ tutti nel percorso critico dell'orientation week)*
       l'app se presente e altrimenti porta a TestFlight, conservando il token
       del ring. (`web/landing/`, `docs/growth/orientation-week-qr.md`,
       entitlements app)
-- [ ] **Token ring/invite sopravvive al signup** — chi arriva dal QR da non
+- [x] **Token ring/invite sopravvive al signup** — chi arriva dal QR da non
       registrato deve atterrare nel ring dopo auth/verify, non su un'orbita
       vuota. Verificare il percorso `AppState.handle(link:)` → auth →
       `HomeView.syncRoutePresentation`.
