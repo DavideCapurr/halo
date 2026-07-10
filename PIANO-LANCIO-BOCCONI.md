@@ -37,7 +37,7 @@ Apple/device sono manuali per natura: il repo prepara tutto lo scaffolding.)*
 *(bug e buchi di funnel trovati nell'audit: piccoli in rapporto all'impatto,
 tutti nel percorso critico dell'orientation week)*
 
-- [ ] **QR su universal link https, non `halo://`** — oggi il QR
+- [x] **QR su universal link https, non `halo://`** — oggi il QR
       dell'orientation week codifica `halo://ring/join/bocconi-orientation-week`:
       chi non ha l'app installata scansiona e non succede nulla. Serve una
       pagina join sulla landing (link https + Associated Domains) che apre

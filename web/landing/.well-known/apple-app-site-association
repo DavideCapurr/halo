@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.app.halo"],
+        "components": [
+          { "/": "/join*", "comment": "orientation-week QR ring join (path or ?ring= query)" },
+          { "/": "/ring/*", "comment": "event ring join / open" },
+          { "/": "/invite/*", "comment": "inner-circle invite token" },
+          { "/": "/space/*", "comment": "HaloSpace deep link" },
+          { "/": "/report/*", "comment": "safety report deep link" },
+          { "/": "/memory", "comment": "memory archive" }
+        ]
+      }
+    ]
+  }
+}
