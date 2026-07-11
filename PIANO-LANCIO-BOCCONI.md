@@ -44,6 +44,11 @@ tutti nel percorso critico dell'orientation week)*
       l'app se presente e altrimenti porta a TestFlight, conservando il token
       del ring. (`web/landing/`, `docs/growth/orientation-week-qr.md`,
       entitlements app)
+  - [ ] **Setup reale del QR (manuale, ancora da finire)** — il codice è
+        pronto ma il link non è ancora attivo: serve il dominio reale in
+        `applinks:` + AASA servito da quel dominio, Team ID/bundle ID reali
+        nell'AASA, `TESTFLIGHT_URL` pubblico, e rigenerare il PNG del QR verso
+        il link https. Passi in `docs/growth/orientation-week-qr.md`.
 - [x] **Token ring/invite sopravvive al signup** — chi arriva dal QR da non
       registrato deve atterrare nel ring dopo auth/verify, non su un'orbita
       vuota. Verificare il percorso `AppState.handle(link:)` → auth →
