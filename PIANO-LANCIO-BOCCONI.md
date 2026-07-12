@@ -37,18 +37,23 @@ Apple/device sono manuali per natura: il repo prepara tutto lo scaffolding.)*
 *(bug e buchi di funnel trovati nell'audit: piccoli in rapporto all'impatto,
 tutti nel percorso critico dell'orientation week)*
 
-- [ ] **QR su universal link https, non `halo://`** — oggi il QR
+- [x] **QR su universal link https, non `halo://`** — oggi il QR
       dell'orientation week codifica `halo://ring/join/bocconi-orientation-week`:
       chi non ha l'app installata scansiona e non succede nulla. Serve una
       pagina join sulla landing (link https + Associated Domains) che apre
       l'app se presente e altrimenti porta a TestFlight, conservando il token
       del ring. (`web/landing/`, `docs/growth/orientation-week-qr.md`,
       entitlements app)
-- [ ] **Token ring/invite sopravvive al signup** — chi arriva dal QR da non
+  - [ ] **Setup reale del QR (manuale, ancora da finire)** — il codice è
+        pronto ma il link non è ancora attivo: serve il dominio reale in
+        `applinks:` + AASA servito da quel dominio, Team ID/bundle ID reali
+        nell'AASA, `TESTFLIGHT_URL` pubblico, e rigenerare il PNG del QR verso
+        il link https. Passi in `docs/growth/orientation-week-qr.md`.
+- [x] **Token ring/invite sopravvive al signup** — chi arriva dal QR da non
       registrato deve atterrare nel ring dopo auth/verify, non su un'orbita
       vuota. Verificare il percorso `AppState.handle(link:)` → auth →
       `HomeView.syncRoutePresentation`.
-- [ ] **Quick-drop "scatto"/"audio" nel Pulse pubblicano post vuoti** —
+- [x] **Quick-drop "scatto"/"audio" nel Pulse pubblicano post vuoti** —
       chiamano `publishQuickDrop(.photo/.audio)` con `mediaPath: nil`, senza
       picker né recorder (`PulseFeedView.swift:270`,
       `FeedViewModel.publishQuickDrop`). Collegare PhotosPicker /

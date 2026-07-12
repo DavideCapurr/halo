@@ -266,10 +266,6 @@ struct PulseFeedView: View {
       withAnimation(SwarmHalo.easeSwarm(0.18)) {
         isDraftOpen = true
       }
-    case .photo:
-      Task { await vm.publishQuickDrop(.photo, audience: scope) }
-    case .audio:
-      Task { await vm.publishQuickDrop(.audio, audience: scope) }
     case .vibe:
       let text = draft
       Task { await vm.publishQuickDrop(.vibe, audience: scope, note: text) }
@@ -725,8 +721,6 @@ private struct PulseDropCard: View {
 private struct PulseDropDock: View {
   enum DropType {
     case note
-    case photo
-    case audio
     case vibe
   }
 
@@ -749,8 +743,6 @@ private struct PulseDropDock: View {
 
       HStack(spacing: 8) {
         dockButton("nota", icon: "square.and.pencil", type: .note)
-        dockButton("scatto", icon: "camera", type: .photo)
-        dockButton("audio", icon: "mic.fill", type: .audio)
         dockButton("vibe", icon: "sparkle", type: .vibe)
       }
       .padding(10)

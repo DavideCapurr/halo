@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta
+      name="description"
+      content="Apri il tuo Event Ring su Halo. Se hai l'app ti portiamo dentro, altrimenti installala da TestFlight — il ring ti aspetta."
+    />
+    <title>Halo · entra nel ring</title>
+    <style>
+      /* Palette allineata ai token dell'app (SwarmHalo / HaloVisual):
+         crema #E4DDCF, bronzo #A88260 su nero assoluto. */
+      :root {
+        --black: #000000;
+        --cream: #e4ddcf;
+        --cream-low: rgba(228, 221, 207, 0.62);
+        --cream-mute: rgba(228, 221, 207, 0.52);
+        --cream-line: rgba(228, 221, 207, 0.1);
+        --cream-hair: rgba(228, 221, 207, 0.18);
+        --bronze: #a88260;
+        --bronze-soft: rgba(168, 130, 96, 0.55);
+        --night: #161516;
+        --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        --mono: ui-monospace, "SF Mono", "IBM Plex Mono", Menlo, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        background: radial-gradient(120% 90% at 50% 0%, #0d0c0d 0%, var(--black) 62%);
+        color: var(--cream);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 20px;
+      }
+
+      main {
+        width: 100%;
+        max-width: 380px;
+        text-align: center;
+      }
+
+      .halo-mark {
+        width: 42px;
+        height: 42px;
+        margin: 0 auto 22px;
+        border: 1px solid var(--bronze-soft);
+        border-radius: 999px;
+        box-shadow: 0 0 24px rgba(168, 130, 96, 0.35);
+      }
+
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--cream-mute);
+        margin-bottom: 12px;
+      }
+
+      h1 {
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: 40px;
+        line-height: 1.05;
+        letter-spacing: -0.01em;
+        margin-bottom: 14px;
+      }
+
+      p.lede {
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--cream-low);
+        margin-bottom: 26px;
+      }
+
+      .token-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        color: var(--cream);
+        padding: 8px 14px;
+        border: 1px solid var(--cream-hair);
+        border-radius: 999px;
+        background: var(--night);
+        margin-bottom: 28px;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .token-chip .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--bronze);
+        box-shadow: 0 0 8px var(--bronze);
+        flex: none;
+      }
+
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      a.btn {
+        display: block;
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 15px 20px;
+        border-radius: 999px;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+      }
+
+      a.btn:active {
+        transform: scale(0.99);
+      }
+
+      a.btn-primary {
+        color: var(--black);
+        background: linear-gradient(180deg, #c39a72 0%, var(--bronze) 100%);
+        box-shadow: 0 8px 24px rgba(168, 130, 96, 0.28);
+      }
+
+      a.btn-secondary {
+        color: var(--cream);
+        background: transparent;
+        border: 1px solid var(--cream-hair);
+      }
+
+      .footnote {
+        margin-top: 24px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--cream-mute);
+      }
+
+      .footnote a {
+        color: var(--cream-low);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="halo-mark" aria-hidden="true"></div>
+      <p class="eyebrow">Event ring</p>
+      <h1>Entra nel ring.</h1>
+      <p class="lede" id="lede">
+        Ti stiamo portando dentro Halo. Se non succede nulla, apri l'app o
+        installala qui sotto: il tuo ring resta pronto.
+      </p>
+
+      <div class="token-chip" id="token-chip" hidden>
+        <span class="dot" aria-hidden="true"></span>
+        <span id="token-label"></span>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" id="open-app" href="#">Apri Halo</a>
+        <a class="btn btn-secondary" id="install-app" href="#">Installa da TestFlight</a>
+      </div>
+
+      <p class="footnote">
+        Non hai ancora l'app? Installala, poi torna a scansionare il QR: il ring
+        è lo stesso. Serve un indirizzo <strong>@studbocconi.it</strong> per
+        entrare.
+      </p>
+    </main>
+
+    <script>
+      // Bridge del QR dell'orientation week: apre l'app via universal link
+      // (gestito da iOS prima ancora di caricare questa pagina se l'app c'è) o,
+      // come fallback, prova lo scheme custom e infine manda su TestFlight
+      // conservando il token del ring per l'utente.
+
+      // TODO(launch): sostituire con il link pubblico TestFlight reale.
+      var TESTFLIGHT_URL = "https://testflight.apple.com/join/PLACEHOLDER";
+
+      var STORAGE_KEY = "halo.pendingRingToken";
+
+      // Il token può arrivare come query (?ring= / ?token=) — robusto su hosting
+      // statico — o come ultimo segmento di /join/<token>.
+      function ringToken() {
+        var params = new URLSearchParams(window.location.search);
+        var fromQuery = params.get("ring") || params.get("token");
+        if (fromQuery) return fromQuery.trim();
+
+        var parts = window.location.pathname.split("/").filter(Boolean);
+        var last = parts[parts.length - 1];
+        if (last && last.toLowerCase() !== "join") return decodeURIComponent(last);
+        return "";
+      }
+
+      var token = ringToken();
+      var openLink = document.getElementById("open-app");
+      var installLink = document.getElementById("install-app");
+      installLink.href = TESTFLIGHT_URL;
+
+      if (token) {
+        try {
+          localStorage.setItem(STORAGE_KEY, token);
+        } catch (e) {
+          /* private mode: non blocca il flusso */
+        }
+
+        document.getElementById("token-label").textContent = token;
+        document.getElementById("token-chip").hidden = false;
+
+        var appURL = "halo://ring/join/" + encodeURIComponent(token);
+        openLink.href = appURL;
+
+        // Tentativo di apertura immediato (copre l'app installata quando
+        // l'universal link non scatta, es. link digitato a mano).
+        var t0 = Date.now();
+        window.location.href = appURL;
+
+        // Se dopo ~1.6s siamo ancora qui, l'app non c'è: manda su TestFlight.
+        setTimeout(function () {
+          var stillHere = document.visibilityState === "visible";
+          var quick = Date.now() - t0 < 2100;
+          if (stillHere && quick) {
+            window.location.href = TESTFLIGHT_URL;
+          }
+        }, 1600);
+      } else {
+        // Nessun token nel link: niente apertura automatica, solo install.
+        document.getElementById("lede").textContent =
+          "Link del ring incompleto. Installa Halo e scansiona di nuovo il QR dell'orientation week.";
+        openLink.href = TESTFLIGHT_URL;
+      }
+
+      // Riapertura manuale col bottone (l'app potrebbe essere appena installata).
+      openLink.addEventListener("click", function (event) {
+        if (!token) return; // href già = TestFlight
+        event.preventDefault();
+        window.location.href = "halo://ring/join/" + encodeURIComponent(token);
+      });
+    </script>
+  </body>
+</html>

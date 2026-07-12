@@ -343,36 +343,6 @@ final class FeedViewModel {
           at: 0
         )
         await applyVibe(vibe)
-
-      case .photo:
-        let post = try await PostsService.shared.post(
-          kind: .photo,
-          mediaPath: nil,
-          caption: trimmed.isEmpty ? nil : trimmed,
-          mood: mood,
-          minTier: audience.minTier
-        )
-        me.apply(post: post)
-        localEvents.insert(
-          PulseEvent(id: localId, person: me, kind: .photoPost(post.caption ?? ""), createdAt: post.createdAt, isMine: true, audience: audience),
-          at: 0
-        )
-        await applyPost(post)
-
-      case .audio:
-        let post = try await PostsService.shared.post(
-          kind: .audio,
-          mediaPath: nil,
-          caption: trimmed.isEmpty ? nil : trimmed,
-          mood: mood,
-          minTier: audience.minTier
-        )
-        me.apply(post: post)
-        localEvents.insert(
-          PulseEvent(id: localId, person: me, kind: .audioPost(post.caption ?? ""), createdAt: post.createdAt, isMine: true, audience: audience),
-          at: 0
-        )
-        await applyPost(post)
       }
       lastError = nil
     } catch {
@@ -518,8 +488,9 @@ final class FeedViewModel {
 }
 
 enum PulseDropKind {
-  case photo
-  case audio
+  // Foto/audio nel Pulse dock pubblicavano post vuoti (mediaPath nil, senza
+  // picker/recorder): rimossi dal dock. I Moment con media passano dal compose
+  // completo (VibeFirstComposeView), che collega PhotosPicker/AudioRecorderView.
   case vibe
 }
 
