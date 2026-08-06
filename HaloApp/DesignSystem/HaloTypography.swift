@@ -1,17 +1,18 @@
 import SwiftUI
-import UIKit
 
-/// SWARM Halo type system.
+/// Halo type system — **one family**, per `docs/DESIGN.md` R3.
 ///
-/// Four brand families:
-///  - **serif** (Cormorant Garamond italic) — names, vibe quotes, manifesto
-///  - **serifUpright** (Cormorant Garamond regular) — rare, crests/numerals
-///  - **display/ui** (Satoshi) — body, controls, navigation labels
-///  - **mono** (IBM Plex Mono) — timestamps, counts, telemetry strips
-///  - **eyebrow** (Space Grotesk) — small-cap section headers
+/// Hierarchy is carried by size, weight and opacity. Never by typeface.
 ///
-/// Satoshi is an external licensed Fase A dependency. Inter remains a bundled
-/// development fallback until the official Satoshi files are registered.
+/// The four brand families are gone. Editorial Cormorant italic on people's
+/// names was beautiful and wrong: it turned friends into a magazine masthead —
+/// content to look at, rather than people to answer. Every role below now
+/// resolves to the system face, which also removes the licensed-Satoshi
+/// dependency that blocked the type system, the ~2 MB font bundle, and the
+/// risk of a silent fallback when a PostScript name doesn't resolve.
+///
+/// The role functions are kept so call sites don't change. `serif()` and
+/// `eyebrow()` are now names for *sizes and weights*, not for faces.
 enum HaloType {
 
   /// Official global readability multiplier — the single knob for the whole
@@ -23,53 +24,44 @@ enum HaloType {
 
   private static func scaled(_ size: CGFloat) -> CGFloat { size * scale }
 
-  // MARK: - serif (Cormorant Garamond italic — display)
+  // MARK: - display roles (were serif — now weight, not face)
 
-  /// Editorial italic serif. The brand voice — used for names, manifesto,
-  /// vibe notes.
+  /// Display role. Formerly editorial italic serif; now the system face at a
+  /// lighter weight, which is what gives large type its calm at size.
   static func serif(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    .custom(serifName(weight: weight, italic: true),
-            size: scaled(size),
-            relativeTo: .title)
+    .system(size: scaled(size), weight: displayWeight(weight))
   }
 
-  /// Non-italic serif (rare — used for crests, ordinal markers).
+  /// Kept for call-site compatibility — identical to `serif` now that there is
+  /// no second face to be upright in.
   static func serifUpright(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    .custom(serifName(weight: weight, italic: false),
-            size: scaled(size),
-            relativeTo: .title)
+    serif(size, weight: weight)
   }
 
-  // MARK: - display/ui (Satoshi — body & controls)
+  // MARK: - body & controls
 
   static func ui(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-    .custom(uiName(weight: weight),
-            size: scaled(size),
-            relativeTo: .body)
+    .system(size: scaled(size), weight: weight)
   }
 
   static func display(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
-    .custom(uiName(weight: weight),
-            size: scaled(size),
-            relativeTo: .title)
+    .system(size: scaled(size), weight: weight)
   }
 
-  // MARK: - mono (IBM Plex Mono — telemetry)
+  // MARK: - numerals
 
+  /// Timestamps, counts, countdowns. Same family — only the digits are made
+  /// monospaced, so columns line up without introducing a second typeface.
   static func mono(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
-    .custom(monoName(weight: weight),
-            size: scaled(size),
-            relativeTo: .caption)
+    .system(size: scaled(size), weight: weight).monospacedDigit()
   }
 
-  // MARK: - eyebrow (Space Grotesk — small-cap section headers)
+  // MARK: - eyebrow
 
   /// Use with `.kerning(2.4-2.6)`, `.textCase(.uppercase)`. The
   /// `haloEyebrow` modifier already applies those.
   static func eyebrow(_ size: CGFloat) -> Font {
-    .custom(SwarmHaloFont.SpaceGrotesk.medium,
-            size: scaled(size),
-            relativeTo: .caption2)
+    .system(size: scaled(size), weight: .medium)
   }
 
   // MARK: - system (SF Symbols & fallback — shares the global scale)
@@ -114,36 +106,14 @@ enum HaloType {
 
   // MARK: - private resolution
 
-  private static func serifName(weight: Font.Weight, italic: Bool) -> String {
-    let isMedium = (weight == .medium || weight == .semibold || weight == .bold)
-    switch (italic, isMedium) {
-    case (true, true):   return SwarmHaloFont.Cormorant.mediumItalic
-    case (true, false):  return SwarmHaloFont.Cormorant.italic
-    case (false, true):  return SwarmHaloFont.Cormorant.medium
-    case (false, false): return SwarmHaloFont.Cormorant.regular
+  /// Large type wants *less* weight, not more: at hero and h1 sizes a regular
+  /// weight reads heavy. Display roles cap at `.light` unless a caller has
+  /// explicitly asked for emphasis.
+  private static func displayWeight(_ requested: Font.Weight) -> Font.Weight {
+    switch requested {
+    case .bold, .semibold, .medium: return .medium
+    default:                        return .light
     }
-  }
-
-  private static func uiName(weight: Font.Weight) -> String {
-    switch weight {
-    case .bold, .semibold:
-      return availableFont(SwarmHaloFont.Satoshi.bold, fallback: SwarmHaloFont.Inter.semibold)
-    case .medium:
-      return availableFont(SwarmHaloFont.Satoshi.medium, fallback: SwarmHaloFont.Inter.medium)
-    default:
-      return availableFont(SwarmHaloFont.Satoshi.regular, fallback: SwarmHaloFont.Inter.regular)
-    }
-  }
-
-  private static func monoName(weight: Font.Weight) -> String {
-    switch weight {
-    case .medium, .semibold, .bold: return SwarmHaloFont.Plex.medium
-    default:                          return SwarmHaloFont.Plex.regular
-    }
-  }
-
-  private static func availableFont(_ preferred: String, fallback: String) -> String {
-    UIFont(name: preferred, size: 12) == nil ? fallback : preferred
   }
 }
 
@@ -157,6 +127,8 @@ enum HaloInk {
   static let creamLine     = SwarmHalo.inkLine
   static let creamWhisper  = SwarmHalo.inkWhisper
 
+  // Deprecated — neutral since `docs/DESIGN.md` R4 removed the brand accent.
+  // For a person, use a mood colour (`MoodPalette`); for chrome, plain ink.
   static let bronze        = SwarmHalo.bronze
   static let bronzeSoft    = SwarmHalo.bronzeSoft
   static let bronzeGlow    = SwarmHalo.bronzeGlow
@@ -168,7 +140,7 @@ enum HaloInk {
   /// Attention state — errors, downgrades, reports only. Warm magenta #FF2B6E.
   static let warmMagenta   = SwarmHalo.attention
 
-  /// Text/overlay drawn on top of media (photos). Stays near-cream, not pure white.
+  /// Text/overlay drawn on top of media (photos).
   static let onMedia       = SwarmHalo.cream
 }
 

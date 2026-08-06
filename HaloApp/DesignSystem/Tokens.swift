@@ -11,30 +11,36 @@ enum SwarmHalo {
   // MARK: - Current endpoints
 
   static let absoluteBlack = HaloVisual.Palette.absoluteBlack
-  /// Primary warm ink — paper-cream. Replaces the SWARM `platinum` endpoint.
+  /// Primary ink — plain white, used at varying opacity. `docs/DESIGN.md` R3.
   static let cream = HaloVisual.Palette.cream
-  /// Deprecated alias kept only so any stray reference still resolves to cream.
+  /// Deprecated alias kept only so any stray reference still resolves to ink.
   static let platinum = HaloVisual.Palette.cream
 
-  // MARK: - Activation (swarm-halo: single bronze accent)
+  // MARK: - Activation: none (docs/DESIGN.md R4)
+  //
+  // Halo has no brand accent. Colour comes only from people's mood states.
+  // The tokens below are neutral and deprecated; the single exception is
+  // `attention`, which is *semantic* (something went wrong) rather than
+  // brand, and stays coloured so failure is never silent.
 
-  /// Connected proximity state — inner. The bronze halo of the person.
+  /// Deprecated — neutral. Prefer `ink`, or a mood colour for a person.
   static let bronzeAccent = HaloVisual.Palette.bronze
-  /// Operational proximity state — close.
+  /// Deprecated — neutral. Prefer `inkSecondary`.
   static let bronzeAccentSoft = HaloVisual.Palette.bronzeSoft
-  /// Attention — errors, downgrades, reports only. Warm magenta, not orange.
+  /// Attention — errors, downgrades, reports only. The one coloured token that
+  /// is not a person: semantic, not accent.
   static let attention = Color(hex: "#FF2B6E")
 
-  // MARK: - Legacy activation aliases (being swept out of feature code)
+  // MARK: - Legacy SWARM activation aliases (deprecated, neutral)
 
   static let orbitalBlue = bronzeAccent
   static let signalGreen = bronzeAccentSoft
-  /// Legacy name — now resolves to the real attention magenta.
+  /// Legacy name — resolves to the semantic attention colour.
   static let launchAmber = attention
 
   // MARK: - Semantic surfaces
 
-  static let background = HaloVisual.Palette.absoluteBlack
+  static let background = HaloVisual.Palette.ground
   static let surface = cream.opacity(0.055)
   static let surfaceRaised = cream.opacity(0.085)
   static let surfaceModal = cream.opacity(0.11)
@@ -60,7 +66,7 @@ enum SwarmHalo {
 
   // MARK: - Legacy aliases during migration
 
-  static let warmBlack = HaloVisual.Palette.absoluteBlack
+  static let warmBlack = HaloVisual.Palette.ground
   static let nightSurface = HaloVisual.Palette.nightSurface
   static let nightSurface2 = HaloVisual.Palette.nightSurface2
   static let nightEdge = HaloVisual.Palette.creamWhisper
@@ -77,13 +83,16 @@ enum SwarmHalo {
   static let bronzeGlow = HaloVisual.Palette.bronzeGlow
   static let warmMagenta = attention
 
-  // MARK: - Radii (SWARM literal)
+  // MARK: - Radii (docs/DESIGN.md R2 — intimate, not operator)
 
-  static let radiusCard:  CGFloat = 6
-  static let radiusInput: CGFloat = 4
-  static let radiusChip:  CGFloat = 2
+  /// 6 / 4 / 2 were SWARM-literal: instrument radii, built for density and
+  /// precision. A place where you share something personal doesn't have 2px
+  /// corners. Softened so the surface reads as calm rather than tactical.
+  static let radiusCard:  CGFloat = 20
+  static let radiusInput: CGFloat = 16
+  static let radiusChip:  CGFloat = 12
   static let radiusPill:  CGFloat = 999
-  static let radiusSheet: CGFloat = 24   // sheet present, Halo extension
+  static let radiusSheet: CGFloat = 28
 
   // MARK: - Spacing (SWARM 4/8 scale)
 
@@ -125,9 +134,8 @@ enum SwarmHalo {
 /// Type scale. Hero is capped at 72 for mobile. Values are base px; the global
 /// `HaloType.scale` multiplier is applied on top at render time.
 ///
-/// TODO(design): headlines are still editorial Cormorant here. Per
-/// `docs/DESIGN.md` R3 the app collapses onto a single family, with hierarchy
-/// carried by size, weight and opacity rather than by typeface.
+/// One family across every step (`docs/DESIGN.md` R3): this ramp plus weight
+/// and opacity is the whole hierarchy.
 enum SwarmHaloTypeScale {
   static let hero: CGFloat = 72
   static let h1: CGFloat = 40
@@ -149,58 +157,69 @@ enum SwarmHaloTierState {
   case rest
   case farRest
 
-  /// Bronze for active proximity (the person's halo), cream hairline at rest.
+  // Relational distance is rendered as *presence*, not as hue —
+  // `docs/DESIGN.md` R4. Closer people are more present: brighter ink, a
+  // stronger edge, a wider glow. Nothing here carries a brand colour, so the
+  // only colour on a person is their own mood (`MoodPalette.auraColor`).
+  //
+  // Keeping distance on the neutral channel also means hue stays free to mean
+  // exactly one thing, everywhere in the app: someone is there.
+
+  /// Ink weight for the tier. Nearer reads brighter.
   var accent: Color {
     switch self {
-    case .connected: return SwarmHalo.bronze
-    case .operational: return SwarmHalo.bronzeSoft
-    case .rest: return SwarmHalo.cream
-    case .farRest: return SwarmHalo.absoluteBlack
+    case .connected: return SwarmHalo.cream
+    case .operational: return SwarmHalo.cream.opacity(0.72)
+    case .rest: return SwarmHalo.cream.opacity(0.44)
+    case .farRest: return SwarmHalo.cream.opacity(0.16)
     }
   }
 
   var stroke: Color {
     switch self {
-    case .connected: return SwarmHalo.bronze.opacity(0.55)
-    case .operational: return SwarmHalo.bronze.opacity(0.34)
+    case .connected: return SwarmHalo.cream.opacity(0.42)
+    case .operational: return SwarmHalo.cream.opacity(0.26)
     case .rest: return SwarmHalo.strokeHair
-    case .farRest: return SwarmHalo.absoluteBlack.opacity(0.84)
+    case .farRest: return SwarmHalo.cream.opacity(0.07)
     }
   }
 
   var activeStroke: Color {
     switch self {
-    case .rest: return SwarmHalo.cream.opacity(0.44)
+    case .connected: return SwarmHalo.cream.opacity(0.80)
+    case .operational: return SwarmHalo.cream.opacity(0.58)
+    case .rest: return SwarmHalo.cream.opacity(0.36)
     case .farRest: return SwarmHalo.cream.opacity(0.10)
-    case .connected: return SwarmHalo.bronze.opacity(0.82)
-    case .operational: return SwarmHalo.bronze.opacity(0.6)
     }
   }
 
   var ringFill: Color {
     switch self {
-    case .connected, .operational: return SwarmHalo.surfaceRaised
-    case .rest: return SwarmHalo.cream.opacity(0.16)
-    case .farRest: return SwarmHalo.absoluteBlack
+    case .connected: return SwarmHalo.cream.opacity(0.10)
+    case .operational: return SwarmHalo.surfaceRaised
+    case .rest: return SwarmHalo.cream.opacity(0.055)
+    case .farRest: return SwarmHalo.cream.opacity(0.02)
     }
   }
 
-  /// The actual halo — bronze glow that decays from inner to rest.
+  /// Neutral presence glow, decaying with distance. A *person's* halo is their
+  /// mood — use `MoodPalette.auraRing(mood:)` where the mood is known; this is
+  /// the fallback for surfaces that only know the tier.
   var glow: Color {
     switch self {
-    case .connected: return SwarmHalo.bronzeGlow
-    case .operational: return SwarmHalo.bronze.opacity(0.18)
-    case .rest: return SwarmHalo.cream.opacity(0.06)
+    case .connected: return SwarmHalo.cream.opacity(0.14)
+    case .operational: return SwarmHalo.cream.opacity(0.08)
+    case .rest: return SwarmHalo.cream.opacity(0.04)
     case .farRest: return .clear
     }
   }
 
   var badgeFill: Color {
     switch self {
-    case .connected: return SwarmHalo.bronze.opacity(0.10)
-    case .operational: return SwarmHalo.bronze.opacity(0.06)
+    case .connected: return SwarmHalo.cream.opacity(0.11)
+    case .operational: return SwarmHalo.cream.opacity(0.07)
     case .rest: return SwarmHalo.inkWhisper
-    case .farRest: return SwarmHalo.absoluteBlack.opacity(0.72)
+    case .farRest: return SwarmHalo.cream.opacity(0.03)
     }
   }
 }
@@ -218,41 +237,15 @@ extension FriendshipTier {
 }
 
 // MARK: - Type families
-
-/// PostScript names for the bundled fonts. Source: Google Fonts.
-/// Registered in `HaloApp/Info.plist` under `UIAppFonts`.
-enum SwarmHaloFont {
-
-  enum Cormorant {
-    static let regular       = "CormorantGaramond-Regular"
-    static let italic        = "CormorantGaramond-Italic"
-    static let medium        = "CormorantGaramond-Medium"
-    static let mediumItalic  = "CormorantGaramond-MediumItalic"
-  }
-
-  /// Expected PostScript names for the licensed app bundle.
-  enum Satoshi {
-    static let regular = "Satoshi-Regular"
-    static let medium = "Satoshi-Medium"
-    static let bold = "Satoshi-Bold"
-  }
-
-  /// Bundled development fallback until Satoshi assets land.
-  enum Inter {
-    static let regular   = "Inter-Regular"
-    static let medium    = "Inter-Medium"
-    static let semibold  = "Inter-SemiBold"
-  }
-
-  enum Plex {
-    static let regular = "IBMPlexMono-Regular"
-    static let medium  = "IBMPlexMono-Medium"
-  }
-
-  enum SpaceGrotesk {
-    static let medium = "SpaceGrotesk-Medium"
-  }
-}
+//
+// Removed: `SwarmHaloFont` named the five bundled faces (Cormorant Garamond,
+// Satoshi, Inter, IBM Plex Mono, Space Grotesk). Per `docs/DESIGN.md` R3 the
+// app uses one family — the system face — so there are no PostScript names to
+// resolve and no silent-fallback risk when one is missing.
+//
+// The .ttf files in `HaloApp/Resources/Fonts/` (~2.4 MB) and their `UIAppFonts`
+// entries in Info.plist are now unreferenced. Removing them touches the Xcode
+// project, so it is tracked separately in PLAN.md rather than done here.
 
 // MARK: - App-wide editable visual direction
 
@@ -262,24 +255,50 @@ enum SwarmHaloFont {
 /// hex colors, mood hues, radii, or key sizing constants in feature files.
 enum HaloVisual {
   enum Palette {
+    /// True black. Shadows, scrims and the far-rest void only — never a
+    /// background. See `ground`.
     static let absoluteBlack = Color(hex: "#000000")
-    static let warmBlack = Color(hex: "#000000")
-    static let nightSurface = Color(hex: "#161516")
-    static let nightSurface2 = Color(hex: "#1B191A")
 
-    static let cream = Color(hex: "#E4DDCF")
-    static let creamLow = cream.opacity(0.62)
-    /// Bumped to ~0.52 for WCAG AA on black backgrounds (was 0.42 → ~3.3:1).
-    static let creamMute = cream.opacity(0.52)
-    static let creamHair = cream.opacity(0.18)
-    static let creamLine = cream.opacity(0.10)
-    static let creamWhisper = cream.opacity(0.06)
+    /// The app ground. Barely cold, never pure black: per `docs/DESIGN.md` R2
+    /// the dark is *intimate* (evening, bedroom, lockscreen), not *premium*.
+    /// Pure black reads as high-contrast and clinical.
+    static let ground = Color(hex: "#0B0C0E")
+    static let warmBlack = ground
 
-    static let bronze = Color(hex: "#A88260")
-    static let bronzeSoft = bronze.opacity(0.55)
-    static let bronzeGlow = bronze.opacity(0.35)
+    static let nightSurface = Color(hex: "#141619")
+    static let nightSurface2 = Color(hex: "#191C20")
 
-    static let glassInkFill = Color(red: 11 / 255, green: 14 / 255, blue: 17 / 255)
+    /// Primary ink. Plain white at varying opacity — `docs/DESIGN.md` §5.
+    /// The paper-cream `#E4DDCF` belonged to the editorial direction that made
+    /// the app read as a magazine; the token name is kept so call sites survive.
+    static let cream = Color(hex: "#FFFFFF")
+    static let creamLow = cream.opacity(0.66)
+    /// ~0.50 keeps muted labels above WCAG AA on the ground.
+    static let creamMute = cream.opacity(0.50)
+    static let creamHair = cream.opacity(0.16)
+    static let creamLine = cream.opacity(0.09)
+    static let creamWhisper = cream.opacity(0.05)
+
+    // MARK: - No brand accent (docs/DESIGN.md R4)
+    //
+    // Halo has no accent colour. The only colour in the app comes from the
+    // mood states of people, via `HaloVisual.Aura` / `MoodPalette` — so colour
+    // means something literal: colour = someone is there.
+    //
+    // These three tokens were the bronze accent. They now resolve to neutral
+    // ink so no surface renders brand colour, and the names stay put so the
+    // ~20 call sites keep compiling while they are migrated to either plain
+    // ink or a real mood colour.
+
+    /// Deprecated: was `#A88260`. Now neutral — prefer `SwarmHalo.ink`.
+    static let bronze = cream.opacity(0.92)
+    /// Deprecated: now neutral — prefer `SwarmHalo.inkSecondary`.
+    static let bronzeSoft = cream.opacity(0.55)
+    /// Deprecated: a presence glow with no hue. For a person's glow use
+    /// `MoodPalette.auraRing(mood:)` — that one carries meaning.
+    static let bronzeGlow = cream.opacity(0.14)
+
+    static let glassInkFill = ground
   }
 
   enum Aura {
@@ -321,36 +340,29 @@ enum HaloVisual {
   }
 
   enum Typography {
+    /// Legacy name. One family now (`docs/DESIGN.md` R3) — this resolves to
+    /// the system face like every other role. Prefer `HaloType.ui(_:weight:)`.
     static func inter(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-      let name: String
-      switch weight {
-      case .bold, .semibold:
-        name = SwarmHaloFont.Inter.semibold
-      case .medium:
-        name = SwarmHaloFont.Inter.medium
-      default:
-        name = SwarmHaloFont.Inter.regular
-      }
-
-      return .custom(name, size: size, relativeTo: .body)
+      .system(size: size, weight: weight)
     }
   }
 
   enum Chrome {
-    static let controlFill = HaloVisual.Palette.absoluteBlack.opacity(0.76)
-    static let contentFill = HaloVisual.Palette.absoluteBlack.opacity(0.88)
-    static let fallbackFill = HaloVisual.Palette.absoluteBlack
-    static let stroke = HaloVisual.Palette.cream.opacity(0.16)
-    static let contentStroke = HaloVisual.Palette.cream.opacity(0.10)
+    static let controlFill = HaloVisual.Palette.ground.opacity(0.76)
+    static let contentFill = HaloVisual.Palette.ground.opacity(0.88)
+    static let fallbackFill = HaloVisual.Palette.ground
+    static let stroke = HaloVisual.Palette.cream.opacity(0.14)
+    static let contentStroke = HaloVisual.Palette.cream.opacity(0.09)
   }
 
   enum Orbita {
-    static let chromeFill = HaloVisual.Palette.absoluteBlack.opacity(0.94)
-    static let chromeFillStrong = HaloVisual.Palette.absoluteBlack
-    static let chromeStroke = HaloVisual.Palette.cream.opacity(0.16)
-    static let chromeStrokeStrong = HaloVisual.Palette.bronze.opacity(0.56)
-    static let selectedFill = HaloVisual.Palette.bronze.opacity(0.34)
-    static let selectedStroke = HaloVisual.Palette.bronze.opacity(0.48)
+    static let chromeFill = HaloVisual.Palette.ground.opacity(0.94)
+    static let chromeFillStrong = HaloVisual.Palette.ground
+    static let chromeStroke = HaloVisual.Palette.cream.opacity(0.14)
+    /// Selection is neutral: brighter, not tinted (`docs/DESIGN.md` R4).
+    static let chromeStrokeStrong = HaloVisual.Palette.cream.opacity(0.40)
+    static let selectedFill = HaloVisual.Palette.cream.opacity(0.12)
+    static let selectedStroke = HaloVisual.Palette.cream.opacity(0.34)
 
     static let contentTopPadding: CGFloat = 48
     static let sectionGap: CGFloat = 12
