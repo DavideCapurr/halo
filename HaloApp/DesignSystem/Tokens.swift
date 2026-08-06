@@ -77,13 +77,13 @@ enum SwarmHalo {
   static let bronzeGlow = HaloVisual.Palette.bronzeGlow
   static let warmMagenta = attention
 
-  // MARK: - Radii (SWARM literal)
+  // MARK: - Radii
 
-  static let radiusCard:  CGFloat = 6
-  static let radiusInput: CGFloat = 4
-  static let radiusChip:  CGFloat = 2
-  static let radiusPill:  CGFloat = 999
-  static let radiusSheet: CGFloat = 24   // sheet present, Halo extension
+  static let radiusCard:  CGFloat = HaloVisual.Radius.card
+  static let radiusInput: CGFloat = HaloVisual.Radius.input
+  static let radiusChip:  CGFloat = HaloVisual.Radius.chip
+  static let radiusPill:  CGFloat = HaloVisual.Radius.pill
+  static let radiusSheet: CGFloat = HaloVisual.Radius.sheet
 
   // MARK: - Spacing (SWARM 4/8 scale)
 
@@ -340,6 +340,14 @@ enum HaloVisual {
     static let fallbackFill = HaloVisual.Palette.absoluteBlack
     static let stroke = HaloVisual.Palette.cream.opacity(0.16)
     static let contentStroke = HaloVisual.Palette.cream.opacity(0.10)
+  }
+
+  enum Radius {
+    static let card: CGFloat = 18
+    static let input: CGFloat = 14
+    static let chip: CGFloat = 12
+    static let sheet: CGFloat = 28
+    static let pill: CGFloat = 999
   }
 
   enum Orbita {
