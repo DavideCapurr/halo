@@ -7,6 +7,11 @@ per fase tecnica. Per lo storico completo e le scelte prese vedi `PLAN.md`.
 > **Piano operativo completo (audit 2026-07-05)**:
 > `docs/launch/PIANO-LANCIO-BOCCONI.md` — fasi, date, criteri di
 > accettazione e triage. Questa checklist ne è il riassunto di stato.
+>
+> **Priorità aggiornate (audit codice 2026-08-06)**:
+> `docs/launch/FEATURE-LANCIO.md` — cosa serve davvero al lancio, cosa taglia,
+> e le feature nuove (roster di co-presenza, richiamo del giorno dopo, widget
+> interattivo). Se i due file divergono, vince quello.
 
 **Stato**: `[ ]` da fare · `[x]` fatto · `[~]` in corso · `[!]` bloccato
 **Priorità**: 🚀 blocker di lancio · ⭐ alto impatto sul successo · 🔧 dopo il lancio
