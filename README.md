@@ -1,8 +1,17 @@
 # Halo - iOS MVP
 
-Private social map basata su presenza umana e distanza relazionale.
-Il beachhead e Bocconi, ma il modello resta globale: `Inner`, `Close`,
-`Orbit` e `Nebula` governano quanto lontano viaggiano vibe e momenti.
+**Halo è la rete delle persone che hai incontrato davvero.** Non chi ti segue,
+non chi conosci online: chi hai incontrato. L'evento è la porta (Ring + QR),
+la presenza è il pavimento (widget e vibe).
+
+> **Leggi prima `docs/PRODOTTO.md`** — tesi, moat, loop, cosa è core e cosa è
+> impalcatura Bocconi, e le cinque domande con cui si giudica ogni feature.
+> Questo README descrive *com'è fatto* il repo; quel file descrive *perché*.
+
+Bocconi è il trampolino, non il prodotto: la verifica campus è un acceleratore
+locale, la prova di co-presenza è il core che generalizza. `Inner`, `Close`,
+`Orbit` e `Nebula` restano l'idraulica che governa quanto lontano viaggiano
+vibe e momenti — idraulica invisibile, non pannello di controllo.
 
 Stack attuale: iOS 17+, SwiftUI, Supabase, WidgetKit e pacchetto locale
 `HaloShared`.
