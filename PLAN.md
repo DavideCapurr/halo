@@ -28,16 +28,30 @@ I tre item bloccati di Fase A sono chiusi **senza oggetto**: con R4 (nessun
 accent di brand) e R3 (un font solo) non servono ne la mono ramp a 14 step, ne
 i file Satoshi ufficiali, ne il mapping stati<->SWARM.
 
-- [x] Type scale, radii e motion `cubic-bezier(0.2, 0.7, 0.1, 1)` canonici nei
-      token. Spacing e easing restano; i radii 6/4/2 vanno rivisti verso
-      20/16/12 (`docs/DESIGN.md` §5) — operator vs consumer.
-- [ ] Invertire `MoodPalette.swift` da canale secondario a fondamento: il colore
-      viene solo dalle persone (R4).
-- [ ] Collassare `HaloTypography.swift` su una famiglia sola, gerarchia da peso
-      e opacita (R3). Sblocca il bundle font e ~2 MB di binario.
-- [ ] Rimuovere gli alias legacy in `Tokens.swift`
-      (`orbitalBlue`/`signalGreen`/`launchAmber` -> bronze,
-      `warmBlack` -> `absoluteBlack`): erano ponti fra due direzioni mai scelte.
+Applicato al layer token: valori cambiati mantenendo ogni simbolo, cosi le ~24
+superfici che consumano i token hanno ereditato la direzione senza refactor di
+massa.
+
+- [x] Spacing, easing e type scale canonici. Radii portati da 6/4/2 (operator)
+      a 20/16/12 (`docs/DESIGN.md` R2).
+- [x] R4 — nessun accent di brand: bronze e i tre alias SWARM risolvono a ink
+      neutro. `SwarmHaloTierState` esprime la distanza con l'opacita dell'ink,
+      non con una tinta, cosi la tinta resta libera di significare una cosa
+      sola: qualcuno c'e.
+- [x] R2 — ground `#0B0C0E` al posto del nero puro; ink bianco al posto del
+      paper-cream. Il nero puro resta per ombre, scrim e il vuoto `farRest`.
+- [x] R3 — una famiglia sola: `HaloType` risolve tutto al system face,
+      `SwarmHaloFont` rimosso. Niente piu dipendenza da Satoshi licenziato ne
+      rischio di fallback silenzioso su un PostScript name mancante.
+- [x] R5 — widget allineato: la palette privata aveva ancora lime/purple/magenta
+      SWARM. Ora ink neutro su ground, colore solo dai mood.
+- [ ] Rimuovere i `.ttf` in `HaloApp/Resources/Fonts/` (~2,4 MB) e le voci
+      `UIAppFonts` in Info.plist: non piu referenziati, ma tocca il progetto
+      Xcode.
+- [ ] Migrare i call site che usano ancora `bronze`/`bronzeSoft`/`bronzeGlow`
+      (~20) a ink o a un mood reale, poi cancellare i token deprecati.
+- [ ] Verificare su device: contrasto del nuovo ink, e che le bolle mood
+      leggano ancora bene sul ground piu chiaro.
 
 ### Prodotto - HALO PDF da costruire sopra
 

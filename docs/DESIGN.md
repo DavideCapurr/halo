@@ -193,30 +193,46 @@ durante il giorno.
 
 ---
 
-## 5 · Conseguenze sui token
+## 5 · Stato nei token
 
-Non è un refactor urgente. È la lente con cui si giudica ogni scelta da qui in
-avanti.
+Applicato al layer token il 6 agosto 2026. La strategia è stata cambiare
+**valori mantenendo ogni simbolo**, così le ~24 superfici che consumano i token
+hanno ereditato la direzione senza un refactor di massa.
 
-| Elemento | Oggi | Direzione |
+| Elemento | Prima | Ora |
 |---|---|---|
-| activation | 3 alias SWARM → bronze | nessun accent di brand |
+| activation | 3 alias SWARM → bronze | neutri e deprecati, nessun accent |
 | colore | bronze + mood secondario | solo mood, dalle persone |
 | font | 4 famiglie, bloccato su Satoshi | 1 famiglia di sistema |
 | radii | 6 / 4 / 2 — operator | 20 / 16 / 12 — morbidi |
 | ink | paper-cream `#E4DDCF` | bianco a opacità variabile |
-| ground | `warmBlack = absoluteBlack` | `#0B0C0E`, freddo appena |
-| tipo hero | Cormorant italic sui nomi | stesso font, peso e scala |
+| ground | `= absoluteBlack` (#000) | `#0B0C0E`, freddo appena |
+| tier | bronze per inner/close | opacità dell'ink: vicino = più presente |
+| widget | lime · purple · magenta SWARM | ink neutro, colore solo dai mood |
 
-### Cosa si sblocca
+Il nero puro resta, ma solo dove serve davvero: ombre, scrim e il vuoto
+`farRest`. Non è più uno sfondo.
 
-I tre item `[!]` di Fase A perdono oggetto: la palette mono 14 step non serve
-più, i file Satoshi ufficiali non servono più, il mapping stati↔SWARM non ha
-più senso.
+### Cosa è rimasto deprecato, non rimosso
+
+`bronze`, `bronzeSoft`, `bronzeGlow`, `orbitalBlue`, `signalGreen`,
+`launchAmber` esistono ancora e risolvono a neutro. Tenerli evitava di toccare
+~20 call site in un colpo solo; vanno migrati a ink o a un mood reale quando si
+passa sulle rispettive view.
+
+`attention` (`#FF2B6E`) resta l'unico token colorato che non è una persona: è
+**semantico**, non brand — un errore non deve mai essere silenzioso.
+
+### Cosa si è sbloccato
+
+I tre item `[!]` di Fase A hanno perso oggetto: niente palette mono 14 step,
+niente file Satoshi ufficiali, niente mapping stati↔SWARM. I `.ttf` in
+`HaloApp/Resources/Fonts/` (~2,4 MB) e le voci `UIAppFonts` non sono più
+referenziati; rimuoverli tocca il progetto Xcode ed è tracciato in `PLAN.md`.
 
 ### Cosa resta buono
 
-`MoodPalette.swift` è l'idea migliore del design system esistente e diventa il
+`MoodPalette.swift` è l'idea migliore del design system esistente ed è ora il
 fondamento. Spacing 4/8, easing `cubic-bezier(0.2, 0.7, 0.1, 1)` e la
 disciplina anti-saturazione restano: sono igiene, non identità.
 
