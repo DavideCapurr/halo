@@ -261,9 +261,9 @@ enum SwarmHaloFont {
 enum HaloVisual {
   enum Palette {
     static let absoluteBlack = Color(hex: "#000000")
-    static let warmBlack = Color(hex: "#000000")
-    static let nightSurface = Color(hex: "#161516")
-    static let nightSurface2 = Color(hex: "#1B191A")
+    static let warmBlack = absoluteBlack
+    static let nightSurface = absoluteBlack
+    static let nightSurface2 = absoluteBlack
 
     static let cream = Color(hex: "#E4DDCF")
     static let creamLow = cream.opacity(0.62)
@@ -277,7 +277,7 @@ enum HaloVisual {
     static let bronzeSoft = bronze.opacity(0.55)
     static let bronzeGlow = bronze.opacity(0.35)
 
-    static let glassInkFill = Color(red: 11 / 255, green: 14 / 255, blue: 17 / 255)
+    static let glassInkFill = absoluteBlack
   }
 
   enum Aura {
