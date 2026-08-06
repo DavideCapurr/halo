@@ -8,37 +8,36 @@ Roadmap canonica: Fase A-E qui sotto. Aggiornare stato task man mano.
 
 ## Stato corrente
 
-**Fase attiva: Fase A - Adozione SWARM design.**
+**Fase attiva: validazione della tesi** (`docs/PRODOTTO.md` §10).
 
-Il repo ha gia parecchie superfici iOS e servizi backend, ma la direzione
-visuale attuale pende ancora troppo verso la variante warm Halo
-(`cream/bronze`). Prima di aprire i gap prodotto del PDF, Fase A deve
-riallineare token, typography, stati e componenti chiave al brief SWARM
-canonico in `docs/design-system/swarm-v1.md`.
+Il prossimo deliverable non e codice: e capire se il problema esiste. Vedi
+`docs/PRODOTTO.md` per la tesi e `docs/DESIGN.md` §6 per come si verifica la
+direzione visiva insieme alle conversazioni.
 
-Il target non e una copia letterale della superficie operator SWARM:
-**Swarm Halo e la via di mezzo consumer, ma deve capirsi subito che e
-SWARM**.
+**Fase A e chiusa, non completata.** L'ereditarieta SWARM e stata rimossa dai
+vincoli di Halo: SWARM e un linguaggio operator, Halo e consumer-social, e la
+riconoscibilita cross-prodotto non esiste finche non ci sono utenti. La
+direzione canonica e ora `docs/DESIGN.md`. I brief SWARM sono in
+`docs/archive/`.
 
-## Gap vs HALO PDF + SWARM design system
+## Gap vs HALO PDF
 
-### Design - SWARM da adottare
+### Design - direzione canonica: `docs/DESIGN.md`
 
-- [!] Palette mono 14-step (`absolute-black` -> `platinum`) + activation
-      (`orbital-blue` lime, `signal-green` purple, `launch-amber` magenta).
-      Codice migrato su endpoint e semantic token SWARM; restano bloccanti
-      i 12 step intermedi ufficiali della mono ramp.
-- [!] Type system Cormorant Garamond / Satoshi / IBM Plex Mono /
-      Space Grotesk. Il repo ha gia alcuni font bundle, ma Satoshi e il
-      mapping SWARM completo non sono ancora la fonte unica.
-      Fallback Inter cablato finche arrivano i file Satoshi ufficiali.
-- [x] Type scale 144 / 64 / 40 / 28 / 17 / 15 / 13 / 11, radii
-      6 / 4 / 2 / 999 e motion
-      `cubic-bezier(0.2, 0.7, 0.1, 1)` da rendere canonici nei token.
-- [x] Mapping stati Halo <-> SWARM da portare in API e componenti:
-      Inner = orbital-blue lime, Close = signal-green purple,
-      Orbit = platinum hairline, Nebula = absolute-black,
-      Vibe attention = launch-amber magenta.
+I tre item bloccati di Fase A sono chiusi **senza oggetto**: con R4 (nessun
+accent di brand) e R3 (un font solo) non servono ne la mono ramp a 14 step, ne
+i file Satoshi ufficiali, ne il mapping stati<->SWARM.
+
+- [x] Type scale, radii e motion `cubic-bezier(0.2, 0.7, 0.1, 1)` canonici nei
+      token. Spacing e easing restano; i radii 6/4/2 vanno rivisti verso
+      20/16/12 (`docs/DESIGN.md` §5) — operator vs consumer.
+- [ ] Invertire `MoodPalette.swift` da canale secondario a fondamento: il colore
+      viene solo dalle persone (R4).
+- [ ] Collassare `HaloTypography.swift` su una famiglia sola, gerarchia da peso
+      e opacita (R3). Sblocca il bundle font e ~2 MB di binario.
+- [ ] Rimuovere gli alias legacy in `Tokens.swift`
+      (`orbitalBlue`/`signalGreen`/`launchAmber` -> bronze,
+      `warmBlack` -> `absoluteBlack`): erano ponti fra due direzioni mai scelte.
 
 ### Prodotto - HALO PDF da costruire sopra
 
@@ -62,25 +61,20 @@ SWARM**.
 
 ## Roadmap operativa A-E
 
-### Fase A - Adozione SWARM design (1-2 settimane)
+### Fase A - CHIUSA (adozione SWARM design, abbandonata)
 
-- [x] `docs/design-system/swarm-v1.md` - brief canonico versionato nel repo.
-- [x] `HaloApp/DesignSystem/Tokens.swift` - palette mono+activation,
-      spacing 4/8, radii, easing motion.
-- [!] Sostituire `HaloTypography.swift` con i 4 font SWARM
-      (bundle `.otf`, fallback system) e aggiornare la type scale.
-      Satoshi resta bloccato dai file licenziati non presenti nel repo.
-- [x] Definire mapping stati:
-      Inner = orbital-blue lime, Close = signal-green purple,
-      Orbit = platinum hairline, Nebula = absolute-black,
-      Vibe attention = launch-amber magenta.
-- [x] Refactor componenti chiave:
-      `SelfCenterView`, `BubbleView`, `OrbitalRing`, `MomentCard`,
-      `PresenceBar`, `HaloTabBar`.
-- [x] Sweep voce: sentence case, periodi come armi,
-      copy "Your people, not your audience" sulla welcome.
-- [x] Lint hex letterali -> token.
-      Eccezioni rimaste: asset portrait/debug preview e parser `Color(hex:)`.
+Fase chiusa senza completamento il 6 agosto 2026. Motivo in `docs/DESIGN.md`
+§2: il vincolo "Halo eredita da SWARM" era dichiarato non negoziabile ed era
+la causa per cui quattro fonti in conflitto tenevano fermo il design system.
+Rimosso il vincolo, gli item bloccati perdono oggetto invece di sbloccarsi.
+
+Cosa sopravvive: spacing 4/8, easing, disciplina anti-saturazione, sweep voce,
+lint hex -> token. Sono igiene, non identita.
+
+Cosa e stato abbandonato: palette mono 14 step, 4 famiglie di font, i tre
+activation color, il mapping stati<->SWARM.
+
+Il lavoro visivo residuo vive in "Design - direzione canonica" sopra.
 
 ### Fase B - Gap prodotto HALO (3-4 settimane)
 

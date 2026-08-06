@@ -26,22 +26,23 @@ Il repo ha superato il bootstrap iniziale:
   indice mutualita e funzione `purge-expired`.
 - Service layer Swift per auth, profili, follow, vibe, post, reazioni,
   storage, realtime feed e snapshot widget.
-- Design system e componenti orbitali gia presenti, ma ancora da
-  riallineare al brief SWARM canonico di Fase A.
+- Design system e componenti orbitali gia presenti, da riallineare alla
+  direzione canonica in `docs/DESIGN.md`.
 - Flussi iOS gia presenti per sign in, onboarding, Initial Inner Circle,
   Orbit Home, Pulse, compose vibe-first, HaloSpace e widget.
 
 ### Stato rispetto alla roadmap A-E
 
-La fase attiva e **Fase A - Adozione SWARM design**:
+La fase attiva e **validazione della tesi** (`docs/PRODOTTO.md` §10): il
+prossimo deliverable non e codice, e capire se il problema esiste.
 
-- `docs/design-system/swarm-v1.md` e il brief SWARM canonico.
-- Swarm Halo resta una variante consumer e piu sociale, ma la parentela
-  SWARM deve leggersi subito.
-- Il codice corrente pende ancora troppo verso cream/bronze, type mapping
-  non ancora SWARM completo e alcuni hex da riportare a token.
-- I gap prodotto HALO PDF (Rings, invite, Bocconi verify, reports,
-  Memory, Events/Clubs) entrano in Fase B.
+- **Fase A (adozione SWARM) e chiusa, non completata.** L'ereditarieta SWARM
+  e uscita dai vincoli di Halo — motivo in `docs/DESIGN.md` §2. I brief sono
+  in `docs/archive/`.
+- `docs/DESIGN.md` e la direzione visiva canonica: guscio premium, atto
+  banale; nessun accent di brand, il colore viene dalle persone.
+- Il lavoro visivo residuo (invertire `MoodPalette`, un font solo, togliere
+  gli alias legacy in `Tokens.swift`) e in `PLAN.md`.
 
 ### Stato da non confondere con "finito"
 
@@ -66,16 +67,17 @@ placeholder fuori dal feed.
 
 ## Prossimo slice consigliato
 
-Partire da Fase A:
+**Non e codice.** Il rischio dominante e domanda e ritorno, non feature
+mancanti: vedi `docs/PRODOTTO.md` §10 per la domanda da fare e
+`docs/DESIGN.md` §6 per come si verifica la direzione visiva in parallelo.
 
-1. Portare `Tokens.swift` alla palette mono+activation, spacing, radii e
-   motion SWARM.
-2. Riallineare `HaloTypography.swift` ai 4 font e alla type scale SWARM.
-3. Definire il mapping stati Halo/SWARM e rifare i componenti chiave
-   dell'orbita e del Pulse sopra quei token.
+Quando si torna al codice, l'ordine e:
 
-I gap prodotto del PDF restano visibili, ma il wiring live di Orbit/Pulse non
-e piu il blocco principale del feed.
+1. Invertire `MoodPalette.swift` da canale secondario a fondamento del colore.
+2. Collassare `HaloTypography.swift` su una famiglia sola.
+3. Rimuovere gli alias legacy in `Tokens.swift`.
+4. Togliere `ChooseYourFiveView` dall'onboarding: i tier vanno derivati dal
+   comportamento (`docs/PRODOTTO.md` §7).
 
 ## Setup dev
 
@@ -156,7 +158,10 @@ Gli screenshot finiscono in `/tmp/halo-shots/` (override con `OUT=`).
 
 - `Halo_Strategy_App_Technical_Plan.pdf`: strategia prodotto, MVP criteria
   e roadmap.
+- `docs/PRODOTTO.md`: **tesi, moat, loop, core vs impalcatura.** Da leggere
+  per primo — spiega perche tutto il resto esiste.
+- `docs/DESIGN.md`: direzione visiva canonica e le cinque regole di stile.
 - `PLAN.md`: piano implementativo locale.
-- `docs/design-system/swarm-v1.md`: brief SWARM canonico per Fase A.
-- `docs/design-system/swarm-halo-v1.md`: note consumer di Swarm Halo.
-- `docs/research/`: vocabolario, audit competitivo e direzioni estetiche.
+- `docs/research/`: vocabolario e audit competitivo.
+- `docs/archive/`: brief SWARM e direzioni estetiche superate. Storia, non
+  riferimento.

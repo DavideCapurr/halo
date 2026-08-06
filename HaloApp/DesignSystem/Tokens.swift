@@ -122,10 +122,12 @@ enum SwarmHalo {
 
 // MARK: - Type scale
 
-/// swarm-halo type scale. Hero is capped at 72 for mobile (the SWARM-literal
-/// 144/64 ramp is archived with `swarm-v1.md`). Headlines are editorial
-/// Cormorant, per `docs/design-system/swarm-halo-v1.md`. Values are base px;
-/// the global `HaloType.scale` multiplier is applied on top at render time.
+/// Type scale. Hero is capped at 72 for mobile. Values are base px; the global
+/// `HaloType.scale` multiplier is applied on top at render time.
+///
+/// TODO(design): headlines are still editorial Cormorant here. Per
+/// `docs/DESIGN.md` R3 the app collapses onto a single family, with hierarchy
+/// carried by size, weight and opacity rather than by typeface.
 enum SwarmHaloTypeScale {
   static let hero: CGFloat = 72
   static let h1: CGFloat = 40

@@ -1,3 +1,15 @@
+> **ARCHIVIATO — non è più il riferimento.**
+>
+> Brief SWARM canonico usato durante Fase A. La direzione canonica di Halo è
+> ora `docs/DESIGN.md`, che rimuove l'ereditarietà SWARM dai vincoli del
+> prodotto: SWARM è un linguaggio operator, Halo è consumer-social, e il
+> vincolo di famiglia visiva costava più di quanto rendesse (zero utenti = zero
+> riconoscibilità cross-prodotto da proteggere).
+>
+> Conservato come storia. Non usare per decisioni nuove.
+
+---
+
 # SWARM v1 - Halo adoption brief
 
 > **ARCHIVIATO (2026-06-12).** Questo brief (mono platinum · 3 activation
