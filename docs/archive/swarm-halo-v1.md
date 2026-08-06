@@ -1,3 +1,14 @@
+> **ARCHIVIATO — non è più il riferimento.**
+>
+> Variante consumer di SWARM (warm-black + paper-cream + single activation
+> bronze). Si autodichiarava già legacy mentre il proprio diagramma continuava
+> a definirsi "canonical reference": una delle quattro fonti in conflitto che
+> tenevano fermo il design system.
+>
+> La direzione canonica è ora `docs/DESIGN.md`. Conservato come storia.
+
+---
+
 # Swarm Halo — Consumer Variant Notes
 
 > Roadmap note: this document records pre-Fase A Halo consumerization notes

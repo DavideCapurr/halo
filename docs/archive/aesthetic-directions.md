@@ -1,3 +1,16 @@
+> **ARCHIVIATO — non è più il riferimento.**
+>
+> Confronto fra tre direzioni estetiche, con raccomandazione finale "hybrid
+> swarm-halo". L'esplorazione resta utile; la raccomandazione è superata.
+>
+> Il vincolo di partenza dichiarato "non negoziabile" — «Halo eredita da SWARM
+> perché è il design language del portfolio» — è la causa per cui nessuna delle
+> tre direzioni è mai stata chiusa. È stato rimosso. Vedi `docs/DESIGN.md` §2.
+>
+> Conservato come storia. Non usare per decisioni nuove.
+
+---
+
 # Halo — direzioni estetiche
 
 > Tre direzioni a confronto, valutate per il target Bocconiano, con il
