@@ -23,15 +23,22 @@ public enum FriendshipTier: String, Codable, CaseIterable, Comparable, Sendable 
     }
   }
 
-  /// Display label for UI copy. Inner / Close stay English as brand-specific
-  /// product terms; Orbita / Nebula translate. See `docs/research/vocabulary.md`.
+  /// Display label for UI copy.
+  ///
+  /// Erano Inner / Close / Orbita / Nebula. `docs/PRODOTTO.md` §7 li classifica
+  /// come **idraulica invisibile**: i tier esistono e si muovono da soli in base
+  /// al comportamento, ma non sono concetti da insegnare all'utente, e il budget
+  /// del first run è di tre termini proprietari in tutto (Ring, Vibe, Halo).
+  ///
+  /// Restano parole comuni di distanza, che dicono la stessa cosa senza chiedere
+  /// a nessuno di imparare una tassonomia.
   public var label: String {
     switch self {
-    case .inner:    return "Inner"
-    case .close:    return "Close"
-    case .orbit:    return "Orbita"
-    case .nebula:   return "Nebula"
-    case .asteroid: return "Asteroidi"
+    case .inner:    return "Vicino"
+    case .close:    return "Amico"
+    case .orbit:    return "Intorno"
+    case .nebula:   return "Lontano"
+    case .asteroid: return "Silenziato"
     }
   }
 

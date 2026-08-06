@@ -157,7 +157,7 @@ struct TierConfirmationSheet: View {
     case .close:  return "Potrà vedere foto, testo e audio. Reazioni in chiaro."
     case .orbit:  return "Vedrà foto e testo. Reazioni solo aggregate."
     case .nebula: return "Vedrà solo la tua presenza e la bio. Niente post."
-    case .asteroid: return "Sparirà dai tuoi anelli: resta tra i contatti ma non comparirà più nell'orbita né nelle storie."
+    case .asteroid: return "Sparirà dalle tue schermate: resta fra i contatti ma non lo vedrai più."
     }
   }
 }

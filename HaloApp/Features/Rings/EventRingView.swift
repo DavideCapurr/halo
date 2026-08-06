@@ -13,6 +13,10 @@ struct EventRingView: View {
 
   private let initialRingId: UUID?
   private let initialJoinToken: String?
+  /// `true` quando la view è una destinazione della dock invece di una sheet.
+  /// Da tab non c'è niente da chiudere, quindi la X sparisce: un bottone che
+  /// non fa niente è peggio di un bottone che non c'è.
+  private let isEmbedded: Bool
 
   @State private var rings: [HaloRing] = []
   @State private var selectedRing: HaloRing?
@@ -32,9 +36,10 @@ struct EventRingView: View {
   @State private var statusMessage: String?
   @State private var errorMessage: String?
 
-  init(ringId: UUID? = nil, joinToken: String? = nil) {
+  init(ringId: UUID? = nil, joinToken: String? = nil, isEmbedded: Bool = false) {
     self.initialRingId = ringId
     self.initialJoinToken = joinToken
+    self.isEmbedded = isEmbedded
     _tokenInput = State(initialValue: joinToken ?? "")
   }
 
@@ -76,8 +81,8 @@ struct EventRingView: View {
 
   private var rail: some View {
     SwarmOperationalRail(
-      title: "HALO / EVENT RING",
-      context: selectedRing?.title ?? "qr live",
+      title: "HALO / RING",
+      context: selectedRing?.title ?? "dove vi siete incontrati",
       activation: .attention
     ) {
       HStack(spacing: SwarmHalo.s2) {
@@ -89,13 +94,15 @@ struct EventRingView: View {
         }
         .buttonStyle(.plain)
 
-        Button(action: { dismiss() }) {
-          Image(systemName: "xmark")
-            .font(HaloType.system(12, weight: .semibold))
-            .foregroundStyle(SwarmHalo.inkSecondary)
-            .swarmIconFrame()
+        if !isEmbedded {
+          Button(action: { dismiss() }) {
+            Image(systemName: "xmark")
+              .font(HaloType.system(12, weight: .semibold))
+              .foregroundStyle(SwarmHalo.inkSecondary)
+              .swarmIconFrame()
+          }
+          .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
       }
     }
   }

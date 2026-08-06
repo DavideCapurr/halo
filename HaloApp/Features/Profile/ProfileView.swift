@@ -1,9 +1,12 @@
 import SwiftUI
 import HaloShared
 
-/// Profile surface for the current user. It keeps Plus, Memory and safety
-/// surfaces visible as real SWARM command objects even while backend work is
-/// staged for later phases.
+/// Profile surface for the current user.
+///
+/// Non ospita più Discovery, Halo Plus e Memory: `docs/PRODOTTO.md` §8 le
+/// congela fino a prova di ritenzione, e finché sono congelate non possono
+/// occupare la superficie migliore del profilo. Il codice resta in repo — sono
+/// congelate, non cancellate.
 struct ProfileView: View {
   @Environment(AppState.self) private var state
 
@@ -12,15 +15,11 @@ struct ProfileView: View {
   var onVibeTap: () -> Void = {}
   var onComposeTap: () -> Void = {}
 
-  @State private var showPlus: Bool = false
-  @State private var showDiscovery: Bool = false
   @State private var showBocconiVerify: Bool = false
-  @State private var showEventRings: Bool = false
   @State private var showClubRings: Bool = false
-  @State private var showMemory: Bool = false
+  @State private var showCloseCircle: Bool = false
   @State private var showSafetyReport: Bool = false
   @State private var showPrivacy: Bool = false
-  @State private var memoryCount: Int = 0
 
   init(
     person: HaloPersonNode,
@@ -55,7 +54,6 @@ struct ProfileView: View {
           heroNode
           haloLedger
           commandPanel
-          memoryPanel
           safetyPanel
         }
         .padding(.horizontal, SwarmHalo.s4)
@@ -64,18 +62,13 @@ struct ProfileView: View {
       }
       .scrollIndicators(.hidden)
     }
-    .sheet(isPresented: $showPlus) { PlusUpsellView() }
-    .sheet(isPresented: $showDiscovery) { DiscoveryView { showDiscovery = false } }
     .sheet(isPresented: $showBocconiVerify) { BocconiVerifyView() }
-    .sheet(isPresented: $showEventRings) { EventRingView() }
     .sheet(isPresented: $showClubRings) { ClubRingView() }
-    .sheet(isPresented: $showMemory) {
-      MemoryArchiveView(hasPlusHint: state.currentProfile?.hasPlus ?? false) {
-        showMemory = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-          showPlus = true
-        }
-      }
+    .sheet(isPresented: $showCloseCircle) {
+      InitialInnerCircleView(
+        onDone: { showCloseCircle = false },
+        onSkip: { showCloseCircle = false }
+      )
     }
     .sheet(isPresented: $showSafetyReport) {
       ProfileReportSheet()
@@ -83,20 +76,10 @@ struct ProfileView: View {
     .sheet(isPresented: $showPrivacy) {
       ProfilePrivacySheet()
     }
-    .task {
-      await loadMemoryCount()
-    }
-    .onChange(of: state.currentProfile?.hasPlus ?? false) { _, _ in
-      Task { await loadMemoryCount() }
-    }
   }
 
   private var rail: some View {
-    SwarmOperationalRail(title: "HALO / PROFILE", context: "@\(person.handle)") {
-      SwarmCommandButton(label: "scopri", icon: "sparkle.magnifyingglass", activation: .operational) {
-        showDiscovery = true
-      }
-    }
+    SwarmOperationalRail(title: "HALO / PROFILE", context: "@\(person.handle)")
   }
 
   private var heroNode: some View {
@@ -135,12 +118,6 @@ struct ProfileView: View {
             .foregroundStyle(SwarmHalo.inkMuted)
           Text("il tuo halo")
             .haloEyebrow(SwarmHalo.inkMuted, size: 9, tracking: 2.1)
-          if state.currentProfile?.hasPlus == true {
-            Image(systemName: "sparkles")
-              .font(HaloType.system(9, weight: .semibold))
-              .foregroundStyle(SwarmActivationRole.attention.color)
-              .accessibilityLabel("Halo Plus")
-          }
         }
       }
     }
@@ -154,31 +131,41 @@ struct ProfileView: View {
       .shadow(color: MoodPalette.auraRing(person.mood, alpha: 0.55), radius: 4)
   }
 
+  /// Due numeri, non quattro.
+  ///
+  /// Prima c'era una riga per tier — inner / close / orbita / live. Ma la
+  /// distanza relazionale è idraulica invisibile (`docs/PRODOTTO.md` §5), e una
+  /// riga di contatori per tier è precisamente il pannello di controllo che §5
+  /// vieta: insegna all'utente una tassonomia che i docs vogliono derivare dal
+  /// comportamento, e gli chiede implicitamente di gestirla.
+  ///
+  /// Restano le due quantità che parlano di persone e non di categorie: quante
+  /// ne hai incontrate davvero, e quante ci sono adesso.
   private var haloLedger: some View {
     HStack(spacing: 0) {
-      metric("inner", count(.inner), .connected)
+      metric("incontrati", twoDigits(metCount), .connected)
       divider
-      metric("close", count(.close), .operational)
-      divider
-      metric("orbita", count(.orbit), .rest)
-      divider
-      metric("live", person.hasActiveVibe ? "01" : "00", .attention, active: person.hasActiveVibe)
+      metric("adesso", twoDigits(liveCount), .operational, active: liveCount > 0)
     }
     .padding(.vertical, SwarmHalo.s3)
     .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous))
   }
 
-  private func metric(_ label: String, _ value: String, _ role: SwarmActivationRole, active: Bool = true) -> some View {
-    SwarmMetricTile(label: label, value: value, activation: role, active: active)
-      .frame(maxWidth: .infinity)
+  private var metCount: Int {
+    tierCounts.values.reduce(0, +)
   }
 
-  private func count(_ tier: FriendshipTier) -> String {
-    String(format: "%02d", tierCounts[tier] ?? 0)
+  private var liveCount: Int {
+    person.hasActiveVibe ? 1 : 0
   }
 
   private func twoDigits(_ value: Int) -> String {
     String(format: "%02d", value)
+  }
+
+  private func metric(_ label: String, _ value: String, _ role: SwarmActivationRole, active: Bool = true) -> some View {
+    SwarmMetricTile(label: label, value: value, activation: role, active: active)
+      .frame(maxWidth: .infinity)
   }
 
   private var divider: some View {
@@ -187,58 +174,32 @@ struct ProfileView: View {
       .frame(width: SwarmStroke.hairline, height: 28)
   }
 
+  /// I comandi, nell'ordine che `docs/PRODOTTO.md` §5 impone: prima ciò che
+  /// vale ovunque e per sempre, poi l'impalcatura che deve poter staccarsi.
+  ///
+  /// Il Ring non è più qui dentro — è una destinazione della dock, perché è la
+  /// prova di co-presenza ed è il cuore del prodotto, non una voce di menu.
   private var commandPanel: some View {
     VStack(alignment: .leading, spacing: SwarmHalo.s3) {
-      sectionHeader("command")
+      sectionHeader("comandi")
       profileCommand("manda una vibe", "waveform.path.ecg", role: .connected, action: onVibeTap)
-      profileCommand("aggiungi un Moment", "plus", role: .connected, action: onComposeTap)
-      profileCommand("verifica Bocconi", "checkmark.seal", role: .connected) {
+      profileCommand("condividi qualcosa", "plus", role: .connected, action: onComposeTap)
+      // La scelta manuale dei vicini resta possibile — ma qui, come rifinitura
+      // a fiducia già guadagnata, mai come porta d'ingresso (§7).
+      profileCommand("chi ti sta vicino", "person.2", role: .operational) {
+        showCloseCircle = true
+      }
+
+      sectionHeader("campus")
+      profileCommand("verifica Bocconi", "checkmark.seal", role: .rest) {
         showBocconiVerify = true
       }
-      profileCommand("Event Ring", "qrcode.viewfinder", role: .connected) {
-        showEventRings = true
-      }
-      profileCommand("Club e corsi", "person.3.sequence", role: .operational) {
+      profileCommand("club e corsi", "person.3.sequence", role: .rest) {
         showClubRings = true
       }
-      profileCommand("scopri account pubblici", "scope", role: .operational) {
-        showDiscovery = true
-      }
     }
     .padding(SwarmHalo.s4)
     .swarmPanel()
-  }
-
-  @ViewBuilder
-  private var memoryPanel: some View {
-    let hasPlus = state.currentProfile?.hasPlus ?? false
-    VStack(alignment: .leading, spacing: SwarmHalo.s3) {
-      sectionHeader("memory")
-      Text(hasPlus ? "i frammenti del semestre restano privati finché non li riapri." : "i frammenti scaduti restano privati. Halo Plus li riapre senza metrica pubblica.")
-        .font(HaloType.ui(13, weight: .regular))
-        .foregroundStyle(SwarmHalo.inkSecondary)
-      HStack {
-        SwarmMetricTile(label: "frammenti", value: twoDigits(memoryCount), activation: hasPlus ? .attention : .rest, active: memoryCount > 0 && hasPlus)
-        Spacer()
-        SwarmCommandButton(label: "Memory", icon: "archivebox", activation: .attention) {
-          showMemory = true
-        }
-        SwarmCommandButton(label: "Halo Plus", icon: "sparkles", activation: .attention) {
-          showPlus = true
-        }
-      }
-    }
-    .padding(SwarmHalo.s4)
-    .swarmPanel()
-  }
-
-  @MainActor
-  private func loadMemoryCount() async {
-    do {
-      memoryCount = try await PostsService.shared.memoryCount()
-    } catch {
-      memoryCount = 0
-    }
   }
 
   private var safetyPanel: some View {
@@ -370,7 +331,7 @@ private struct ProfileReportSheet: View {
       Text("segnala senza esporre il tier.")
         .font(HaloType.serif(28, weight: .regular))
         .foregroundStyle(HaloInk.cream)
-      Text("scegli un profilo e usa lo stesso report sicuro di HaloSpace.")
+      Text("scegli una persona e mandaci un report. resta fra te e noi.")
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
     }
@@ -595,10 +556,10 @@ private struct ProfilePrivacySheet: View {
       sectionHeader("visibilita")
       Toggle(isOn: $isPublic) {
         VStack(alignment: .leading, spacing: 3) {
-          Text("account pubblico in Discovery")
+          Text("fatti trovare per handle")
             .font(HaloType.ui(14, weight: .semibold))
             .foregroundStyle(HaloInk.cream)
-          Text("handle e nome possono apparire nella ricerca pubblica.")
+          Text("chi conosce già il tuo handle può cercarti. nessun profilo pubblico, nessuna directory.")
             .font(HaloType.ui(12, weight: .regular))
             .foregroundStyle(HaloInk.creamMute)
         }
@@ -613,7 +574,7 @@ private struct ProfilePrivacySheet: View {
         activation: isPublic ? .connected : .rest
       )
 
-      Text("i Moment restano filtrati dai tier scelti quando pubblichi.")
+      Text("quello che condividi resta a chi hai scelto quando lo mandi.")
         .font(HaloType.ui(12, weight: .regular))
         .foregroundStyle(HaloInk.creamMute)
     }
@@ -634,7 +595,7 @@ private struct ProfilePrivacySheet: View {
       } else if blockedProfiles.isEmpty && blockedFallbackIds.isEmpty {
         SwarmEmptyState(
           title: "nessun blocco.",
-          message: "i profili bloccati spariscono da orbita e feed.",
+          message: "chi blocchi sparisce da ogni schermata, subito.",
           activation: .rest
         )
       } else {

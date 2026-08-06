@@ -10,15 +10,15 @@ enum PulseScope: String, CaseIterable, Hashable, Identifiable {
 
   var title: String {
     switch self {
-    case .inner: return "Inner"
+    case .inner: return "Vicini"
     case .tutti: return "Tutti"
     }
   }
 
   var subtitle: String {
     switch self {
-    case .inner: return "solo Inner"
-    case .tutti: return "tutte le tue orbite"
+    case .inner: return "solo i più vicini"
+    case .tutti: return "tutti quelli che hai incontrato"
     }
   }
 
@@ -94,9 +94,9 @@ final class FeedViewModel {
 
     var title: String {
       switch self {
-      case .innerClose: return "Inner · Close"
-      case .orbit:      return "Orbita"
-      case .nebula:     return "Nebula"
+      case .innerClose: return "i più vicini"
+      case .orbit:      return "intorno a te"
+      case .nebula:     return "più lontano"
       }
     }
 
@@ -306,7 +306,7 @@ final class FeedViewModel {
       lastError = nil
     } catch {
       localEvents.removeAll { $0.id == localId }
-      lastError = SupabaseErrorMessage.describe(error, fallback: "Non riesco a mandare il Moment. Riprova.")
+      lastError = SupabaseErrorMessage.describe(error, fallback: "Non riesco a mandarlo. Riprova.")
     }
   }
 

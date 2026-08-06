@@ -4,7 +4,7 @@ import HaloShared
 private enum HomeSystemTab: Hashable {
   case orbit
   case pulse
-  case status
+  case ring
   case profile
 }
 
@@ -12,7 +12,7 @@ private enum ComposeMediaUploadError: LocalizedError {
   case missingMedia
 
   var errorDescription: String? {
-    "Aggiungi il media prima di mandare il Moment."
+    "Aggiungi la foto prima di mandare."
   }
 }
 
@@ -41,8 +41,7 @@ struct HomeView: View {
   @State private var zoomRailHideTask: Task<Void, Never>? = nil
   @State private var pendingInvite: PendingInvite?
   @State private var pendingRing: PendingRing?
-  @State private var showMemoryArchive: Bool = false
-  @State private var showPlusFromRoute: Bool = false
+  @State private var showStato: Bool = false
 
   private struct BubbleDragState: Equatable {
     let personId: String
@@ -115,8 +114,8 @@ struct HomeView: View {
   }
 
   private var orbitStoriesCountText: String {
-    guard orbitStoriesCount > 0 else { return "0 STORIES · IN ATTESA" }
-    return "+\(max(orbitStoriesCount - 1, 0)) STORIES · ADESSO"
+    guard orbitStoriesCount > 0 else { return "NESSUNO · IN ATTESA" }
+    return "+\(max(orbitStoriesCount - 1, 0)) · ADESSO"
   }
 
   private var orbitalFieldTopInset: CGFloat {
@@ -145,8 +144,11 @@ struct HomeView: View {
         case .pulse:
           PulseFeedView(onPersonTap: { peek = $0 })
             .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
-        case .status:
-          StatoView(people: people, onTapPerson: { peek = $0 })
+        case .ring:
+          // Il Ring è una destinazione, non una sheet dentro il profilo:
+          // `docs/PRODOTTO.md` §5 lo classifica come core, ed è la porta del
+          // loop di acquisizione di §4.
+          EventRingView(isEmbedded: true)
             .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
         case .profile:
           ProfileView(
@@ -165,9 +167,9 @@ struct HomeView: View {
         activeTab: bottomBarTab,
         onCompose: { showCompose = true },
         onEasy: { showEasyCompose = true },
-        onOrbit: { selectTab(.orbit) },
-        onPulse: { selectTab(.pulse) },
-        onStato: { selectTab(.status) },
+        onHalo: { selectTab(.orbit) },
+        onAdesso: { selectTab(.pulse) },
+        onRing: { selectTab(.ring) },
         onProfile: { selectTab(.profile) }
       )
       .padding(.bottom, 6)
@@ -264,18 +266,13 @@ struct HomeView: View {
     }) { pending in
       EventRingView(ringId: pending.ringId, joinToken: pending.token)
     }
-    .sheet(isPresented: $showMemoryArchive, onDismiss: {
-      if case .memory = state.route {
-        state.route = .home
-      }
-    }) {
-      MemoryArchiveView(hasPlusHint: state.currentProfile?.hasPlus ?? false) {
-        showMemoryArchive = false
-        showPlusFromRoute = true
-      }
-    }
-    .sheet(isPresented: $showPlusFromRoute) {
-      PlusUpsellView()
+    .sheet(isPresented: $showStato) {
+      StatoView(people: people, onTapPerson: { person in
+        showStato = false
+        peek = person
+      })
+      .presentationDetents([.large])
+      .presentationCornerRadius(HaloTheme.sheetCornerRadius)
     }
     .fullScreenCover(isPresented: $showStories) {
       OrbitStoriesView(
@@ -297,9 +294,9 @@ struct HomeView: View {
 
   private var bottomBarTab: BottomBarView.Tab {
     switch selectedTab {
-    case .orbit:   return .orbit
-    case .pulse:   return .pulse
-    case .status:  return .stato
+    case .orbit:   return .halo
+    case .pulse:   return .adesso
+    case .ring:    return .ring
     case .profile: return .profile
     }
   }
@@ -315,9 +312,6 @@ struct HomeView: View {
   private func syncRoutePresentation() {
     if case .invite(let token) = state.route {
       pendingInvite = PendingInvite(token: token)
-    }
-    if case .memory = state.route {
-      showMemoryArchive = true
     }
     if case .ring(let id) = state.route {
       pendingRing = PendingRing(ringId: id, token: nil)
@@ -414,10 +408,26 @@ struct HomeView: View {
 
       Spacer(minLength: 12)
 
-      Button(action: openOrbitHeaderVibeSetter) {
-        orbitReferenceVibePill
+      HStack(spacing: 8) {
+        // "Come stanno" — la stessa presenza raccolta per mood invece che per
+        // posizione. Era una tab della dock: è una lettura alternativa del
+        // campo, non una quinta destinazione (vedi docs/UI-UX-AUDIT.md §4).
+        Button(action: { showStato = true }) {
+          Image(systemName: "circle.grid.2x2")
+            .font(HaloType.system(13, weight: .medium))
+            .foregroundStyle(Self.orbitStoriesCreamLow)
+            .frame(width: 30, height: 30)
+            .background(Self.orbitStoriesHeaderPillFill, in: Circle())
+            .overlay(Circle().strokeBorder(Self.orbitStoriesCreamHair, lineWidth: 0.8))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Come stanno")
+
+        Button(action: openOrbitHeaderVibeSetter) {
+          orbitReferenceVibePill
+        }
+        .buttonStyle(.plain)
       }
-      .buttonStyle(.plain)
       .padding(.top, HaloVisual.Orbita.vibePillTopPadding)
     }
     .padding(.horizontal, HaloVisual.Orbita.headerHorizontalPadding)
@@ -729,7 +739,7 @@ struct HomeView: View {
     } else if people.isEmpty {
       SwarmEmptyState(
         title: "orbita vuota.",
-        message: "aggiungi il tuo Inner per vedere vibe e Moment qui.",
+        message: "quando incontri qualcuno e entrate nello stesso ring, compare qui.",
         activation: .rest
       )
       .frame(width: 260)
@@ -1371,7 +1381,7 @@ struct HomeView: View {
     guard DemoMode.isActive else { return .orbit }
     switch ProcessInfo.processInfo.environment["HALO_DEMO_TAB"] {
     case "pulse": return .pulse
-    case "status": return .status
+    case "ring": return .ring
     case "profile": return .profile
     default: return .orbit
     }
@@ -1467,7 +1477,7 @@ struct HomeView: View {
     } catch {
       vm.lastError = SupabaseErrorMessage.describe(
         error,
-        fallback: "Non riesco a mandare il Moment. Riprova."
+        fallback: "Non riesco a mandarlo. Riprova."
       )
     }
   }
@@ -1525,7 +1535,7 @@ struct HomeView: View {
     } catch {
       vm.lastError = SupabaseErrorMessage.describe(
         error,
-        fallback: "Non riesco a mandare l'easy Moment. Riprova."
+        fallback: "Non riesco a mandarlo. Riprova."
       )
     }
   }
@@ -1637,10 +1647,10 @@ struct HomeView: View {
 private extension ZoomLevel {
   var shortLabel: String {
     switch self {
-    case .innerOnly: return "INN"
-    case .innerClose: return "CLO"
-    case .full: return "ORB"
-    case .asteroids: return "OUT"
+    case .innerOnly: return "1"
+    case .innerClose: return "2"
+    case .full: return "3"
+    case .asteroids: return "4"
     }
   }
 }

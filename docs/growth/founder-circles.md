@@ -34,8 +34,8 @@ A Founder Circle counts only when all of these are true:
 ## One-minute script
 
 ```text
-Halo is a private social map for campus.
-It is not a feed and it is not for followers.
+Halo is the network of people you have actually met.
+Not who follows you, not who you know online. Who you have met.
 
 We are starting with 20 Founder Circles at Bocconi:
 you plus four people you already trust.

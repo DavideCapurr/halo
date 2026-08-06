@@ -5,6 +5,16 @@ import HaloShared
 /// Ricerca per handle (`ProfilesService.search`) → tap per aggiungere.
 /// Per ogni aggiunta, segue (default `.nebula`) e propone tier `.inner`
 /// (la controparte conferma più avanti).
+/// Correzione manuale di chi ti sta vicino.
+///
+/// **Non è più una tappa del first run.** `docs/PRODOTTO.md` §7 la toglie
+/// dall'onboarding: chiedere a qualcuno di ordinare la propria vita sociale
+/// prima di avergli dato un solo momento di valore è il lavoro più intimo e
+/// faticoso possibile, richiesto a costo zero di fiducia guadagnata — e per una
+/// matricola o uno studente in exchange al giorno 1 è proprio impossibile.
+///
+/// I tier si muovono da soli in base al comportamento. Questa schermata resta
+/// come rifinitura, raggiungibile dal profilo quando l'utente la cerca.
 struct InitialInnerCircleView: View {
   var onDone: () -> Void = {}
   var onSkip: () -> Void = {}
@@ -39,7 +49,7 @@ struct InitialInnerCircleView: View {
       .padding(.top, 26)
       .padding(.bottom, 26)
       if isWorking {
-        SwarmLoadingState(label: "inner sync")
+        SwarmLoadingState(label: "sincronizzo")
           .padding(.horizontal, SwarmHalo.s6)
       }
     }
@@ -50,12 +60,12 @@ struct InitialInnerCircleView: View {
 
   private var eyebrow: some View {
     VStack(alignment: .leading, spacing: 6) {
-      Text("HALO / INNER")
+      Text("HALO / VICINI")
         .haloEyebrow(SwarmActivationRole.connected.color, size: 9, tracking: 2.2)
-      Text("scegli i tuoi 5.")
+      Text("chi ti sta vicino.")
         .font(HaloType.serif(28, weight: .regular))
         .foregroundStyle(HaloInk.cream)
-      Text("massimo 5. li puoi spostare quando vuoi.")
+      Text("massimo 5, e li puoi spostare quando vuoi. Halo lo capisce anche da solo.")
         .font(HaloType.ui(12, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
     }
@@ -163,15 +173,18 @@ struct InitialInnerCircleView: View {
 
   private var ctaRow: some View {
     HStack {
+      // Non è più uno step da saltare: da `docs/PRODOTTO.md` §7 questa
+      // schermata è una rifinitura raggiunta di proposito dal profilo, quindi
+      // l'uscita è una chiusura, non uno skip.
       Button(action: onSkip) {
-        Text("salta")
+        Text("chiudi")
           .font(HaloType.ui(14, weight: .medium))
           .foregroundStyle(HaloInk.creamMute)
       }
       .buttonStyle(.plain)
       Spacer()
       Button { Task { await confirm() } } label: {
-        Text(picked.isEmpty ? "continua" : "aggiungi al mio Inner (\(picked.count))")
+        Text(picked.isEmpty ? "continua" : "tieni vicino (\(picked.count))")
           .font(HaloType.ui(15, weight: .semibold))
           .foregroundStyle(SwarmHalo.background)
           .padding(.horizontal, 18).padding(.vertical, 12)
@@ -225,7 +238,7 @@ struct InitialInnerCircleView: View {
     } catch {
       errorMessage = SupabaseErrorMessage.describe(
         error,
-        fallback: "Non riesco ad aggiungere il tuo Inner. Riprova."
+        fallback: "Non riesco a salvare. Riprova."
       )
     }
   }

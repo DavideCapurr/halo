@@ -7,7 +7,7 @@ struct LockscreenWidget: Widget {
       WidgetEntryView(entry: entry)
     }
     .configurationDisplayName("Halo — Bolle")
-    .description("Le bolle Inner + Close con la vibe di ognuno.")
+    .description("Come stanno le persone che hai incontrato.")
     .supportedFamilies([.accessoryCircular, .accessoryRectangular])
   }
 }

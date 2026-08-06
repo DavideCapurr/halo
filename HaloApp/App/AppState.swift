@@ -20,17 +20,22 @@ final class AppState {
     case haloSpace(userId: UUID)
     case profile(userId: UUID)
     case invite(token: String)
-    case memory
     case ring(id: UUID)
     case ringJoin(token: String)
     case report(userId: UUID)
   }
 
+  /// Fasi di avvio. Non c'è nessuno step fra l'identità e la Home:
+  /// `docs/PRODOTTO.md` §7 toglie "scegli i tuoi 5" dall'onboarding, perché i
+  /// tier si derivano dal comportamento e chiederli al giorno 1 è impossibile
+  /// per una matricola o uno studente in exchange — cioè per il nostro utente.
+  ///
+  /// Vale anche per il loop di acquisizione: chi arriva da un QR atterra sul
+  /// ring dell'evento, non su un gate.
   enum Phase: Equatable {
     case launching     // verifica sessione iniziale
     case signedOut     // SignInView
     case onboarding    // handle / display / avatar
-    case initialCircle // primi Inner
     case ready         // Home
   }
 
@@ -40,8 +45,6 @@ final class AppState {
   var launchErrorMessage: String?
 
   var isAuthenticated: Bool { currentProfile != nil }
-
-  private let initialCircleSkipPrefix = "halo.initialCircleSkipped."
 
   // MARK: - Bootstrap
 
@@ -65,7 +68,7 @@ final class AppState {
       do {
         let p = try await ProfilesService.shared.currentProfile()
         currentProfile = p
-        await routeAfterAuthenticatedProfile(p)
+        routeAfterAuthenticatedProfile(p)
       } catch ProfilesService.ProfilesError.notFound {
         phase = .onboarding
       } catch {
@@ -85,30 +88,13 @@ final class AppState {
   func didSignIn(_ profile: Profile) {
     launchErrorMessage = nil
     currentProfile = profile
-    if profileNeedsOnboarding(profile) {
-      phase = .onboarding
-    } else {
-      phase = .launching
-      Task { await routeAfterAuthenticatedProfile(profile) }
-    }
+    routeAfterAuthenticatedProfile(profile)
   }
 
   func didFinishOnboarding(_ profile: Profile) {
     launchErrorMessage = nil
     currentProfile = profile
-    phase = .launching
-    Task { await routeAfterAuthenticatedProfile(profile) }
-  }
-
-  func didFinishInitialCircle() {
-    phase = .ready
-  }
-
-  func didSkipInitialCircle() {
-    if let profileId = currentProfile?.id {
-      UserDefaults.standard.set(true, forKey: initialCircleSkipKey(for: profileId))
-    }
-    phase = .ready
+    routeAfterAuthenticatedProfile(profile)
   }
 
   func didSignOut() {
@@ -136,7 +122,10 @@ final class AppState {
     case .invite(let token):
       route = .invite(token: token)
     case .memory:
-      route = .memory
+      // Memory è congelata (`docs/PRODOTTO.md` §8). Il contratto URL resta
+      // valido — il link non deve rompersi — ma non apre più niente: atterra
+      // sulla Home invece che su un archivio a pagamento.
+      route = .home
     case .ring(let id):
       route = .ring(id: id)
     case .ringJoin(let token):
@@ -148,36 +137,12 @@ final class AppState {
 
   // MARK: - Phase routing
 
-  private func routeAfterAuthenticatedProfile(_ profile: Profile) async {
+  private func routeAfterAuthenticatedProfile(_ profile: Profile) {
     currentProfile = profile
-
-    if profileNeedsOnboarding(profile) {
-      phase = .onboarding
-      return
-    }
-
-    phase = await initialCircleNeeded(for: profile) ? .initialCircle : .ready
+    phase = profileNeedsOnboarding(profile) ? .onboarding : .ready
   }
 
   private func profileNeedsOnboarding(_ profile: Profile) -> Bool {
     profile.handle.hasPrefix("halo_") || profile.displayName == "Halo"
-  }
-
-  /// Serve quando l'utente non ha ancora scelto/proposto nessuno per Inner e
-  /// non ha saltato esplicitamente il passaggio su questo device.
-  private func initialCircleNeeded(for profile: Profile) async -> Bool {
-    guard !UserDefaults.standard.bool(forKey: initialCircleSkipKey(for: profile.id)) else {
-      return false
-    }
-
-    do {
-      return try await !FollowsService.shared.hasStartedInnerCircle()
-    } catch {
-      return false
-    }
-  }
-
-  private func initialCircleSkipKey(for profileId: UUID) -> String {
-    "\(initialCircleSkipPrefix)\(profileId.uuidString.lowercased())"
   }
 }

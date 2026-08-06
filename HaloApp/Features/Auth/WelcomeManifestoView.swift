@@ -31,27 +31,52 @@ struct WelcomeManifestoView<Actions: View>: View {
         .lineLimit(1)
         .minimumScaleFactor(0.8)
 
-      Text("Your people, not your audience.")
+      // La tesi di `docs/PRODOTTO.md` §1, testuale e in italiano. Era «Your
+      // people, not your audience.»: inglese in un'app italiana, e soprattutto
+      // una frase che dice cosa Halo *non* è. §1 chiede l'opposto — una riga
+      // sola, zero termini proprietari, che dica cosa Halo è.
+      Text("Le persone che hai incontrato davvero.")
         .font(HaloType.serif(36, weight: .regular))
         .foregroundStyle(SwarmHalo.ink)
         .fixedSize(horizontal: false, vertical: true)
 
-      Text("presenza, non performance.")
-        .haloEyebrow(SwarmHalo.inkSecondary, size: 9, tracking: 2.0)
+      Text("non chi ti segue. non chi conosci online.")
+        .font(HaloType.ui(14, weight: .regular))
+        .foregroundStyle(SwarmHalo.inkSecondary)
+        .fixedSize(horizontal: false, vertical: true)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }
 
+  /// Tre righe, nessun numero.
+  ///
+  /// Prima era una riga di metriche — `likes 00 · inner 05 · feed NO` — cioè
+  /// dei contatori finti usati per dire che non ci sono contatori. Ma è la
+  /// prima schermata dell'app, quella del guscio (`docs/DESIGN.md` §3): mettere
+  /// dei numeri lì insegna che qui si contano le cose, che è esattamente la
+  /// promessa che il prodotto sta cercando di non fare.
   private var ledger: some View {
-    HStack(spacing: 0) {
-      SwarmMetricTile(label: "likes", value: "00", activation: .rest, active: false)
-      Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
-      SwarmMetricTile(label: "inner", value: "05", activation: .connected, active: true)
-      Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
-      SwarmMetricTile(label: "feed", value: "NO", activation: .attention, active: true)
+    VStack(alignment: .leading, spacing: SwarmHalo.s3) {
+      ledgerLine("solo persone che hai incontrato di persona.")
+      ledgerLine("niente like, niente follower, niente estranei.")
+      ledgerLine("vedi come stanno senza doverci parlare.")
     }
-    .padding(.vertical, SwarmHalo.s3)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(SwarmHalo.s4)
     .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: .connected)
+  }
+
+  private func ledgerLine(_ text: String) -> some View {
+    HStack(alignment: .firstTextBaseline, spacing: SwarmHalo.s3) {
+      Circle()
+        .fill(SwarmHalo.inkMuted)
+        .frame(width: 4, height: 4)
+      Text(text)
+        .font(HaloType.ui(14, weight: .regular))
+        .foregroundStyle(SwarmHalo.inkSecondary)
+        .fixedSize(horizontal: false, vertical: true)
+      Spacer(minLength: 0)
+    }
   }
 }
 

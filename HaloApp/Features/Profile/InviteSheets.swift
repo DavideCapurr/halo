@@ -50,7 +50,7 @@ struct InnerInviteSheet: View {
   private var topRail: some View {
     HStack(spacing: 12) {
       VStack(alignment: .leading, spacing: 3) {
-        Text("INNER / INVITE")
+        Text("HALO / INVITO")
           .haloEyebrow(SwarmActivationRole.connected.color, size: 8.5, tracking: 2.3)
         Text(person.name.lowercased())
           .font(HaloType.serif(24, weight: .regular))
@@ -76,7 +76,7 @@ struct InnerInviteSheet: View {
           .background(HaloTheme.portraitBacking, in: Circle())
           .overlay(Circle().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: 0.8))
         VStack(alignment: .leading, spacing: 2) {
-          Text("stai aprendo l'Inner.")
+          Text("lo stai avvicinando.")
             .font(HaloType.serif(22, weight: .regular))
             .foregroundStyle(HaloInk.cream)
           Text("@\(person.handle) ricevera un link privato.")
@@ -84,7 +84,7 @@ struct InnerInviteSheet: View {
             .foregroundStyle(HaloInk.creamMute)
         }
       }
-      Text("copy: ti ho messo nel mio Inner.")
+      Text("testo: ti tengo vicino.")
         .font(HaloType.ui(12, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
     }
@@ -99,7 +99,7 @@ struct InnerInviteSheet: View {
   private var messageField: some View {
     VStack(alignment: .leading, spacing: 8) {
       sectionHeader("messaggio")
-      TextField("ti ho messo nel mio Inner.", text: $message, axis: .vertical)
+      TextField("ti tengo vicino.", text: $message, axis: .vertical)
         .textFieldStyle(.plain)
         .font(HaloType.serif(17, weight: .regular))
         .foregroundStyle(HaloInk.cream)
@@ -212,7 +212,7 @@ struct InnerInviteSheet: View {
     do {
       invite = try await InvitesService.shared.createInnerInvite(
         to: userId,
-        message: message.isEmpty ? "ti ho messo nel mio Inner." : message
+        message: message.isEmpty ? "ti tengo vicino." : message
       )
     } catch {
       errorMessage = SupabaseErrorMessage.describe(
@@ -247,7 +247,7 @@ struct InviteAcceptSheet: View {
           SwarmLoadingState(label: "carico invite")
         } else if didAccept {
           SwarmEmptyState(
-            title: "Inner confermato.",
+            title: "fatto.",
             message: "ora puoi chiudere questa finestra.",
             activation: .connected
           )
@@ -283,7 +283,7 @@ struct InviteAcceptSheet: View {
       VStack(alignment: .leading, spacing: 3) {
         Text("HALO / INVITE")
           .haloEyebrow(SwarmActivationRole.connected.color, size: 8.5, tracking: 2.3)
-        Text("inner request")
+        Text("richiesta")
           .font(HaloType.serif(24, weight: .regular))
           .foregroundStyle(HaloInk.cream)
       }
@@ -307,7 +307,7 @@ struct InviteAcceptSheet: View {
           .background(HaloTheme.portraitBacking, in: Circle())
           .overlay(Circle().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: 0.8))
         VStack(alignment: .leading, spacing: 3) {
-          Text("\(inviter.displayName) ti ha messo nel suo Inner.")
+          Text("\(inviter.displayName) ti tiene vicino.")
             .font(HaloType.serif(24, weight: .regular))
             .foregroundStyle(HaloInk.cream)
             .fixedSize(horizontal: false, vertical: true)
@@ -344,7 +344,7 @@ struct InviteAcceptSheet: View {
         Button {
           Task { await accept() }
         } label: {
-          Text(isAccepting ? "confermo..." : "conferma Inner")
+          Text(isAccepting ? "confermo..." : "conferma")
             .font(HaloType.ui(15, weight: .semibold))
             .foregroundStyle(SwarmHalo.background)
             .padding(.horizontal, 22)

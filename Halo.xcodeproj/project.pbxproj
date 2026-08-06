@@ -61,7 +61,6 @@
 		B10000000000000000000013 /* ClubRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* ClubRingView.swift */; };
 		B10000000000000000000014 /* MemoryArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* MemoryArchiveView.swift */; };
 		B10000000000000000000015 /* WelcomeManifestoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000025 /* WelcomeManifestoView.swift */; };
-		B10000000000000000000016 /* ChooseYourFiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000026 /* ChooseYourFiveView.swift */; };
 		C3BFC0CFBF335F829B29EBD3 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C068CF3C029287339064B62 /* OnboardingView.swift */; };
 		C6A80CF60E65CD265C9EF769 /* DeepSpaceBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3A359887F8BB79CE25DEA0 /* DeepSpaceBackground.swift */; };
 		C78E2869D9E3A96D1DDBC7F6 /* HaloShared in Frameworks */ = {isa = PBXBuildFile; productRef = 7ACAF70CCC9F65EFE9A704F6 /* HaloShared */; };
@@ -183,7 +182,6 @@
 		B10000000000000000000023 /* ClubRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubRingView.swift; sourceTree = "<group>"; };
 		B10000000000000000000024 /* MemoryArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryArchiveView.swift; sourceTree = "<group>"; };
 		B10000000000000000000025 /* WelcomeManifestoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeManifestoView.swift; sourceTree = "<group>"; };
-		B10000000000000000000026 /* ChooseYourFiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseYourFiveView.swift; sourceTree = "<group>"; };
 		C669663C5BBC6DEAC925B046 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		C9A3BA733F12EEB5C02DDA4B /* ZoomLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomLevel.swift; sourceTree = "<group>"; };
 		CBBF159C391B639968EDDA4A /* StandByWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandByWidget.swift; sourceTree = "<group>"; };
@@ -512,7 +510,6 @@
 			isa = PBXGroup;
 			children = (
 				2EBC0A11223344556677889A /* BocconiVerifyView.swift */,
-				B10000000000000000000026 /* ChooseYourFiveView.swift */,
 				2410598D92A3A5BF37A9D272 /* InitialInnerCircleView.swift */,
 				8C068CF3C029287339064B62 /* OnboardingView.swift */,
 				ECD2AC664A6AA49C2DC6BBF5 /* SignInView.swift */,
@@ -668,7 +665,6 @@
 				2EBC0A112233445566778899 /* BocconiVerifyView.swift in Sources */,
 				57625BFD8C86B08A1CBCB178 /* AuthService.swift in Sources */,
 				89A6203B06472FB1E7FA9EF0 /* BottomBarView.swift in Sources */,
-				B10000000000000000000016 /* ChooseYourFiveView.swift in Sources */,
 				E9562EF3214C2BE76676404B /* ComposePostView.swift in Sources */,
 				C6A80CF60E65CD265C9EF769 /* DeepSpaceBackground.swift in Sources */,
 				4B6322AC9F824D35A654C663 /* DiscoveryView.swift in Sources */,

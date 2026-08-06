@@ -26,8 +26,19 @@ private enum WidgetSwarm {
 }
 
 /// Render del widget Halo.
+///
+/// `docs/DESIGN.md` R5: *«zero testo oltre alle iniziali. Nessun conteggio,
+/// nessun badge, nessuna notifica che chiede di essere aperta. Solo il colore
+/// delle persone che cambia durante il giorno.»*
+///
+/// Ogni famiglia qui sotto mostrava invece un numero — il totale al centro del
+/// circolare, l'overflow `+N` nel rettangolare, `NN live` nello StandBy. Un
+/// conteggio è una metrica, e una metrica in schermata di blocco è una
+/// richiesta di attenzione: esattamente il contrario del loop di presenza, dove
+/// il widget deve lavorare anche quando l'utente non fa niente.
+///
 /// - `.accessoryCircular`: mini orbital field con 6 bolle radiali su un anello.
-/// - `.accessoryRectangular`: 4 bolle inline + count totale.
+/// - `.accessoryRectangular`: bolle inline con le sole iniziali.
 /// - `.systemMedium` (StandBy): hero center + anello esterno bolle, deep space.
 struct WidgetEntryView: View {
   let entry: HaloEntry
@@ -64,31 +75,25 @@ struct WidgetEntryView: View {
           total: circularBubbles.count
         )
       }
-      Text("\(entry.snapshot.bubbles.count)")
-        .font(.system(size: 13, weight: .semibold).monospacedDigit())
-        .foregroundStyle(WidgetSwarm.platinum)
     }
     .frame(width: 56, height: 56)
+    .accessibilityLabel(presenceAccessibilityLabel)
   }
 
   // MARK: - Lockscreen rectangular
 
+  /// Niente wordmark e niente `+N`: lo spazio guadagnato va in due bolle in
+  /// più, che sono due persone in più invece di un numero.
   private var rectangularBody: some View {
     HStack(spacing: 6) {
-      Text("HALO")
-        .font(.system(size: 9, weight: .semibold))
-        .foregroundStyle(WidgetSwarm.platinum.opacity(0.62))
-      ForEach(entry.snapshot.bubbles.prefix(4), id: \.userId) { b in
+      ForEach(entry.snapshot.bubbles.prefix(6), id: \.userId) { b in
         RectangularWidgetBubble(color: bubbleColor(for: b), handle: b.handle)
-      }
-      if entry.snapshot.bubbles.count > 4 {
-        Text("+\(entry.snapshot.bubbles.count - 4)")
-          .font(.system(size: 11, weight: .medium).monospacedDigit())
-          .foregroundStyle(WidgetSwarm.platinum.opacity(0.75))
       }
       Spacer(minLength: 0)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(presenceAccessibilityLabel)
   }
 
   // MARK: - StandBy systemMedium
@@ -109,6 +114,19 @@ struct WidgetEntryView: View {
           glow: bubbleGlow(for:)
         )
       }
+    }
+  }
+
+  // MARK: - accessibility
+
+  /// R5 vieta il testo *visibile*, non l'accessibilità. VoiceOver non può
+  /// leggere un colore, quindi la stessa informazione — chi c'è — passa da qui.
+  private var presenceAccessibilityLabel: String {
+    let count = entry.snapshot.bubbles.count
+    switch count {
+    case 0:  return "Nessuno adesso"
+    case 1:  return "Una persona adesso"
+    default: return "\(count) persone adesso"
     }
   }
 
@@ -209,11 +227,6 @@ private struct StandByWidgetOrbit: View {
           radius: radius
         )
       }
-
-      Text(String(format: "%02d live", snapshot.bubbles.count))
-        .font(.system(size: 10, weight: .medium).monospacedDigit())
-        .foregroundStyle(WidgetSwarm.platinum.opacity(0.55))
-        .position(x: center.x, y: size.height - 14)
     }
   }
 }
