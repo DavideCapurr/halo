@@ -1,5 +1,9 @@
 # Perimetro funzionale — di cosa è fatto Halo
 
+> **L'elenco canonico delle funzioni è `docs/FUNZIONI.md`.** Qui c'è il
+> ragionamento con cui è stato costruito: gli anelli, le priorità e il perché
+> di ogni pezzo.
+>
 > Cosa deve avere il prodotto, indipendentemente dal calendario di lancio.
 > `docs/PRODOTTO.md` dice *perché* Halo esiste, questo file dice *di quali
 > pezzi è fatto*, `docs/launch/FEATURE-LANCIO.md` dice *quali di questi pezzi

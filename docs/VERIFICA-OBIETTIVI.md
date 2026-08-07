@@ -1,5 +1,8 @@
 # Queste funzioni portano agli obiettivi?
 
+> **L'elenco canonico delle funzioni è `docs/FUNZIONI.md`**, che incorpora già
+> le sei aggiunte trovate qui (M1-M6).
+>
 > Verifica critica di `docs/PERIMETRO.md` contro gli obiettivi dichiarati in
 > `docs/PRODOTTO.md`. Scritto per essere sgradevole dove serve: un elenco di
 > feature che si auto-conferma non serve a niente.
