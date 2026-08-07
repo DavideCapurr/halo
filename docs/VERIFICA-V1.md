@@ -11,6 +11,31 @@
 
 ---
 
+## 0-bis · Cosa è stato deciso dopo questa verifica
+
+*Aggiunto il 2026-08-07, poche ore dopo il resto del documento. Il testo sotto
+resta invariato: è il registro del perché, non un documento vivo.*
+
+| Rilievo | Esito |
+|---|---|
+| §1.3 — la porta su invito e il budget | **Accolto: escono entrambi.** La porta torna a essere l'incontro (scan di persona, link, QR). E5 — inviti aperti con link e codice — resta in onda 1, perché è idraulica, non un gate |
+| §1.3d — il conflitto di canone con `PRODOTTO.md` §4 | **Risolto senza lavoro.** Rovesciata la porta, il loop di `PRODOTTO.md` §4 e `FUNZIONI.md` §2 torna a descrivere il prodotto |
+| §2 — O2 danneggiato dal budget | **Chiuso.** Senza budget, l'exchange che torna a Madrid non ha un tetto agli ingressi |
+| §1.2 — l'ampiezza e il calendario | **Respinto, con motivazione.** Perimetro e data restano; la scommessa dichiarata è la velocità di esecuzione con Claude Code. `V1.md` §2 ora dice cosa quella velocità **non** comprime |
+| §3.3 — R1 e R2 fermi | **Aperto.** Resta il rilievo più grave, e la decisione sul calendario lo rende più grave, non meno |
+
+Conseguenza derivata, applicata: **E6 sale dall'onda 2 all'onda 1.** Il gate era
+la rete di sicurezza per chi arriva da solo; tolto il gate, quella persona entra
+e trova l'app vuota.
+
+Sull'idea in sé, §4.2b (l'invito peggiora la densità) decade con la porta.
+**Restano validi e non affrontati gli altri quattro:** la ritenzione non
+verificata (a), il moat che difende dal modo di morire sbagliato per la
+categoria (c), WhatsApp come incumbent reale (d), la monetizzazione che si vuole
+in onda 4 e quella che si rifiuta già costruita (e).
+
+---
+
 ## 0 · Verdetto in tre righe
 
 1. Delle tre decisioni della v1, **una è giusta ed è più economica di come è
@@ -222,7 +247,9 @@ quattro settimane non è una domanda di design, è empirica.
 `VERIFICA-OBIETTIVI.md` §5 R3 lo diceva già. Ogni versione del piano la
 rimanda, e questa la rimanda più delle precedenti.
 
-**b) L'invito peggiora il problema che il prodotto ha davvero.**
+**b) L'invito peggiora il problema che il prodotto ha davvero.** *(Rilievo
+accolto il 2026-08-07: la porta su invito e il budget sono usciti dalla v1.
+Il paragrafo resta perché è la ragione della decisione.)*
 `VERIFICA-OBIETTIVI.md` §3 lo nomina: una rete chiusa ha poco contenuto, ed è
 matematica. La risposta corretta è "la presenza, non il contenuto". Ma la
 presenza richiede comunque **persone presenti**: un campo con tre bolle non è
@@ -279,6 +306,11 @@ l'orizzonte in cui il progetto ha dimostrato di saper consegnare qualcosa.
 ---
 
 ## 5 · Cosa cambierei, in una riga per punto
+
+*Stato al 2026-08-07: **1, 2 e 7 sono stati applicati** in `docs/V1.md` (la
+porta su invito e il budget escono, il canone torna coerente da solo). **3, 5 e
+6 restano aperti.** **4 è stato respinto**: perimetro e data restano, vedi
+§0-bis.*
 
 1. **Spedire la porta, non l'economia.** Inviti aperti + codice a sei caratteri
    in onda 1; budget, ricarica e dotazione founder fuori. Il budget dipende da
