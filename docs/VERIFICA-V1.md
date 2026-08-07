@@ -29,10 +29,19 @@ la rete di sicurezza per chi arriva da solo; tolto il gate, quella persona entra
 e trova l'app vuota.
 
 Sull'idea in sé, §4.2b (l'invito peggiora la densità) decade con la porta.
-**Restano validi e non affrontati gli altri quattro:** la ritenzione non
-verificata (a), il moat che difende dal modo di morire sbagliato per la
-categoria (c), WhatsApp come incumbent reale (d), la monetizzazione che si vuole
-in onda 4 e quella che si rifiuta già costruita (e).
+
+**Gli altri quattro sono stati affrontati poco dopo in
+`docs/CORREZIONI-TESI.md`**, con questo esito:
+
+- **(c) il moat sbagliato** e **(d) WhatsApp** — chiusi. `PRODOTTO.md` ha ora un
+  secondo moat (la provenienza come archivio che si accumula) e un
+  posizionamento esplicito contro il gruppo WhatsApp: *il gruppo è il
+  contenitore, Halo è quello che resta*.
+- **(e) monetizzazione invertita** — chiuso spaccando T3 in accumulare /
+  mostrare / far pagare: sale solo il primo pezzo, il paywall resta dov'era.
+- **(a) la ritenzione** — non chiudibile a tavolino, ma la verifica aveva
+  mancato il pezzo peggiore: **la soglia di attivazione era due reciproche, e
+  sotto quella soglia il widget è vuoto due giorni su tre.** Ora è sei, derivata.
 
 ---
 

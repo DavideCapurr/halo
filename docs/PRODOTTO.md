@@ -3,6 +3,11 @@
 > Documento di riferimento. Ogni feature, copy, schermata e riga di roadmap si
 > giudica contro questo file. Se una cosa non si giustifica qui, non si fa.
 >
+> **Rivisto il 2026-08-07** su quattro punti: il secondo moat (§3.2), il
+> concorrente vero (§3.3), la soglia di attivazione (§4) e il criterio di
+> validazione (§10), che era scritto al contrario. Il ragionamento è in
+> `docs/CORREZIONI-TESI.md`.
+>
 > Questo file risponde a **cosa è Halo e perché esiste**.
 > `PLAN.md` risponde a *cosa stiamo costruendo*.
 > `TODO.md` risponde a *cosa facciamo adesso*.
@@ -51,6 +56,18 @@ ricostruita di proposito e difesa dal modello di business.**
 
 ## 3 · Cosa ci distingue (e perché non è copiabile)
 
+Servono **due** moat, e fanno lavori diversi. Averne uno solo è stato l'errore
+di questo documento fino al 2026-08-07 (`docs/CORREZIONI-TESI.md` §2).
+
+> **Moat competitivo** — perché non ci schiacciano.
+> **Moat di ritenzione** — perché l'utente non se ne va.
+
+Il secondo non è un dettaglio: Path, BeReal, Locket e Lapse sono morti tutti
+**senza che nessuno li copiasse**. Un moat che difende solo dal primo rischio
+difende dal modo di morire che in questa categoria non ha mai ucciso nessuno.
+
+### 3.1 · Il moat competitivo
+
 Il vantaggio difendibile **non** è nessuna di queste cose:
 
 | Non è il moat | Perché no |
@@ -82,10 +99,56 @@ Il moat migliore non è *"non sanno farlo"*. È *"non gli conviene farlo"*.
 contenuti da estranei, creator economy o profili pubblici scopribili. Non per
 purezza ideologica — perché è letteralmente l'unica cosa che ci protegge.
 
+### 3.2 · Il moat di ritenzione
+
+I quattro morti della categoria avevano una meccanica e **nessun asset che si
+accumula**: quando la meccanica ha stancato, l'utente non aveva niente da
+perdere andandosene. Instagram trattiene con l'archivio e il grafo, WhatsApp
+con lo storico e il fatto che ci sono tutti. Path non aveva l'equivalente.
+
+Halo il suo ce l'ha, ed è la **provenienza della relazione**: *"conosciuta il 3
+ottobre, Aperitivo giovedì"*, su ogni legame, per sempre.
+
+1. **Non esiste altrove.** Instagram non sa dove hai conosciuto nessuno,
+   WhatsApp nemmeno. È un dato che si può raccogliere solo nel momento
+   dell'incontro — e lì ci siamo, per costruzione.
+2. **Si accumula e accelera.** A un mese è un dettaglio. A due anni è la mappa
+   dei propri vent'anni, e non è ricostruibile a posteriori da nessuna parte.
+3. **Rende l'uscita costosa senza trattenere con la forza.** Non è una streak
+   né un ricatto: è una cosa tua che esiste solo lì.
+
+**Conseguenza vincolante:** la provenienza va raccolta **dal primo giorno**,
+anche prima di avere una schermata che la mostri. È l'unica funzione che
+perde valore retroattivamente se arriva tardi — le relazioni nate prima non
+hanno un'origine ricostruibile, e ogni settimana di ritardo è una settimana di
+archivio persa per sempre.
+
+### 3.3 · Il concorrente vero non è Instagram, è il gruppo WhatsApp
+
+E non si combatte. Il gruppo si fa in dieci secondi, è gratis, ci sono già
+tutti: è una guerra che si perde e che non serve vincere.
+
+Ma il gruppo è il **contenitore dell'evento**, e muore con l'evento — di solito
+in tre settimane. Quando muore, si porta dietro le relazioni, perché non erano
+da nessun'altra parte.
+
+> **Il gruppo WhatsApp è il contenitore. Halo è quello che resta quando il
+> gruppo muore.**
+
+Non chiede a nessuno di smettere di fare niente, ed è già letteralmente il
+prodotto: *"il Ring finisce, le persone restano"*.
+
+### 3.4 · La monetizzazione
+
 **Domanda aperta, da chiudere prima della Serie A:** come si monetizza una
 rete senza reach a 50M di utenti. Candidati: abbonamento, licenze a
 istituzioni, eventi, commercio locale ad alta intenzione. Non va risolta
 adesso, ma non va nemmeno dimenticata.
+
+Quello che §3.2 chiude è però l'ordine: **l'accumulazione dell'archivio va
+anticipata, il paywall no.** Far pagare a mese 1 un archivio di tre settimane è
+assurdo; non registrare nulla a mese 1 rende l'archivio impossibile per sempre.
+Sono due decisioni diverse e finora erano una sola.
 
 ---
 
@@ -119,12 +182,35 @@ nuovo invece che su Instagram.
 
 ```
 incontro reale → scan/link → verifica di co-presenza → Ring
-  → ≥2 relazioni reciproche → segnale (vibe/momento) → risposta → ritorno
+  → ≥6 relazioni reciproche → segnale (vibe/momento) → risposta → ritorno
 ```
 
 L'attivazione si conta **solo** quando c'è reciprocità e una risposta sociale.
 Un Ring join isolato, o una vibe che nessuno vede, non è attivazione: è rumore
 che ci racconta una bugia sul funnel.
+
+### Perché sei, e non due
+
+Fino al 2026-08-07 questa soglia era **due**, e non era derivata da niente.
+Rifatto il conto (`docs/CORREZIONI-TESI.md` §1): il widget mostra le vibe delle
+reciproche, una vibe dura 24h, quindi le vibe visibili in un momento qualsiasi
+sono circa `N × p` — dove `N` sono le reciproche e `p` è quanto spesso una
+persona mette una vibe.
+
+Con `p` fra 0,2 e 0,3 (una o due volte a settimana), **due reciproche danno
+0,4-0,6 vibe attive: il widget è vuoto due giorni su tre.** Nessuna qualità di
+design lo salva — non c'è niente da mostrare.
+
+> L'attivazione non è "ha completato il loop una volta". È **"ha abbastanza
+> rete perché il loop si ripeta da solo"**.
+
+Sei è il punto in cui, anche col `p` pessimistico, il widget ha in media più di
+una vibe attiva. Non è misurato, è **derivato** — ed è quello che I1 deve
+correggere in onda 2 misurando `p` sul campo.
+
+**Conseguenza operativa:** il lavoro non è portare persone dentro, è portare
+**ognuna a sei**. Un roster che fa aggiungere due persone su otto presenti non
+ha attivato nessuno.
 
 ---
 
@@ -140,6 +226,8 @@ Il test: *"questa cosa la butto quando esco da Bocconi?"*
 - **Prova di co-presenza** (Ring + QR/link con token temporale). È il cuore.
   "Eri lì" è la versione universale e permanente di "sei di Bocconi".
 - **Grafo delle relazioni reali** e sua persistenza nel tempo.
+- **Provenienza di ogni relazione** — dove e quando. È il moat di ritenzione
+  (§3.2), e va raccolta dal primo giorno perché non è ricostruibile dopo.
 - **Presenza leggera** (vibe, stato, reazioni) e il widget.
 - **Contenuti a basso rischio**, effimeri di default.
 - **Distanza relazionale**, come idraulica invisibile — mai come pannello di
@@ -317,10 +405,28 @@ fare a chiunque, subito, senza aspettare la Welcome Week:
 > *"Pensa all'ultima persona interessante che hai conosciuto a un evento.
 > Che fine ha fatto?"*
 
-Se la risposta abituale è "ci siamo aggiunti su Instagram e finita lì,
-peccato" → il problema è reale e Halo ha una ragione di esistere.
-Se è "c'è il gruppo WhatsApp, funziona" → la tesi va rivista prima di
-qualunque altra cosa.
+**La domanda ha un secondo tempo, e senza quello il test non vale.** Fino al
+2026-08-07 questo documento trattava *"c'è il gruppo WhatsApp, funziona"* come
+la risposta che uccide la tesi. Era scritto al contrario
+(`docs/CORREZIONI-TESI.md` §3): il gruppo WhatsApp **c'è sempre**, si fa in
+dieci secondi ed è gratis. Fermarsi lì produce un falso negativo garantito, e
+avrebbe fermato il progetto sulla risposta sbagliata.
+
+Quando arriva quella risposta — e arriverà quasi sempre — si continua:
+
+> 1. *"Quel gruppo, è ancora vivo?"*
+> 2. *"Di quelle persone, con quante parli ancora?"*
+> 3. *"Se domani qualcuno lo archivia, cosa ti resta di quelle persone?"*
+
+**Il problema è reale se:** il gruppo è morto in poche settimane, delle
+quattordici persone ne è rimasta una, e delle altre non resta niente — spesso
+nemmeno il ricordo di dove ci si è conosciuti. Non manca un posto dove parlare:
+ne esiste uno e funziona. Manca il fatto che **quando il posto muore, muoiono
+anche le relazioni**, perché non erano da nessun'altra parte.
+
+**La tesi va rivista se:** le persone dicono che quei gruppi sono ancora vivi e
+che con quelle persone parlano ancora. Quello — e non l'esistenza del gruppo —
+è il criterio di morte.
 
 Gate e metriche di attivazione, ritenzione e densità relazionale:
 `docs/launch/PIANO-LANCIO-BOCCONI.md`.
