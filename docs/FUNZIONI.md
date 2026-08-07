@@ -6,7 +6,8 @@
 > l'ordine e i criteri di "fatto" sono in `docs/V1.md`.
 >
 > `docs/PERIMETRO.md` e `docs/VERIFICA-OBIETTIVI.md` contengono il
-> ragionamento con cui questa lista è stata costruita e messa alla prova;
+> ragionamento con cui questa lista è stata costruita e messa alla prova, e
+> `docs/VERIFICA-V1.md` mette alla prova la scelta stessa;
 > `docs/launch/FEATURE-LANCIO.md` dice quali di queste voci servono entro
 > agosto. Questo file dice **cos'è l'app**.
 >
