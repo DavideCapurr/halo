@@ -128,6 +128,27 @@ Aggiungo tre confini che nascono da questo documento:
 
 ---
 
+## 5-bis · Le sei funzioni aggiunte dalla verifica
+
+`docs/VERIFICA-OBIETTIVI.md` ha messo la lista contro gli obiettivi e ne ha
+trovate sei che mancavano. Motivazione estesa lì, qui restano per completezza
+dell'elenco.
+
+| # | Funzione | Anello |
+|---|---|---|
+| M1 | Il primo minuto da solo — chi installa fuori da un evento apre un'app vuota | nucleo |
+| M2 | Ring in dieci secondi, creato da chiunque (oggi è un form da dieci campi) | nucleo |
+| M3 | Il primo segnale non lo dà l'utente — il Ring produce la prima card | completamento |
+| M4 | Misurare la densità reciproca, non il volume di eventi | interna |
+| M5 | L'host è il moltiplicatore — risultato privato del suo Ring | estensione |
+| M6 | Cosa resta quando il Ring scade: il Ring finisce, le persone restano | completamento |
+
+M1 e M2 sono nucleo, non completamento: senza M1 il lancio perde la
+maggioranza dei download, senza M2 il campus 2 lo apre il fondatore invece
+della rete — cioè l'obiettivo §6 di `PRODOTTO.md` non è raggiungibile.
+
+---
+
 ## 6 · L'ordine con cui si costruisce
 
 ```
