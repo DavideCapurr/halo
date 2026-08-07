@@ -2,6 +2,9 @@
 
 > **Elenco canonico.** Se cerchi "cosa fa Halo", si guarda qui e basta.
 >
+> Le funzioni sono state **scelte tutte e 29**, in quattro onde: la decisione,
+> l'ordine e i criteri di "fatto" sono in `docs/V1.md`.
+>
 > `docs/PERIMETRO.md` e `docs/VERIFICA-OBIETTIVI.md` contengono il
 > ragionamento con cui questa lista è stata costruita e messa alla prova;
 > `docs/launch/FEATURE-LANCIO.md` dice quali di queste voci servono entro
