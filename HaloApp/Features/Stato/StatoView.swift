@@ -580,7 +580,7 @@ private struct StatoDetailRow: View {
 
   private func tierLabel(_ tier: FriendshipTier) -> String {
     switch tier {
-    case .inner:  return "inner"
+    case .inner:  return "vicino"
     case .close:  return "close"
     case .orbit:  return "orbita"
     case .nebula: return "nebula"

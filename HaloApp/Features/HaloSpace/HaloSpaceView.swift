@@ -63,7 +63,7 @@ struct HaloSpaceView: View {
       .buttonStyle(.plain)
       Spacer()
       VStack(spacing: 5) {
-        Text("HALO / SPACE")
+        Text("HALO")
           .haloEyebrow(current.tier.swarmHaloState.accent, size: 8, tracking: 2.2)
         if peers.count > 1 {
           HStack(spacing: 4) {
@@ -88,7 +88,7 @@ struct HaloSpaceView: View {
             .overlay(Circle().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: 0.6))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Invita \(current.name) nel tuo Inner")
+        .accessibilityLabel("Avvicina \(current.name)")
 
         Button {
           reportTarget = current
@@ -227,7 +227,7 @@ private struct HaloSpacePage: View {
       ledgerDivider
       ledgerCell("vibe", person.hasActiveVibe ? person.mood.rawValue : "rest")
       ledgerDivider
-      ledgerCell("Moment", isLoading ? "--" : String(format: "%02d", posts.count))
+      ledgerCell("momenti", isLoading ? "--" : String(format: "%02d", posts.count))
     }
     .padding(.vertical, 12)
     .background(
@@ -262,7 +262,7 @@ private struct HaloSpacePage: View {
 
   private var streamHeader: some View {
     HStack(spacing: 10) {
-      Text("Moment")
+      Text("momenti")
         .haloEyebrow(HaloInk.creamMute, size: 8.5, tracking: 2.0)
       Rectangle().fill(HaloInk.creamLine).frame(height: 0.5)
       Text("72H")
@@ -278,7 +278,7 @@ private struct HaloSpacePage: View {
   private var emptyState: some View {
     SwarmEmptyState(
       title: "ancora silenzio.",
-      message: "\(person.name.lowercased()) non ha Moment attivi nelle ultime 72h. puoi essere tu a farti sentire.",
+      message: "\(person.name.lowercased()) non manda niente da 72h. puoi essere tu a farti sentire.",
       activation: .connected,
       actionTitle: "invitalo più vicino",
       actionIcon: "person.badge.plus",
@@ -303,7 +303,7 @@ private struct HaloSpacePage: View {
       posts = []
       lastError = SupabaseErrorMessage.describe(
         error,
-        fallback: "Non riesco a caricare questo HaloSpace."
+        fallback: "Non riesco a caricare questa persona."
       )
     }
   }

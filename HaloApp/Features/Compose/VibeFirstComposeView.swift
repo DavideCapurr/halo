@@ -295,7 +295,7 @@ struct VibeFirstComposeView: View {
 
   private var momentoStep: some View {
     VStack(alignment: .leading, spacing: 12) {
-      stepHeading(eyebrow: "STEP 3 · MOMENT", title: "vuoi aggiungere un Moment?")
+      stepHeading(eyebrow: "STEP 3", title: "vuoi aggiungere qualcosa?")
       Text("se non aggiungi nulla, condividi solo la presenza.")
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
@@ -455,7 +455,7 @@ struct VibeFirstComposeView: View {
   private var tierStep: some View {
     VStack(alignment: .leading, spacing: 12) {
       stepHeading(eyebrow: "STEP 4 · CON CHI", title: "condividi con…")
-      Text("Halo parte da Inner. Allargare è una scelta.")
+      Text("Halo parte dai più vicini. Allargare è una scelta.")
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
 
@@ -517,10 +517,10 @@ struct VibeFirstComposeView: View {
 
   private func audienceLabel(for t: FriendshipTier, count: Int) -> String {
     switch t {
-    case .inner:  return "i tuoi \(count) di Inner"
-    case .close:  return "Inner + i tuoi \(count) di Close"
-    case .orbit:  return "Inner + Close + i tuoi \(count) in Orbita"
-    case .nebula: return "Inner + Close + Orbita + \(count) in Nebula"
+    case .inner:  return "i tuoi \(count) più vicini"
+    case .close:  return "i più vicini + \(count) amici"
+    case .orbit:  return "più vicini, amici e \(count) intorno a te"
+    case .nebula: return "tutti quelli che hai incontrato (\(count))"
     case .asteroid: return ""
     }
   }
@@ -703,7 +703,7 @@ private extension VibeFirstComposeView.Step {
     switch self {
     case .mood: return "mood"
     case .nota: return "nota"
-    case .momento: return "Moment"
+    case .momento: return "momento"
     case .tier: return "con chi"
     }
   }

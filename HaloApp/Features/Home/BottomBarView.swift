@@ -1,24 +1,32 @@
 import SwiftUI
 import HaloShared
 
-/// Floating glass command dock. Four destinations plus a central Moment action.
-/// Tap the centre to compose a Moment (vibe-first); long-press for the
-/// frictionless "easy" share that goes to your Inner and fades in 3 hours.
+/// Floating glass command dock. Quattro destinazioni più l'azione centrale.
+///
+/// I nomi delle tab sono parole comuni, non nomi di schermate: il budget di
+/// `docs/PRODOTTO.md` §7 è di **tre** termini proprietari in tutto il first run
+/// — Ring, Vibe, Halo — e la vecchia dock ne spendeva quattro nuovi da sola
+/// (Orbita, Pulse, Stato, Moment), nessuno dei quali è un concetto che valga la
+/// pena insegnare.
+///
+/// Il Ring è qui perché è la prova di co-presenza, cioè il core (§5). Prima era
+/// il quarto item di un pannello dentro il profilo, sotto l'impalcatura campus
+/// e le feature congelate.
 struct BottomBarView: View {
   enum Tab {
-    case orbit
-    case pulse
-    case stato
+    case halo
+    case adesso
+    case ring
     case profile
   }
 
   let selfMood: Mood
-  var activeTab: Tab = .orbit
+  var activeTab: Tab = .halo
   var onCompose: () -> Void = {}
   var onEasy: () -> Void = {}
-  var onOrbit: () -> Void = {}
-  var onPulse: () -> Void = {}
-  var onStato: () -> Void = {}
+  var onHalo: () -> Void = {}
+  var onAdesso: () -> Void = {}
+  var onRing: () -> Void = {}
   var onProfile: () -> Void = {}
 
   @ViewBuilder
@@ -43,10 +51,10 @@ struct BottomBarView: View {
 
   private var dockContent: some View {
     HStack(spacing: 10) {
-      tabButton(.orbit, title: "Orbita", icon: "circle.dotted", selectedIcon: "circle.circle.fill", action: onOrbit)
-      tabButton(.pulse, title: "Pulse", icon: "waveform.path.ecg", selectedIcon: "waveform.path.ecg", action: onPulse)
+      tabButton(.halo, title: "Halo", icon: "circle.dotted", selectedIcon: "circle.circle.fill", action: onHalo)
+      tabButton(.adesso, title: "Adesso", icon: "waveform.path.ecg", selectedIcon: "waveform.path.ecg", action: onAdesso)
       composeButton()
-      tabButton(.stato, title: "Stato", icon: "circle.grid.2x2", selectedIcon: "circle.grid.2x2.fill", action: onStato)
+      tabButton(.ring, title: "Ring", icon: "qrcode.viewfinder", selectedIcon: "qrcode.viewfinder", action: onRing)
       tabButton(.profile, title: "Tu", icon: "person.circle", selectedIcon: "person.circle.fill", action: onProfile)
     }
     .padding(.horizontal, HaloVisual.Orbita.dockInnerHorizontalPadding)
@@ -128,15 +136,15 @@ struct BottomBarView: View {
       .contentShape(Circle())
       .onTapGesture(perform: onCompose)
       .onLongPressGesture(minimumDuration: 0.35, perform: onEasy)
-      .accessibilityLabel("Nuovo Moment")
-      .accessibilityHint("Tocca per un Moment, tieni premuto per condividere veloce")
+      .accessibilityLabel("Condividi")
+      .accessibilityHint("Tocca per scegliere chi vede, tieni premuto per mandarlo ai più vicini")
   }
 }
 
 #Preview {
   ZStack {
     SwarmHalo.background
-    BottomBarView(selfMood: .focused, activeTab: .pulse)
+    BottomBarView(selfMood: .focused, activeTab: .adesso)
   }
   .frame(width: 402, height: 120)
 }

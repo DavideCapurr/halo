@@ -101,7 +101,7 @@ struct PulseFeedView: View {
         .lineLimit(1)
         .minimumScaleFactor(0.72)
 
-      Text(scope == .inner ? "Moment spontanei dal tuo Inner" : "tutti i segnali dalle tue orbite")
+      Text(scope == .inner ? "quello che mandano i più vicini" : "tutti quelli che hai incontrato")
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
         .animation(SwarmHalo.easeSwarm(0.18), value: scope)
@@ -126,7 +126,7 @@ struct PulseFeedView: View {
   private var timelineContent: some View {
     let groups = vm.pulseEventGroups(in: scope)
     if vm.isLoading && groups.isEmpty {
-      SwarmLoadingState(label: "carico il Pulse")
+      SwarmLoadingState(label: "carico")
         .padding(.horizontal, 22)
         .padding(.top, 14)
     } else if let lastError = vm.lastError {
@@ -139,10 +139,10 @@ struct PulseFeedView: View {
       .padding(.top, 14)
     } else if groups.isEmpty {
       SwarmEmptyState(
-        title: "nessun Moment.",
+        title: "ancora niente.",
         message: scope == .inner
-          ? "quando il tuo Inner manda vibe o Moment, li trovi qui."
-          : "quando le tue orbite si muovono, il Pulse si accende.",
+          ? "quando i tuoi più vicini mandano qualcosa, lo trovi qui."
+          : "quando qualcuno che hai incontrato si muove, compare qui.",
         activation: .rest
       )
       .padding(.horizontal, 22)
@@ -186,7 +186,7 @@ struct PulseFeedView: View {
           .font(HaloType.ui(10, weight: .medium))
           .foregroundStyle(HaloInk.creamMute)
       }
-      Text("\(eventCount) Moment")
+      Text("\(eventCount) adesso")
         .font(HaloType.ui(11, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
     }
@@ -209,7 +209,7 @@ struct PulseFeedView: View {
       separator
       statCell("live", value: String(format: "%02d", liveCount), accent: liveCount > 0)
       separator
-      statCell("Moment", value: String(format: "%02d", eventCount), accent: activeCount > 0)
+      statCell("momenti", value: String(format: "%02d", eventCount), accent: activeCount > 0)
     }
     .padding(.vertical, 12)
     .padding(.horizontal, 16)
@@ -759,7 +759,7 @@ private struct PulseDropDock: View {
   private var draftPanel: some View {
     VStack(alignment: .leading, spacing: 10) {
       HStack(spacing: 8) {
-        Text("nuovo Moment")
+        Text("manda qualcosa")
           .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 1.8)
         Rectangle()
           .fill(HaloInk.creamLine)

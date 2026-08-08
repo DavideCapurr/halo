@@ -73,11 +73,16 @@ mancanti: vedi `docs/PRODOTTO.md` §10 per la domanda da fare e
 
 Quando si torna al codice, l'ordine e:
 
-1. Invertire `MoodPalette.swift` da canale secondario a fondamento del colore.
-2. Collassare `HaloTypography.swift` su una famiglia sola.
-3. Rimuovere gli alias legacy in `Tokens.swift`.
-4. Togliere `ChooseYourFiveView` dall'onboarding: i tier vanno derivati dal
-   comportamento (`docs/PRODOTTO.md` §7).
+1. ~~Invertire `MoodPalette.swift` da canale secondario a fondamento del
+   colore.~~ Fatto: il colore viene solo dai mood delle persone.
+2. ~~Collassare `HaloTypography.swift` su una famiglia sola.~~ Fatto.
+3. Rimuovere gli alias legacy in `Tokens.swift` — restano deprecati e neutri,
+   si migrano passando sulle rispettive view.
+4. ~~Togliere `ChooseYourFiveView` dall'onboarding.~~ Fatto: la fase
+   `.initialCircle` non esiste più e la scelta manuale è una rifinitura nel
+   profilo (`docs/PRODOTTO.md` §7).
+5. Unire `PulseFeedView` e `StatoView`, oggi due letture dello stesso grafo —
+   serve un dato d'uso prima di decidere (`docs/UI-UX-AUDIT.md` §4).
 
 ## Setup dev
 
@@ -161,6 +166,8 @@ Gli screenshot finiscono in `/tmp/halo-shots/` (override con `OUT=`).
 - `docs/PRODOTTO.md`: **tesi, moat, loop, core vs impalcatura.** Da leggere
   per primo — spiega perche tutto il resto esiste.
 - `docs/DESIGN.md`: direzione visiva canonica e le cinque regole di stile.
+- `docs/UI-UX-AUDIT.md`: ogni superficie dell'app passata alle domande dei due
+  documenti sopra — cosa era disallineato, cosa è stato corretto, cosa resta.
 - `PLAN.md`: piano implementativo locale.
 - `docs/research/`: vocabolario e audit competitivo.
 - `docs/archive/`: brief SWARM e direzioni estetiche superate. Storia, non

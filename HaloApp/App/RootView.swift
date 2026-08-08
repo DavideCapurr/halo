@@ -1,8 +1,13 @@
 import SwiftUI
 import HaloShared
 
-/// Routing principale: gate auth → onboarding → initial circle → home.
+/// Routing principale: gate auth → onboarding → home.
 /// `restore()` viene chiamata all'avvio per ripristinare la sessione esistente.
+///
+/// Fra l'identità e la Home non c'è nessuno step: `docs/PRODOTTO.md` §7 toglie
+/// "scegli i tuoi 5" dal first run. Chi arriva da un QR deve atterrare sul ring
+/// dell'evento, non su una schermata che gli chiede di ordinare le proprie
+/// amicizie prima di aver visto un solo momento di valore.
 struct RootView: View {
   @Environment(AppState.self) private var state
 
@@ -20,12 +25,6 @@ struct RootView: View {
         OnboardingView(initialProfile: state.currentProfile ?? bootstrapProfile()) { profile in
           state.didFinishOnboarding(profile)
         }
-        .transition(.opacity)
-      case .initialCircle:
-        ChooseYourFiveView(
-          onDone: { state.didFinishInitialCircle() },
-          onSkip: { state.didSkipInitialCircle() }
-        )
         .transition(.opacity)
       case .ready:
         HomeView()

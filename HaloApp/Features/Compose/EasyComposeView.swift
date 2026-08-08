@@ -169,7 +169,7 @@ struct EasyComposeView: View {
       Image(systemName: "bolt.fill")
         .font(HaloType.system(11, weight: .semibold))
         .foregroundStyle(MoodPalette.auraColor(mood, l: 0.78))
-      Text("va ai tuoi Inner e svanisce in 3 ore. nessuna pressione.")
+      Text("va ai tuoi più vicini e svanisce in 3 ore. nessuna pressione.")
         .font(HaloType.ui(12, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
       Spacer()
